@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Fragment } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Search,
   Loader2,
-  Pencil,
   Trash2,
   Check,
   X,
@@ -13,7 +12,12 @@ import {
   ChevronRight,
   ArrowLeft,
   Building2,
+  FileText,
+  ChevronDown,
 } from "lucide-react";
+import type { Invoice } from "@/lib/types";
+import { STATUS_LABELS, STATUS_COLORS } from "@/lib/types";
+import { formatDate } from "@/lib/utils";
 
 interface CatalogItem {
   id: string;
@@ -21,6 +25,11 @@ interface CatalogItem {
   provider_description: string;
   customs_description: string;
   ncm_code: string;
+  latu: boolean | null;
+  imesi: boolean | null;
+  exonera_iva: boolean | null;
+  apertura: number | null;
+  internal_description: string | null;
   times_used: number;
   last_used_at: string;
   provider: { id: string; name: string } | null;
@@ -49,8 +58,18 @@ export default function ProviderCatalogPage() {
   const [editValues, setEditValues] = useState({
     customs_description: "",
     ncm_code: "",
+    latu: null as boolean | null,
+    imesi: null as boolean | null,
+    exonera_iva: null as boolean | null,
+    apertura: null as number | null,
+    internal_description: "",
   });
   const [saving, setSaving] = useState(false);
+
+  // Provider invoices
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loadingInvoices, setLoadingInvoices] = useState(true);
+  const [showInvoices, setShowInvoices] = useState(false);
 
   // Debounce search
   useEffect(() => {
@@ -113,17 +132,39 @@ export default function ProviderCatalogPage() {
     fetchProviderName();
   }, [providerId, providerName]);
 
+  // Fetch invoices for this provider
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      try {
+        const response = await fetch("/api/invoices");
+        if (response.ok) {
+          const all: Invoice[] = await response.json();
+          setInvoices(all.filter((inv) => inv.provider_id === providerId));
+        }
+      } catch {
+        // ignore
+      }
+      setLoadingInvoices(false);
+    };
+    fetchInvoices();
+  }, [providerId]);
+
   const startEdit = (item: CatalogItem) => {
     setEditingId(item.id);
     setEditValues({
       customs_description: item.customs_description,
       ncm_code: item.ncm_code,
+      latu: item.latu,
+      imesi: item.imesi,
+      exonera_iva: item.exonera_iva,
+      apertura: item.apertura,
+      internal_description: item.internal_description || "",
     });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    setEditValues({ customs_description: "", ncm_code: "" });
+    setEditValues({ customs_description: "", ncm_code: "", latu: null, imesi: null, exonera_iva: null, apertura: null, internal_description: "" });
   };
 
   const saveEdit = async () => {
@@ -138,19 +179,25 @@ export default function ProviderCatalogPage() {
       });
 
       if (response.ok) {
+        const updatedData = await response.json();
         setData((prev) => {
           if (!prev) return prev;
           return {
             ...prev,
             items: prev.items.map((item) =>
-              item.id === editingId ? { ...item, ...editValues } : item
+              item.id === editingId ? { ...item, ...updatedData } : item
             ),
           };
         });
         setEditingId(null);
+      } else {
+        const err = await response.json();
+        console.error("Error updating catalog:", err);
+        alert(`Error al guardar: ${err.error || "Error desconocido"}`);
       }
     } catch (err) {
       console.error("Error saving:", err);
+      alert("Error de conexión al guardar");
     }
     setSaving(false);
   };
@@ -193,6 +240,59 @@ export default function ProviderCatalogPage() {
         </div>
       </div>
 
+      {/* Invoices collapsible */}
+      <div className="mb-6">
+        <button
+          onClick={() => setShowInvoices(!showInvoices)}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 mb-2"
+        >
+          <FileText size={16} className="text-gray-400" />
+          Facturas ({loadingInvoices ? "..." : invoices.length})
+          <ChevronDown size={14} className={`transition-transform ${showInvoices ? "rotate-180" : ""}`} />
+        </button>
+        {showInvoices && (
+          <div className="bg-white rounded-xl border divide-y mb-2">
+            {loadingInvoices ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 size={20} className="animate-spin text-[#2E86C1]" />
+              </div>
+            ) : invoices.length === 0 ? (
+              <p className="text-gray-400 text-sm text-center py-6">
+                No hay facturas asociadas a este proveedor
+              </p>
+            ) : (
+              invoices.map((inv) => (
+                <button
+                  key={inv.id}
+                  onClick={() => router.push(`/facturas/${inv.id}`)}
+                  className="flex items-center justify-between w-full p-3 hover:bg-gray-50 text-left"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <FileText size={16} className="text-gray-400 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {inv.file_name}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {formatDate(inv.created_at)}
+                        {inv.total_items > 0 && ` · ${inv.total_items} items`}
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${
+                      STATUS_COLORS[inv.status]
+                    }`}
+                  >
+                    {STATUS_LABELS[inv.status]}
+                  </span>
+                </button>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Search */}
       <div className="mb-6">
         <div className="relative max-w-md">
@@ -223,17 +323,20 @@ export default function ProviderCatalogPage() {
                 <th className="px-4 py-3 font-medium text-gray-600">
                   Desc. Aduanera
                 </th>
+                <th className="px-4 py-3 font-medium text-gray-600">
+                  Desc. Interna
+                </th>
                 <th className="px-4 py-3 font-medium text-gray-600">NCM</th>
                 <th className="px-4 py-3 font-medium text-gray-600 text-center">
                   Usos
                 </th>
-                <th className="px-4 py-3 font-medium text-gray-600 w-20"></th>
+                <th className="px-4 py-3 font-medium text-gray-600 w-16"></th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center">
+                  <td colSpan={7} className="px-4 py-12 text-center">
                     <Loader2
                       size={24}
                       className="animate-spin text-[#2E86C1] mx-auto"
@@ -243,7 +346,7 @@ export default function ProviderCatalogPage() {
               ) : !data || data.items.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="px-4 py-12 text-center text-gray-400"
                   >
                     {search
@@ -252,113 +355,241 @@ export default function ProviderCatalogPage() {
                   </td>
                 </tr>
               ) : (
-                data.items.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="border-b last:border-b-0 hover:bg-gray-50/50"
-                  >
-                    <td className="px-4 py-3 font-mono text-xs text-gray-600">
-                      {item.sku}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 max-w-xs truncate">
-                      {item.provider_description}
-                    </td>
-
-                    {/* Desc. Aduanera - editable */}
-                    <td className="px-4 py-3">
-                      {editingId === item.id ? (
-                        <input
-                          type="text"
-                          value={editValues.customs_description}
-                          onChange={(e) =>
-                            setEditValues((v) => ({
-                              ...v,
-                              customs_description: e.target.value,
-                            }))
+                data.items.map((item) => {
+                  const isExpanded = editingId === item.id;
+                  return (
+                    <Fragment key={item.id}>
+                      <tr
+                        className={`border-b last:border-b-0 cursor-pointer transition-colors ${
+                          isExpanded ? "bg-blue-50/50" : "hover:bg-gray-50/50"
+                        }`}
+                        onClick={() => {
+                          if (isExpanded) {
+                            cancelEdit();
+                          } else {
+                            startEdit(item);
                           }
-                          className="w-full px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#2E86C1]"
-                        />
-                      ) : (
-                        <span className="text-gray-700">
+                        }}
+                      >
+                        <td className="px-4 py-3 font-mono text-xs text-gray-600">
+                          {item.sku}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600 max-w-xs truncate">
+                          {item.provider_description}
+                        </td>
+                        <td className="px-4 py-3 text-gray-700 max-w-xs truncate">
                           {item.customs_description}
-                        </span>
-                      )}
-                    </td>
-
-                    {/* NCM - editable */}
-                    <td className="px-4 py-3">
-                      {editingId === item.id ? (
-                        <input
-                          type="text"
-                          value={editValues.ncm_code}
-                          onChange={(e) =>
-                            setEditValues((v) => ({
-                              ...v,
-                              ncm_code: e.target.value,
-                            }))
-                          }
-                          className="w-24 px-2 py-1 border rounded text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[#2E86C1]"
-                        />
-                      ) : (
-                        <span className="font-mono text-xs text-gray-600">
+                        </td>
+                        <td className="px-4 py-3 text-gray-600 max-w-xs truncate">
+                          {item.internal_description || <span className="text-gray-400">—</span>}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs text-gray-600">
                           {item.ncm_code}
-                        </span>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
-                        {item.times_used}
-                      </span>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
-                        {editingId === item.id ? (
-                          <>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
+                            {item.times_used}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1">
+                            <ChevronDown
+                              size={14}
+                              className={`text-gray-400 transition-transform ${
+                                isExpanded ? "rotate-180" : ""
+                              }`}
+                            />
                             <button
-                              onClick={saveEdit}
-                              disabled={saving}
-                              className="p-1.5 rounded hover:bg-green-50 text-green-600"
-                              title="Guardar"
-                            >
-                              {saving ? (
-                                <Loader2 size={14} className="animate-spin" />
-                              ) : (
-                                <Check size={14} />
-                              )}
-                            </button>
-                            <button
-                              onClick={cancelEdit}
-                              className="p-1.5 rounded hover:bg-gray-100 text-gray-400"
-                              title="Cancelar"
-                            >
-                              <X size={14} />
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => startEdit(item)}
-                              className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600"
-                              title="Editar"
-                            >
-                              <Pencil size={14} />
-                            </button>
-                            <button
-                              onClick={() => deleteItem(item.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteItem(item.id);
+                              }}
                               className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-500"
                               title="Eliminar"
                             >
                               <Trash2 size={14} />
                             </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Expanded edit panel */}
+                      {isExpanded && (
+                        <tr className="border-b bg-blue-50/30">
+                          <td colSpan={7} className="px-4 py-4">
+                            <div className="space-y-4">
+                              {/* Row 1: descriptions */}
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                    Descripción Aduanera
+                                  </label>
+                                  <textarea
+                                    value={editValues.customs_description}
+                                    onChange={(e) =>
+                                      setEditValues((v) => ({
+                                        ...v,
+                                        customs_description: e.target.value,
+                                      }))
+                                    }
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
+                                    placeholder="Descripción para aduana"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                    Descripción Interna
+                                  </label>
+                                  <textarea
+                                    value={editValues.internal_description}
+                                    onChange={(e) =>
+                                      setEditValues((v) => ({
+                                        ...v,
+                                        internal_description: e.target.value,
+                                      }))
+                                    }
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
+                                    placeholder="Descripción interna (uso propio)"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Row 2: NCM + flags */}
+                              <div className="grid grid-cols-5 gap-4">
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                    NCM
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={editValues.ncm_code}
+                                    onChange={(e) =>
+                                      setEditValues((v) => ({
+                                        ...v,
+                                        ncm_code: e.target.value,
+                                      }))
+                                    }
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                    LATU
+                                  </label>
+                                  <select
+                                    value={editValues.latu === null ? "" : editValues.latu ? "true" : "false"}
+                                    onChange={(e) =>
+                                      setEditValues((v) => ({
+                                        ...v,
+                                        latu: e.target.value === "" ? null : e.target.value === "true",
+                                      }))
+                                    }
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                                  >
+                                    <option value="">—</option>
+                                    <option value="true">Sí</option>
+                                    <option value="false">No</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                    IMESI
+                                  </label>
+                                  <select
+                                    value={editValues.imesi === null ? "" : editValues.imesi ? "true" : "false"}
+                                    onChange={(e) =>
+                                      setEditValues((v) => ({
+                                        ...v,
+                                        imesi: e.target.value === "" ? null : e.target.value === "true",
+                                      }))
+                                    }
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                                  >
+                                    <option value="">—</option>
+                                    <option value="true">Sí</option>
+                                    <option value="false">No</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                    Exonera IVA
+                                  </label>
+                                  <select
+                                    value={editValues.exonera_iva === null ? "" : editValues.exonera_iva ? "true" : "false"}
+                                    onChange={(e) =>
+                                      setEditValues((v) => ({
+                                        ...v,
+                                        exonera_iva: e.target.value === "" ? null : e.target.value === "true",
+                                      }))
+                                    }
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                                  >
+                                    <option value="">—</option>
+                                    <option value="true">Sí</option>
+                                    <option value="false">No</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                    Apertura
+                                  </label>
+                                  <input
+                                    type="number"
+                                    value={editValues.apertura ?? ""}
+                                    onChange={(e) =>
+                                      setEditValues((v) => ({
+                                        ...v,
+                                        apertura: e.target.value === "" ? null : Number(e.target.value),
+                                      }))
+                                    }
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                                    placeholder="—"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    saveEdit();
+                                  }}
+                                  disabled={saving}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] disabled:opacity-50 transition-colors"
+                                >
+                                  {saving ? (
+                                    <Loader2 size={14} className="animate-spin" />
+                                  ) : (
+                                    <Check size={14} />
+                                  )}
+                                  Guardar
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    cancelEdit();
+                                  }}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm text-gray-600 hover:bg-white transition-colors"
+                                >
+                                  <X size={14} />
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })
               )}
             </tbody>
           </table>

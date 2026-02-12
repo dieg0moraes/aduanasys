@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
+    const despachoId = formData.get("despacho_id") as string | null;
 
     if (!file) {
       return NextResponse.json(
@@ -60,6 +61,7 @@ export async function POST(request: NextRequest) {
         raw_extraction: {},
         processing_error: null,
         provider_id: null,
+        despacho_id: despachoId || null,
       })
       .select()
       .single();

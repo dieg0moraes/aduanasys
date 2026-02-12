@@ -9,6 +9,7 @@ function FacturasContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const showUpload = searchParams.get("action") === "upload";
+  const despachoId = searchParams.get("despacho_id");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -19,6 +20,9 @@ function FacturasContent() {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      if (despachoId) {
+        formData.append("despacho_id", despachoId);
+      }
 
       const response = await fetch("/api/invoices", {
         method: "POST",
@@ -31,7 +35,11 @@ function FacturasContent() {
       }
 
       const data = await response.json();
-      router.push(`/facturas/${data.id}`);
+      if (despachoId) {
+        router.push(`/despachos/${despachoId}`);
+      } else {
+        router.push(`/facturas/${data.id}`);
+      }
     } catch (err) {
       setUploadError(
         err instanceof Error ? err.message : "Error desconocido"

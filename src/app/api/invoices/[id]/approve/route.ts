@@ -34,7 +34,7 @@ export async function POST(
       supabase
         .from("invoice_items")
         .select(
-          "sku, original_description, customs_description, ncm_code, was_corrected"
+          "sku, original_description, customs_description, internal_description, ncm_code, was_corrected"
         )
         .eq("invoice_id", id),
     ]);
@@ -77,6 +77,7 @@ export async function POST(
           sku: string;
           provider_description: string;
           customs_description: string;
+          internal_description: string | null;
           ncm_code: string;
           times_used: number;
           last_used_at: string;
@@ -91,6 +92,7 @@ export async function POST(
           sku: item.sku,
           provider_description: item.original_description,
           customs_description: item.customs_description,
+          internal_description: item.internal_description || null,
           ncm_code: item.ncm_code,
           times_used: 1,
           last_used_at: now,

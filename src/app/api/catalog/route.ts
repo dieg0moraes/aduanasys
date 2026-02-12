@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     // Búsqueda por texto en múltiples campos
     if (search) {
       query = query.or(
-        `sku.ilike.%${search}%,provider_description.ilike.%${search}%,customs_description.ilike.%${search}%,ncm_code.ilike.%${search}%`
+        `sku.ilike.%${search}%,provider_description.ilike.%${search}%,customs_description.ilike.%${search}%,internal_description.ilike.%${search}%,ncm_code.ilike.%${search}%`
       );
     }
 
@@ -93,6 +93,16 @@ export async function PATCH(request: NextRequest) {
     if (updates.ncm_code !== undefined)
       allowedUpdates.ncm_code = updates.ncm_code;
     if (updates.sku !== undefined) allowedUpdates.sku = updates.sku;
+    if (updates.latu !== undefined) allowedUpdates.latu = updates.latu;
+    if (updates.imesi !== undefined) allowedUpdates.imesi = updates.imesi;
+    if (updates.exonera_iva !== undefined)
+      allowedUpdates.exonera_iva = updates.exonera_iva;
+    if (updates.apertura !== undefined)
+      allowedUpdates.apertura = updates.apertura;
+    if (updates.internal_description !== undefined)
+      allowedUpdates.internal_description = updates.internal_description;
+
+    console.log("[Catalog PATCH] id:", id, "updates:", allowedUpdates);
 
     const { data, error } = await supabase
       .from("product_catalog")
@@ -102,9 +112,11 @@ export async function PATCH(request: NextRequest) {
       .single();
 
     if (error) {
+      console.error("[Catalog PATCH] Error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    console.log("[Catalog PATCH] Success, updated row:", data?.id);
     return NextResponse.json(data);
   } catch (error) {
     console.error("Catalog update error:", error);

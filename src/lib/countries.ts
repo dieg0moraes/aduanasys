@@ -1,0 +1,217 @@
+// ============================================
+// Códigos de Países – Referencia DUA / DNA Uruguay
+// Códigos numéricos internacionales usados en práctica aduanera.
+// Fuente: codigos_paises_DUA.pdf
+// ============================================
+
+export interface Country {
+  code: number;
+  name: string;
+}
+
+export const COUNTRIES: Country[] = [
+  { code: 4, name: "Afganistán" },
+  { code: 8, name: "Albania" },
+  { code: 12, name: "Argelia" },
+  { code: 20, name: "Andorra" },
+  { code: 24, name: "Angola" },
+  { code: 28, name: "Antigua y Barbuda" },
+  { code: 32, name: "Argentina" },
+  { code: 36, name: "Australia" },
+  { code: 40, name: "Austria" },
+  { code: 44, name: "Bahamas" },
+  { code: 48, name: "Baréin" },
+  { code: 50, name: "Bangladés" },
+  { code: 51, name: "Armenia" },
+  { code: 52, name: "Barbados" },
+  { code: 56, name: "Bélgica" },
+  { code: 60, name: "Bermudas" },
+  { code: 64, name: "Bután" },
+  { code: 68, name: "Bolivia" },
+  { code: 70, name: "Bosnia y Herzegovina" },
+  { code: 72, name: "Botsuana" },
+  { code: 76, name: "Brasil" },
+  { code: 84, name: "Belice" },
+  { code: 90, name: "Islas Salomón" },
+  { code: 96, name: "Brunéi" },
+  { code: 100, name: "Bulgaria" },
+  { code: 104, name: "Myanmar" },
+  { code: 108, name: "Burundi" },
+  { code: 112, name: "Belarús" },
+  { code: 116, name: "Camboya" },
+  { code: 120, name: "Camerún" },
+  { code: 124, name: "Canadá" },
+  { code: 132, name: "Cabo Verde" },
+  { code: 136, name: "Islas Caimán" },
+  { code: 140, name: "República Centroafricana" },
+  { code: 144, name: "Sri Lanka" },
+  { code: 148, name: "Chad" },
+  { code: 152, name: "Chile" },
+  { code: 156, name: "China" },
+  { code: 170, name: "Colombia" },
+  { code: 174, name: "Comoras" },
+  { code: 178, name: "Congo" },
+  { code: 180, name: "República Democrática del Congo" },
+  { code: 188, name: "Costa Rica" },
+  { code: 191, name: "Croacia" },
+  { code: 192, name: "Cuba" },
+  { code: 196, name: "Chipre" },
+  { code: 203, name: "Chequia" },
+  { code: 204, name: "Benín" },
+  { code: 208, name: "Dinamarca" },
+  { code: 212, name: "Dominica" },
+  { code: 214, name: "República Dominicana" },
+  { code: 218, name: "Ecuador" },
+  { code: 222, name: "El Salvador" },
+  { code: 226, name: "Guinea Ecuatorial" },
+  { code: 231, name: "Etiopía" },
+  { code: 232, name: "Eritrea" },
+  { code: 233, name: "Estonia" },
+  { code: 242, name: "Fiyi" },
+  { code: 246, name: "Finlandia" },
+  { code: 250, name: "Francia" },
+  { code: 262, name: "Yibuti" },
+  { code: 266, name: "Gabón" },
+  { code: 268, name: "Georgia" },
+  { code: 270, name: "Gambia" },
+  { code: 276, name: "Alemania" },
+  { code: 288, name: "Ghana" },
+  { code: 300, name: "Grecia" },
+  { code: 308, name: "Granada" },
+  { code: 320, name: "Guatemala" },
+  { code: 324, name: "Guinea" },
+  { code: 328, name: "Guyana" },
+  { code: 332, name: "Haití" },
+  { code: 340, name: "Honduras" },
+  { code: 348, name: "Hungría" },
+  { code: 352, name: "Islandia" },
+  { code: 356, name: "India" },
+  { code: 360, name: "Indonesia" },
+  { code: 364, name: "Irán" },
+  { code: 368, name: "Irak" },
+  { code: 372, name: "Irlanda" },
+  { code: 376, name: "Israel" },
+  { code: 380, name: "Italia" },
+  { code: 388, name: "Jamaica" },
+  { code: 392, name: "Japón" },
+  { code: 398, name: "Kazajistán" },
+  { code: 400, name: "Jordania" },
+  { code: 404, name: "Kenia" },
+  { code: 408, name: "Corea del Norte" },
+  { code: 410, name: "Corea del Sur" },
+  { code: 414, name: "Kuwait" },
+  { code: 417, name: "Kirguistán" },
+  { code: 418, name: "Laos" },
+  { code: 422, name: "Líbano" },
+  { code: 426, name: "Lesoto" },
+  { code: 428, name: "Letonia" },
+  { code: 430, name: "Liberia" },
+  { code: 434, name: "Libia" },
+  { code: 438, name: "Liechtenstein" },
+  { code: 440, name: "Lituania" },
+  { code: 442, name: "Luxemburgo" },
+  { code: 450, name: "Madagascar" },
+  { code: 454, name: "Malaui" },
+  { code: 458, name: "Malasia" },
+  { code: 462, name: "Maldivas" },
+  { code: 466, name: "Malí" },
+  { code: 470, name: "Malta" },
+  { code: 478, name: "Mauritania" },
+  { code: 480, name: "Mauricio" },
+  { code: 484, name: "México" },
+  { code: 496, name: "Mongolia" },
+  { code: 498, name: "Moldavia" },
+  { code: 499, name: "Montenegro" },
+  { code: 504, name: "Marruecos" },
+  { code: 508, name: "Mozambique" },
+  { code: 512, name: "Omán" },
+  { code: 516, name: "Namibia" },
+  { code: 524, name: "Nepal" },
+  { code: 528, name: "Países Bajos" },
+  { code: 554, name: "Nueva Zelanda" },
+  { code: 558, name: "Nicaragua" },
+  { code: 562, name: "Níger" },
+  { code: 566, name: "Nigeria" },
+  { code: 578, name: "Noruega" },
+  { code: 586, name: "Pakistán" },
+  { code: 591, name: "Panamá" },
+  { code: 598, name: "Papúa Nueva Guinea" },
+  { code: 600, name: "Paraguay" },
+  { code: 604, name: "Perú" },
+  { code: 608, name: "Filipinas" },
+  { code: 616, name: "Polonia" },
+  { code: 620, name: "Portugal" },
+  { code: 634, name: "Catar" },
+  { code: 642, name: "Rumania" },
+  { code: 643, name: "Rusia" },
+  { code: 646, name: "Ruanda" },
+  { code: 682, name: "Arabia Saudita" },
+  { code: 686, name: "Senegal" },
+  { code: 688, name: "Serbia" },
+  { code: 690, name: "Seychelles" },
+  { code: 694, name: "Sierra Leona" },
+  { code: 702, name: "Singapur" },
+  { code: 703, name: "Eslovaquia" },
+  { code: 704, name: "Vietnam" },
+  { code: 705, name: "Eslovenia" },
+  { code: 706, name: "Somalia" },
+  { code: 710, name: "Sudáfrica" },
+  { code: 716, name: "Zimbabue" },
+  { code: 724, name: "España" },
+  { code: 728, name: "Sudán del Sur" },
+  { code: 729, name: "Sudán" },
+  { code: 740, name: "Surinam" },
+  { code: 752, name: "Suecia" },
+  { code: 756, name: "Suiza" },
+  { code: 760, name: "Siria" },
+  { code: 762, name: "Tayikistán" },
+  { code: 764, name: "Tailandia" },
+  { code: 768, name: "Togo" },
+  { code: 780, name: "Trinidad y Tobago" },
+  { code: 784, name: "Emiratos Árabes Unidos" },
+  { code: 788, name: "Túnez" },
+  { code: 792, name: "Turquía" },
+  { code: 795, name: "Turkmenistán" },
+  { code: 800, name: "Uganda" },
+  { code: 804, name: "Ucrania" },
+  { code: 807, name: "Macedonia del Norte" },
+  { code: 818, name: "Egipto" },
+  { code: 826, name: "Reino Unido" },
+  { code: 834, name: "Tanzania" },
+  { code: 840, name: "Estados Unidos" },
+  { code: 854, name: "Burkina Faso" },
+  { code: 858, name: "Uruguay" },
+  { code: 860, name: "Uzbekistán" },
+  { code: 862, name: "Venezuela" },
+  { code: 887, name: "Yemen" },
+  { code: 894, name: "Zambia" },
+];
+
+// Lookup maps for fast access
+const byCode = new Map(COUNTRIES.map((c) => [c.code, c]));
+const byName = new Map(COUNTRIES.map((c) => [c.name.toLowerCase(), c]));
+
+/** Get country by DUA numeric code */
+export function getCountryByCode(code: number): Country | undefined {
+  return byCode.get(code);
+}
+
+/** Get country name by DUA code, returns the code as string if not found */
+export function getCountryName(code: number): string {
+  return byCode.get(code)?.name ?? String(code);
+}
+
+/** Search countries by name (partial, case-insensitive) */
+export function searchCountries(query: string): Country[] {
+  if (!query.trim()) return COUNTRIES;
+  const q = query.toLowerCase();
+  return COUNTRIES.filter((c) => c.name.toLowerCase().includes(q));
+}
+
+/** Find country by name (fuzzy: partial match, returns first) */
+export function findCountryByName(name: string): Country | undefined {
+  const exact = byName.get(name.toLowerCase());
+  if (exact) return exact;
+  const q = name.toLowerCase();
+  return COUNTRIES.find((c) => c.name.toLowerCase().includes(q));
+}

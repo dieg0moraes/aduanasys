@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FileText, Upload, BarChart3, Database, Settings, BookOpen, LogOut } from "lucide-react";
+import { FileText, Upload, FolderOpen, Database, Settings, BookOpen, LogOut } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Dashboard", icon: BarChart3 },
+  { href: "/", label: "Clientes", icon: FolderOpen },
   { href: "/facturas", label: "Facturas", icon: FileText },
   { href: "/facturas?action=upload", label: "Subir Factura", icon: Upload },
   { href: "/catalogo", label: "Catálogo", icon: Database },
@@ -35,7 +35,7 @@ export function Sidebar() {
           const baseHref = item.href.split("?")[0];
           const isActive =
             item.href === "/"
-              ? pathname === "/"
+              ? pathname === "/" || pathname.startsWith("/clientes") || pathname.startsWith("/despachos")
               : pathname.startsWith(baseHref) &&
                 !item.href.includes("action=upload");
           const Icon = item.icon;
