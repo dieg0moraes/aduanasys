@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createServerClient } from "@/lib/supabase-server";
 
 /**
  * GET /api/catalog?search=...&provider_id=...&page=1&limit=50
@@ -8,7 +8,12 @@ import { createServerClient } from "@/lib/supabase";
  * Soporta búsqueda por texto (SKU, descripción, NCM) y filtro por proveedor.
  */
 export async function GET(request: NextRequest) {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
 
   const search = searchParams.get("search")?.trim() || "";
@@ -68,7 +73,11 @@ export async function GET(request: NextRequest) {
  * Body: { id, customs_description, ncm_code }
  */
 export async function PATCH(request: NextRequest) {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
 
   try {
     const { id, ...updates } = await request.json();
@@ -111,7 +120,12 @@ export async function PATCH(request: NextRequest) {
  * Elimina un producto del catálogo.
  */
 export async function DELETE(request: NextRequest) {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 

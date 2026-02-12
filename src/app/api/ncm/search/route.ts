@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createServerClient } from "@/lib/supabase-server";
 import { searchNCM } from "@/lib/ncm-search";
 
 // ---------------------------------------------------------------------------
@@ -7,7 +7,11 @@ import { searchNCM } from "@/lib/ncm-search";
 // ---------------------------------------------------------------------------
 
 export async function POST(request: NextRequest) {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
 
   try {
     const { query, limit = 10, threshold = 0.5 } = await request.json();
@@ -35,6 +39,12 @@ export async function POST(request: NextRequest) {
 // ---------------------------------------------------------------------------
 
 export async function GET(request: NextRequest) {
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q") || "";
   const limit = parseInt(searchParams.get("limit") || "10");
@@ -43,7 +53,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "q es requerido" }, { status: 400 });
   }
 
-  const supabase = createServerClient();
   const result = await searchNCM(supabase, query, { limit });
   return NextResponse.json(result);
 }

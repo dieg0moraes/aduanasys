@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createServerClient, createServiceClient } from "@/lib/supabase-server";
 import { extractInvoiceData } from "@/lib/claude";
 import { getClaudeMediaType } from "@/lib/utils";
 import { classifyInvoiceItems } from "@/lib/ncm-search";
@@ -8,9 +8,10 @@ import type { InvoiceItemInput } from "@/lib/ncm-search";
 /**
  * Procesamiento en background.
  * La función no se await-ea: se lanza y el endpoint responde inmediatamente.
+ * Usa createServiceClient() porque cookies() no está disponible fuera del request.
  */
 async function processInvoiceInBackground(id: string) {
-  const supabase = createServerClient();
+  const supabase = createServiceClient();
 
   try {
     // 1. Obtener la factura
@@ -166,7 +167,7 @@ async function processInvoiceInBackground(id: string) {
   } catch (error) {
     console.error(`❌ Error procesando factura ${id}:`, error);
 
-    const supabase = createServerClient();
+    const supabase = createServiceClient();
     await supabase
       .from("invoices")
       .update({
@@ -187,7 +188,11 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
 
   // Verificar que la factura existe
   const { data: invoice, error } = await supabase

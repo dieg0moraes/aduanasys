@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { FileText, Upload, BarChart3, Database, Settings, BookOpen } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { FileText, Upload, BarChart3, Database, Settings, BookOpen, LogOut } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: BarChart3 },
@@ -15,6 +16,13 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <aside className="w-64 bg-[#1B4F72] text-white flex flex-col min-h-screen">
@@ -47,7 +55,14 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-white/10 space-y-3">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-blue-100 hover:bg-white/10 hover:text-white transition-colors w-full"
+        >
+          <LogOut size={18} />
+          Cerrar Sesión
+        </button>
         <p className="text-xs text-blue-200 text-center">MVP v0.1.0</p>
       </div>
     </aside>
