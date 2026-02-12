@@ -1,9 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createServerClient, createServiceClient } from "@/lib/supabase-server";
 import { extractInvoiceData } from "@/lib/claude";
 import { getClaudeMediaType } from "@/lib/utils";
 import { classifyInvoiceItems } from "@/lib/ncm-search";
 import type { InvoiceItemInput } from "@/lib/ncm-search";
+
+// Timeout máximo de la función (en segundos).
+// Hobby: máx 60s, Pro: máx 300s. Vercel lo capea al límite del plan.
+export const maxDuration = 300;
 
 /**
  * Procesamiento en background.
@@ -221,10 +225,13 @@ export async function POST(
     .update({ status: "processing", processing_error: null })
     .eq("id", id);
 
-  // Lanzar procesamiento en background (no await)
-  processInvoiceInBackground(id).catch((err) => {
-    console.error("Background processing failed:", err);
-  });
+  // Lanzar procesamiento en background con after() —
+  // Vercel mantiene la función viva hasta que la promesa resuelva
+  after(
+    processInvoiceInBackground(id).catch((err) => {
+      console.error("Background processing failed:", err);
+    })
+  );
 
   // Responder inmediatamente
   return NextResponse.json({ success: true, status: "processing" });

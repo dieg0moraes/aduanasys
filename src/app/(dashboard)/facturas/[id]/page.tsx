@@ -8,6 +8,7 @@ import {
   Download,
   CheckCircle,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Invoice, InvoiceItem } from "@/lib/types";
@@ -26,6 +27,7 @@ export default function InvoiceDetailPage() {
   const [processing, setProcessing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [approving, setApproving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [approveResult, setApproveResult] = useState<{
     catalog_synced: number;
     total_items: number;
@@ -98,6 +100,28 @@ export default function InvoiceDetailPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoice?.status]);
+
+  const handleDelete = async () => {
+    if (!window.confirm("¿Estás seguro de que querés eliminar esta factura? Esta acción no se puede deshacer.")) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/invoices/${invoiceId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        router.push("/facturas");
+      } else {
+        const data = await response.json();
+        alert(data.error || "Error al eliminar la factura");
+      }
+    } catch (err) {
+      console.error("Error al eliminar:", err);
+      alert("Error al eliminar la factura");
+    }
+    setDeleting(false);
+  };
 
   const handleProcess = async () => {
     setProcessing(true);
@@ -225,6 +249,23 @@ export default function InvoiceDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="px-4 py-2 rounded-lg border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 disabled:opacity-50 flex items-center gap-2"
+          >
+            {deleting ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Eliminando...
+              </>
+            ) : (
+              <>
+                <Trash2 size={16} />
+                Eliminar
+              </>
+            )}
+          </button>
           {invoice.status === "uploaded" && (
             <button
               onClick={handleProcess}
