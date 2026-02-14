@@ -334,7 +334,7 @@ async function searchNCMGraph(
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (process.env.GRAPH_API_KEY) {
