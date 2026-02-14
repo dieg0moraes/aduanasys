@@ -1,16 +1,20 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   Search,
   Loader2,
   X,
   Check,
+  ChevronDown,
   ChevronRight,
   Database,
   FileText,
   Brain,
   Tag,
+  GitBranch,
+  AlertTriangle,
 } from "lucide-react";
 
 interface NCMResult {
@@ -19,6 +23,8 @@ interface NCMResult {
   similarity: number;
   match_type: string;
   source: string;
+  hierarchy_path?: string[];
+  exclusions?: { rule_id: string; letter: string | null; description: string; target_codes: string[] }[];
 }
 
 interface NCMPickerProps {
@@ -28,6 +34,8 @@ interface NCMPickerProps {
   productDescription?: string;
   /** Fuente de clasificación actual */
   classificationSource?: string;
+  /** Elemento ancla para posicionar el picker (usa portal + fixed) */
+  anchorEl?: HTMLElement | null;
   /** Callback al seleccionar un NCM */
   onSelect: (ncmCode: string, description: string) => void;
   /** Callback al cerrar sin seleccionar */
@@ -40,6 +48,7 @@ const SOURCE_ICONS: Record<string, typeof Database> = {
   trigram: Search,
   semantic: Brain,
   exact: Tag,
+  graph: GitBranch,
 };
 
 const SOURCE_COLORS: Record<string, string> = {
@@ -48,6 +57,7 @@ const SOURCE_COLORS: Record<string, string> = {
   trigram: "text-amber-600 bg-amber-50",
   semantic: "text-blue-600 bg-blue-50",
   exact: "text-gray-600 bg-gray-50",
+  graph: "text-cyan-600 bg-cyan-50",
 };
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -61,6 +71,7 @@ export function NCMPicker({
   value,
   productDescription,
   classificationSource,
+  anchorEl,
   onSelect,
   onClose,
 }: NCMPickerProps) {
@@ -69,16 +80,20 @@ export function NCMPicker({
   const [loading, setLoading] = useState(false);
   const [expandedQuery, setExpandedQuery] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const usePortal = !!anchorEl;
 
   // Focus input al abrir
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 50);
   }, []);
 
-  // Cerrar con click afuera
+  // Cerrar con click afuera (solo en modo no-portal; en portal el backdrop maneja esto)
   useEffect(() => {
+    if (usePortal) return;
     function handleClickOutside(e: MouseEvent) {
       if (
         containerRef.current &&
@@ -89,7 +104,7 @@ export function NCMPicker({
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
+  }, [onClose, usePortal]);
 
   // Cerrar con Escape
   useEffect(() => {
@@ -104,6 +119,7 @@ export function NCMPicker({
     if (!searchQuery.trim()) return;
     setLoading(true);
     setHasSearched(true);
+    setExpandedIdx(null);
     try {
       const res = await fetch("/api/ncm/search", {
         method: "POST",
@@ -148,13 +164,17 @@ export function NCMPicker({
     return desc.slice(0, max) + "...";
   };
 
-  return (
+  const pickerInner = (
     <div
       ref={containerRef}
-      className="absolute z-50 top-full left-0 mt-1 w-[560px] bg-white rounded-xl border border-gray-200 shadow-xl"
+      className={`${
+        usePortal
+          ? "w-[620px] max-h-[80vh] flex flex-col"
+          : "absolute top-full left-0 mt-1 w-[560px]"
+      } bg-white rounded-xl border border-gray-200 shadow-xl`}
     >
       {/* Header con NCM actual */}
-      <div className="p-3 border-b bg-gray-50 rounded-t-xl">
+      <div className="p-3 border-b bg-gray-50 rounded-t-xl flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500">NCM actual:</span>
@@ -181,7 +201,7 @@ export function NCMPicker({
       </div>
 
       {/* Search input */}
-      <form onSubmit={handleSubmit} className="p-3 border-b">
+      <form onSubmit={handleSubmit} className="p-3 border-b flex-shrink-0">
         <div className="relative">
           <Search
             size={16}
@@ -216,7 +236,7 @@ export function NCMPicker({
       </form>
 
       {/* Results */}
-      <div className="max-h-[320px] overflow-y-auto">
+      <div className={`${usePortal ? "flex-1 min-h-0" : "max-h-[380px]"} overflow-y-auto`}>
         {loading && (
           <div className="flex items-center justify-center py-8 text-gray-400">
             <Loader2 size={20} className="animate-spin mr-2" />
@@ -240,64 +260,154 @@ export function NCMPicker({
               SOURCE_COLORS[result.match_type] || "text-gray-600 bg-gray-50";
             const isCurrentNCM =
               value && result.ncm_code.replace(/\./g, "") === value.replace(/\./g, "");
+            const isExpanded = expandedIdx === idx;
 
             return (
-              <button
+              <div
                 key={`${result.ncm_code}-${idx}`}
-                onClick={() => onSelect(result.ncm_code, result.description)}
-                className={`w-full text-left px-3 py-2.5 border-b last:border-b-0 hover:bg-blue-50/50 transition-colors flex items-start gap-3 group ${
-                  isCurrentNCM ? "bg-green-50/50" : ""
-                }`}
+                className={`border-b last:border-b-0 ${isCurrentNCM ? "bg-green-50/30" : ""}`}
               >
-                {/* NCM code */}
-                <div className="flex-shrink-0 w-24">
-                  <span className="font-mono text-sm font-medium text-gray-800">
-                    {formatNCM(result.ncm_code)}
-                  </span>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <span
-                      className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${colorClass}`}
-                    >
-                      <Icon size={10} />
-                      {result.source}
-                    </span>
+                {/* Row compacta — click expande/colapsa */}
+                <button
+                  onClick={() => setExpandedIdx(isExpanded ? null : idx)}
+                  className="w-full text-left px-3 py-2.5 hover:bg-blue-50/50 transition-colors flex items-start gap-3 group"
+                >
+                  {/* Chevron */}
+                  <div className="flex-shrink-0 mt-0.5 text-gray-300 group-hover:text-gray-500">
+                    {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                   </div>
-                </div>
 
-                {/* Description */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-700 leading-snug">
-                    {truncateDesc(result.description)}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    Similitud: {(result.similarity * 100).toFixed(0)}%
-                  </p>
-                </div>
+                  {/* NCM code + source badge */}
+                  <div className="flex-shrink-0 w-24">
+                    <span className="font-mono text-sm font-medium text-gray-800">
+                      {formatNCM(result.ncm_code)}
+                    </span>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <span
+                        className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${colorClass}`}
+                      >
+                        <Icon size={10} />
+                        {result.source}
+                      </span>
+                    </div>
+                  </div>
 
-                {/* Selection indicator */}
-                <div className="flex-shrink-0 self-center">
-                  {isCurrentNCM ? (
-                    <Check size={16} className="text-green-500" />
-                  ) : (
-                    <ChevronRight
-                      size={16}
-                      className="text-gray-300 group-hover:text-blue-500"
-                    />
+                  {/* Description (truncated) + similarity */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-700 leading-snug">
+                      {truncateDesc(result.description, isExpanded ? 300 : 80)}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Similitud: {(result.similarity * 100).toFixed(0)}%
+                      {result.exclusions && result.exclusions.length > 0 && (
+                        <span className="ml-2 text-amber-500">
+                          <AlertTriangle size={10} className="inline -mt-0.5" /> {result.exclusions.length} exclusión{result.exclusions.length > 1 ? "es" : ""}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Current indicator */}
+                  {isCurrentNCM && (
+                    <div className="flex-shrink-0 self-center">
+                      <Check size={14} className="text-green-500" />
+                    </div>
                   )}
-                </div>
-              </button>
+                </button>
+
+                {/* Panel expandido */}
+                {isExpanded && (
+                  <div className="px-3 pb-3 pt-0 ml-[38px] space-y-2">
+                    {/* Descripción completa */}
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {result.description}
+                    </p>
+
+                    {/* Hierarchy breadcrumb */}
+                    {result.hierarchy_path && result.hierarchy_path.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1 text-xs text-cyan-700 bg-cyan-50 rounded-md px-2.5 py-1.5">
+                        <GitBranch size={12} className="text-cyan-400 flex-shrink-0" />
+                        {result.hierarchy_path.map((seg, i) => (
+                          <span key={i} className="flex items-center gap-1">
+                            {i > 0 && <span className="text-cyan-300">&rsaquo;</span>}
+                            <span>{seg.replace(/^(Section|Chapter|Heading|Item|Sección|Capítulo|Partida|Subpartida):\s*/, "")}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Exclusiones detalladas */}
+                    {result.exclusions && result.exclusions.length > 0 && (
+                      <div className="space-y-1">
+                        {result.exclusions.map((exc, i) => (
+                          <div
+                            key={exc.rule_id || i}
+                            className="flex items-start gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5"
+                          >
+                            <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
+                            <span>
+                              {exc.letter && <strong className="mr-1">({exc.letter})</strong>}
+                              {exc.description}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Info catálogo */}
+                    {result.match_type === "catalog" && (result as NCMResult & { sku?: string; provider_description?: string }).sku && (
+                      <p className="text-xs text-gray-400">
+                        SKU: {(result as NCMResult & { sku?: string }).sku}
+                      </p>
+                    )}
+
+                    {/* Botón seleccionar */}
+                    <button
+                      onClick={() => onSelect(result.ncm_code, result.description)}
+                      className={`w-full mt-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                        isCurrentNCM
+                          ? "bg-green-100 text-green-700 hover:bg-green-200"
+                          : "bg-[#2E86C1] text-white hover:bg-[#2471A3]"
+                      }`}
+                    >
+                      {isCurrentNCM ? (
+                        <span className="flex items-center justify-center gap-1.5">
+                          <Check size={12} /> NCM actual
+                        </span>
+                      ) : (
+                        "Seleccionar este código"
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
             );
           })}
       </div>
 
       {/* Manual input footer */}
-      <div className="p-3 border-t bg-gray-50 rounded-b-xl">
+      <div className="p-3 border-t bg-gray-50 rounded-b-xl flex-shrink-0">
         <ManualNCMInput
           onSelect={(code) => onSelect(code, "")}
         />
       </div>
     </div>
   );
+
+  if (usePortal) {
+    return createPortal(
+      <div
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-[2px]"
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
+        {pickerInner}
+      </div>,
+      document.body
+    );
+  }
+  return pickerInner;
 }
 
 /** Input manual para cuando el usuario sabe el código exacto */

@@ -69,6 +69,7 @@ export function ItemsTable({
     internal_description: "",
   });
   const [ncmPickerItem, setNcmPickerItem] = useState<string | null>(null);
+  const [ncmAnchorEl, setNcmAnchorEl] = useState<HTMLElement | null>(null);
 
   const expandRow = (item: InvoiceItem) => {
     if (!editable) return;
@@ -117,6 +118,26 @@ export function ItemsTable({
   }
 
   return (
+    <>
+    {ncmPickerItem && (() => {
+      const pickerItem = items.find((i) => i.id === ncmPickerItem);
+      if (!pickerItem) return null;
+      return (
+        <NCMPicker
+          value={pickerItem.ncm_code}
+          productDescription={pickerItem.original_description}
+          classificationSource={pickerItem.classification_source}
+          anchorEl={ncmAnchorEl}
+          onSelect={(code, desc) =>
+            handleNCMSelect(pickerItem.id, code, desc)
+          }
+          onClose={() => {
+            setNcmPickerItem(null);
+            setNcmAnchorEl(null);
+          }}
+        />
+      );
+    })()}
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
@@ -192,18 +213,7 @@ export function ItemsTable({
                       )}
                     </span>
                   </td>
-                  <td className="px-3 py-2.5 relative">
-                    {ncmPickerItem === item.id ? (
-                      <NCMPicker
-                        value={item.ncm_code}
-                        productDescription={item.original_description}
-                        classificationSource={item.classification_source}
-                        onSelect={(code, desc) =>
-                          handleNCMSelect(item.id, code, desc)
-                        }
-                        onClose={() => setNcmPickerItem(null)}
-                      />
-                    ) : null}
+                  <td className="px-3 py-2.5">
                     <div
                       className={`flex items-center gap-1.5 ${
                         editable ? "group" : ""
@@ -211,9 +221,13 @@ export function ItemsTable({
                       onClick={(e) => {
                         if (!editable) return;
                         e.stopPropagation();
-                        setNcmPickerItem(
-                          ncmPickerItem === item.id ? null : item.id
-                        );
+                        if (ncmPickerItem === item.id) {
+                          setNcmPickerItem(null);
+                          setNcmAnchorEl(null);
+                        } else {
+                          setNcmPickerItem(item.id);
+                          setNcmAnchorEl(e.currentTarget as HTMLElement);
+                        }
                       }}
                     >
                       <span
@@ -341,6 +355,7 @@ export function ItemsTable({
         </tbody>
       </table>
     </div>
+    </>
   );
 }
 

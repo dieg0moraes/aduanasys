@@ -28,11 +28,13 @@ export interface NCMSearchResult {
   section: string;
   chapter: string;
   similarity: number;
-  match_type: "catalog" | "fulltext" | "trigram" | "semantic" | "exact";
+  match_type: "catalog" | "fulltext" | "trigram" | "semantic" | "exact" | "graph";
   source: string;
   provider_description?: string;
   customs_description?: string;
   sku?: string;
+  hierarchy_path?: string[];
+  exclusions?: { rule_id: string; letter: string | null; description: string; target_codes: string[] }[];
 }
 
 export interface NCMSearchResponse {
@@ -45,6 +47,7 @@ export interface NCMSearchResponse {
     fulltext: number;
     trigram: number;
     semantic: number;
+    graph: number;
   };
 }
 
@@ -64,6 +67,7 @@ const MIN_SCORES: Record<string, number> = {
   fulltext: 0.0,
   trigram: 0.40,
   semantic: 0.30,
+  graph: 0.30,
 };
 
 // ---------------------------------------------------------------------------
@@ -317,6 +321,55 @@ async function searchNCMSemantic(
 }
 
 // ---------------------------------------------------------------------------
+// Capa 5: Graph API (Neo4j + query expansion)
+// ---------------------------------------------------------------------------
+
+async function searchNCMGraph(
+  query: string,
+  limit: number = 10,
+  threshold: number = 0.3
+): Promise<NCMSearchResult[]> {
+  const graphUrl = process.env.GRAPH_API_URL;
+  if (!graphUrl) return [];
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (process.env.GRAPH_API_KEY) {
+      headers["X-API-Key"] = process.env.GRAPH_API_KEY;
+    }
+
+    const res = await fetch(`${graphUrl}/api/ncm/search`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ query, limit, threshold }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!res.ok) return [];
+    const data = await res.json();
+
+    return (data.results || []).map((r: Record<string, unknown>) => ({
+      id: r.id as string,
+      ncm_code: r.ncm_code as string,
+      description: r.description as string,
+      section: (r.section as string) || "",
+      chapter: (r.chapter as string) || "",
+      similarity: r.similarity as number,
+      match_type: "graph" as const,
+      source: "Grafo NCM",
+      hierarchy_path: (r.hierarchy_path as string[]) || undefined,
+      exclusions: (r.exclusions as NCMSearchResult["exclusions"]) || undefined,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Combinar resultados con scores ponderados
 // ---------------------------------------------------------------------------
 
@@ -324,12 +377,20 @@ function combineResults(
   catalog: NCMSearchResult[],
   fulltext: NCMSearchResult[],
   trigram: NCMSearchResult[],
-  semantic: NCMSearchResult[]
+  semantic: NCMSearchResult[],
+  graph: NCMSearchResult[] = []
 ): NCMSearchResult[] {
   const seen = new Map<string, NCMSearchResult>();
 
+  // Index graph data by ncm_code for enrichment
+  const graphDataByCode = new Map<string, NCMSearchResult>();
+  for (const r of graph) {
+    graphDataByCode.set(r.ncm_code, r);
+  }
+
   const sourceBonus: Record<string, number> = {
     catalog: 0.10,
+    graph: 0.05,
     fulltext: 0.03,
     semantic: 0.01,
     trigram: 0.00,
@@ -340,6 +401,7 @@ function combineResults(
     ...fulltext,
     ...trigram,
     ...semantic,
+    ...graph,
   ].filter((r) => r.similarity >= (MIN_SCORES[r.match_type] || 0));
 
   for (const r of allResults) {
@@ -347,12 +409,31 @@ function combineResults(
     const existing = seen.get(r.ncm_code);
 
     if (!existing) {
+      // Enrich with graph data if available
+      const graphData = graphDataByCode.get(r.ncm_code);
+      if (graphData && r.match_type !== "graph") {
+        r.hierarchy_path = graphData.hierarchy_path;
+        r.exclusions = graphData.exclusions;
+      }
       seen.set(r.ncm_code, r);
     } else {
       const existingEffective =
         existing.similarity + (sourceBonus[existing.match_type] || 0);
       if (effectiveScore > existingEffective) {
+        // Preserve graph enrichment data
+        const graphData = graphDataByCode.get(r.ncm_code);
+        if (graphData) {
+          r.hierarchy_path = r.hierarchy_path || graphData.hierarchy_path;
+          r.exclusions = r.exclusions || graphData.exclusions;
+        }
         seen.set(r.ncm_code, r);
+      } else if (!existing.hierarchy_path) {
+        // Enrich existing winner with graph data
+        const graphData = graphDataByCode.get(r.ncm_code);
+        if (graphData) {
+          existing.hierarchy_path = graphData.hierarchy_path;
+          existing.exclusions = graphData.exclusions;
+        }
       }
     }
   }
@@ -395,7 +476,7 @@ export async function searchNCM(
         query: trimmedQuery,
         expanded_query: trimmedQuery,
         method: "exact_code",
-        sources: { catalog: 0, fulltext: 0, trigram: 0, semantic: 0 },
+        sources: { catalog: 0, fulltext: 0, trigram: 0, semantic: 0, graph: 0 },
       };
     }
   }
@@ -405,20 +486,22 @@ export async function searchNCM(
     ? trimmedQuery
     : await expandQuery(trimmedQuery);
 
-  // Ejecutar las 4 capas en paralelo
-  const [catalogResults, fulltextResults, trigramResults, semanticResults] =
+  // Ejecutar las 5 capas en paralelo
+  const [catalogResults, fulltextResults, trigramResults, semanticResults, graphResults] =
     await Promise.all([
       searchCatalog(supabase, trimmedQuery),
       searchNCMFulltext(supabase, trimmedQuery, expandedQuery),
       searchNCMTrigram(supabase, trimmedQuery),
       searchNCMSemantic(supabase, expandedQuery, threshold),
+      searchNCMGraph(trimmedQuery, limit, threshold),
     ]);
 
   const results = combineResults(
     catalogResults,
     fulltextResults,
     trigramResults,
-    semanticResults
+    semanticResults,
+    graphResults
   ).slice(0, limit);
 
   return {
@@ -431,6 +514,7 @@ export async function searchNCM(
       fulltext: fulltextResults.length,
       trigram: trigramResults.length,
       semantic: semanticResults.length,
+      graph: graphResults.length,
     },
   };
 }
@@ -572,10 +656,11 @@ export async function classifyInvoiceItems(
 
       if (!query) return;
 
-      // Fulltext + trigram en paralelo (no necesitan embedding)
-      const [fulltextResults, trigramResults] = await Promise.all([
+      // Fulltext + trigram + graph en paralelo (no necesitan embedding)
+      const [fulltextResults, trigramResults, graphResults] = await Promise.all([
         searchNCMFulltext(supabase, query, expanded),
         searchNCMTrigram(supabase, query),
+        searchNCMGraph(expanded),
       ]);
 
       // Semantic con el embedding pre-generado
@@ -616,7 +701,8 @@ export async function classifyInvoiceItems(
         [], // sin catálogo (ya lo chequeamos en paso 1)
         fulltextResults,
         trigramResults,
-        semanticResults
+        semanticResults,
+        graphResults
       );
 
       if (combined.length > 0) {

@@ -10,6 +10,8 @@ import {
   FileText,
   Brain,
   Tag,
+  GitBranch,
+  AlertTriangle,
 } from "lucide-react";
 
 interface NCMResult {
@@ -19,11 +21,13 @@ interface NCMResult {
   section: string;
   chapter: string;
   similarity: number;
-  match_type: "catalog" | "fulltext" | "trigram" | "semantic" | "exact";
+  match_type: "catalog" | "fulltext" | "trigram" | "semantic" | "exact" | "graph";
   source: string;
   provider_description?: string;
   customs_description?: string;
   sku?: string;
+  hierarchy_path?: string[];
+  exclusions?: { rule_id: string; letter: string | null; description: string; target_codes: string[] }[];
 }
 
 interface SearchResponse {
@@ -31,7 +35,7 @@ interface SearchResponse {
   query: string;
   expanded_query?: string;
   method: string;
-  sources?: { catalog: number; fulltext: number; trigram: number; semantic: number };
+  sources?: { catalog: number; fulltext: number; trigram: number; semantic: number; graph: number };
 }
 
 const SOURCE_CONFIG: Record<
@@ -67,6 +71,12 @@ const SOURCE_CONFIG: Record<
     color: "text-gray-700",
     bg: "bg-gray-50 border-gray-200",
     label: "Código exacto",
+  },
+  graph: {
+    icon: GitBranch,
+    color: "text-cyan-700",
+    bg: "bg-cyan-50 border-cyan-200",
+    label: "Grafo NCM",
   },
 };
 
@@ -248,6 +258,12 @@ export default function NCMPage() {
                   {sources.semantic} semántica
                 </span>
               )}
+              {sources.graph > 0 && (
+                <span className="flex items-center gap-1">
+                  <GitBranch size={12} className="text-cyan-500" />
+                  {sources.graph} grafo
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -269,7 +285,7 @@ export default function NCMPage() {
         <div className="flex flex-col items-center justify-center py-20 gap-3">
           <Loader2 size={32} className="animate-spin text-[#2E86C1]" />
           <p className="text-sm text-gray-500">
-            Buscando en catálogo, texto y semántica...
+            Buscando en catálogo, texto, semántica y grafo...
           </p>
         </div>
       )}
@@ -327,6 +343,39 @@ export default function NCMPage() {
 
                 <div className="ml-14">
                   {renderDescription(result.description)}
+
+                  {/* Hierarchy breadcrumb del grafo */}
+                  {result.hierarchy_path && result.hierarchy_path.length > 0 && (
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1 text-xs text-cyan-600">
+                      <GitBranch size={11} className="text-cyan-400 flex-shrink-0" />
+                      {result.hierarchy_path.map((seg, i) => {
+                        const label = seg
+                          .replace(/^(Section|Chapter|Heading|Item|Sección|Capítulo|Partida|Subpartida):\s*/, "")
+                          .split(" - ")[0];
+                        return (
+                          <span key={i} className="flex items-center gap-1">
+                            {i > 0 && <span className="text-gray-300">&rsaquo;</span>}
+                            <span>{label}</span>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Exclusiones */}
+                  {result.exclusions && result.exclusions.length > 0 && (
+                    <div className="mt-1.5 space-y-1">
+                      {result.exclusions.map((exc, i) => (
+                        <div
+                          key={exc.rule_id || i}
+                          className="flex items-start gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1"
+                        >
+                          <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
+                          <span>{exc.description}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Info extra del catálogo */}
                   {result.match_type === "catalog" && (
