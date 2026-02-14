@@ -5,6 +5,7 @@ import type { InvoiceItem, ConfidenceLevel, ClassificationSource } from "@/lib/t
 import { CONFIDENCE_LABELS } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 import { NCMPicker } from "./ncm-picker";
+import { COUNTRIES } from "@/lib/countries";
 import {
   CheckCircle,
   AlertTriangle,
@@ -14,6 +15,7 @@ import {
   Check,
   X,
   ChevronDown,
+  Globe,
 } from "lucide-react";
 
 interface ItemsTableProps {
@@ -67,7 +69,10 @@ export function ItemsTable({
   const [editValues, setEditValues] = useState({
     customs_description: "",
     internal_description: "",
+    country_of_origin: "",
   });
+  const [countrySearch, setCountrySearch] = useState("");
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [ncmPickerItem, setNcmPickerItem] = useState<string | null>(null);
   const [ncmAnchorEl, setNcmAnchorEl] = useState<HTMLElement | null>(null);
 
@@ -81,7 +86,10 @@ export function ItemsTable({
     setEditValues({
       customs_description: item.customs_description || "",
       internal_description: item.internal_description || "",
+      country_of_origin: item.country_of_origin || "",
     });
+    setCountrySearch("");
+    setShowCountryDropdown(false);
   };
 
   const saveExpanded = (itemId: string) => {
@@ -89,10 +97,18 @@ export function ItemsTable({
     onItemUpdate(itemId, {
       customs_description: editValues.customs_description,
       internal_description: editValues.internal_description,
+      country_of_origin: editValues.country_of_origin || null,
       was_corrected: true,
     });
     setExpandedId(null);
   };
+
+  const filteredCountries = countrySearch.trim()
+    ? COUNTRIES.filter((c) =>
+        c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+        String(c.code).includes(countrySearch)
+      )
+    : COUNTRIES;
 
   const handleNCMSelect = (itemId: string, ncmCode: string, description: string) => {
     if (!onItemUpdate) return;
@@ -165,6 +181,9 @@ export function ItemsTable({
             </th>
             <th className="px-3 py-3 text-right font-medium text-gray-600 w-24">
               Total
+            </th>
+            <th className="px-3 py-3 text-left font-medium text-gray-600 w-28">
+              Origen
             </th>
             <th className="px-3 py-3 text-center font-medium text-gray-600 w-28">
               Confianza
@@ -258,6 +277,9 @@ export function ItemsTable({
                   <td className="px-3 py-2.5 text-right font-medium text-gray-900">
                     {formatCurrency(item.total_price, item.currency)}
                   </td>
+                  <td className="px-3 py-2.5 text-xs text-gray-600">
+                    {item.country_of_origin || <span className="text-gray-300">—</span>}
+                  </td>
                   <td className="px-3 py-2.5">
                     <div className="flex items-center justify-between">
                       <ConfidenceBadge
@@ -279,7 +301,7 @@ export function ItemsTable({
                 {/* Expanded edit panel */}
                 {isExpanded && (
                   <tr className="border-b bg-blue-50/30">
-                    <td colSpan={9} className="px-4 py-4">
+                    <td colSpan={10} className="px-4 py-4">
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
@@ -336,13 +358,79 @@ export function ItemsTable({
                             <X size={14} />
                             Cancelar
                           </button>
-                          <div className="ml-auto flex items-center gap-2 text-xs text-gray-500">
+                          <div className="ml-auto flex items-center gap-3 text-xs text-gray-500">
                             <span>
                               P. Unit: {formatCurrency(item.unit_price, item.currency)}
                             </span>
-                            <span>
-                              Origen: {item.country_of_origin || "—"}
-                            </span>
+                            <div className="relative">
+                              <label className="text-xs text-gray-500 mr-1">Origen:</label>
+                              {showCountryDropdown ? (
+                                <span className="inline-block relative">
+                                  <input
+                                    type="text"
+                                    value={countrySearch}
+                                    onChange={(e) => setCountrySearch(e.target.value)}
+                                    placeholder="Buscar país..."
+                                    className="w-44 px-2 py-1 border rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#2E86C1]"
+                                    autoFocus
+                                    onClick={(e) => e.stopPropagation()}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Escape") {
+                                        setShowCountryDropdown(false);
+                                        setCountrySearch("");
+                                      }
+                                    }}
+                                  />
+                                  <div
+                                    className="fixed inset-0 z-[9]"
+                                    onClick={(e) => { e.stopPropagation(); setShowCountryDropdown(false); setCountrySearch(""); }}
+                                  />
+                                  <div className="absolute z-10 mt-1 right-0 w-56 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                    {editValues.country_of_origin && (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setEditValues((v) => ({ ...v, country_of_origin: "" }));
+                                          setShowCountryDropdown(false);
+                                          setCountrySearch("");
+                                        }}
+                                        className="w-full text-left px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 border-b"
+                                      >
+                                        Quitar país
+                                      </button>
+                                    )}
+                                    {filteredCountries.map((c) => (
+                                      <button
+                                        key={c.code}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setEditValues((v) => ({ ...v, country_of_origin: c.name }));
+                                          setShowCountryDropdown(false);
+                                          setCountrySearch("");
+                                        }}
+                                        className={`w-full text-left px-3 py-1.5 text-xs hover:bg-[#EBF5FB] ${
+                                          editValues.country_of_origin === c.name ? "bg-blue-50 font-medium" : ""
+                                        }`}
+                                      >
+                                        <span className="text-gray-400 font-mono mr-1.5">{c.code}</span>
+                                        {c.name}
+                                      </button>
+                                    ))}
+                                    {filteredCountries.length === 0 && (
+                                      <p className="px-3 py-1.5 text-xs text-gray-400">Sin resultados</p>
+                                    )}
+                                  </div>
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setShowCountryDropdown(true); }}
+                                  className="inline-flex items-center gap-1 px-2 py-1 border rounded text-xs hover:bg-gray-50 transition-colors"
+                                >
+                                  <Globe size={11} className="text-gray-400" />
+                                  {editValues.country_of_origin || <span className="text-gray-400">Seleccionar</span>}
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>

@@ -69,16 +69,18 @@ async function processInvoiceInBackground(id: string) {
 
     // 5. Buscar o crear proveedor
     let providerId: string | null = null;
+    let providerCountry: string | null = null;
     if (extraction.provider_name) {
       const { data: existingProvider } = await supabase
         .from("providers")
-        .select("id")
+        .select("id, country")
         .ilike("name", extraction.provider_name)
         .limit(1)
         .single();
 
       if (existingProvider) {
         providerId = existingProvider.id;
+        providerCountry = existingProvider.country || null;
       } else {
         const { data: newProvider } = await supabase
           .from("providers")
@@ -96,7 +98,7 @@ async function processInvoiceInBackground(id: string) {
       }
     }
 
-    // 6. Clasificar NCM en batch (catálogo → expansion → embeddings → búsqueda)
+    // 7. Clasificar NCM en batch (catálogo → expansion → embeddings → búsqueda)
     const classificationInputs: InvoiceItemInput[] = extraction.items.map(
       (item, i) => ({
         index: i,
@@ -127,7 +129,7 @@ async function processInvoiceInBackground(id: string) {
       unit_price: item.unit_price,
       total_price: item.total_price,
       currency: item.currency || extraction.currency || "USD",
-      country_of_origin: item.country_of_origin,
+      country_of_origin: item.country_of_origin || providerCountry,
       confidence_level: classifications[i].confidence_level,
       classification_source: classifications[i].classification_source,
       was_corrected: false,
@@ -136,7 +138,7 @@ async function processInvoiceInBackground(id: string) {
       metadata: {},
     }));
 
-    // 7. Insertar ítems
+    // 9. Insertar ítems
     const { error: itemsError } = await supabase
       .from("invoice_items")
       .insert(itemsToInsert);
@@ -145,7 +147,7 @@ async function processInvoiceInBackground(id: string) {
       throw new Error("Error al guardar ítems: " + itemsError.message);
     }
 
-    // 8. Actualizar factura como lista para revisión
+    // 10. Actualizar factura como lista para revisión
     const exactMatches = itemsToInsert.filter(
       (i) => i.classification_source === "exact_match"
     ).length;
