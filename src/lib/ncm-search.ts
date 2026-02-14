@@ -327,7 +327,8 @@ async function searchNCMSemantic(
 async function searchNCMGraph(
   query: string,
   limit: number = 10,
-  threshold: number = 0.3
+  threshold: number = 0.3,
+  expandedQuery?: string
 ): Promise<NCMSearchResult[]> {
   const graphUrl = process.env.GRAPH_API_URL;
   if (!graphUrl) return [];
@@ -341,10 +342,15 @@ async function searchNCMGraph(
       headers["X-API-Key"] = process.env.GRAPH_API_KEY;
     }
 
+    const body: Record<string, unknown> = { query, limit, threshold };
+    if (expandedQuery && expandedQuery !== query) {
+      body.expanded_query = expandedQuery;
+    }
+
     const res = await fetch(`${graphUrl}/api/ncm/search`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ query, limit, threshold }),
+      body: JSON.stringify(body),
       signal: controller.signal,
     });
     clearTimeout(timeout);
@@ -493,7 +499,7 @@ export async function searchNCM(
       searchNCMFulltext(supabase, trimmedQuery, expandedQuery),
       searchNCMTrigram(supabase, trimmedQuery),
       searchNCMSemantic(supabase, expandedQuery, threshold),
-      searchNCMGraph(trimmedQuery, limit, threshold),
+      searchNCMGraph(trimmedQuery, limit, threshold, expandedQuery),
     ]);
 
   const results = combineResults(
@@ -660,7 +666,7 @@ export async function classifyInvoiceItems(
       const [fulltextResults, trigramResults, graphResults] = await Promise.all([
         searchNCMFulltext(supabase, query, expanded),
         searchNCMTrigram(supabase, query),
-        searchNCMGraph(expanded),
+        searchNCMGraph(query, 10, 0.3, expanded),
       ]);
 
       // Semantic con el embedding pre-generado
