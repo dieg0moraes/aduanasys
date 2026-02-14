@@ -315,22 +315,37 @@ export async function extractInvoiceData(
   }
 
   // --- CASO 2: PDF ---
+  const pageCount = pdfBuffer
+    ? (await PDFDocument.load(pdfBuffer)).getPageCount()
+    : 1;
+
+  console.log(`PDF de ${pageCount} página(s).`);
+
+  // PDFs cortos (≤5 páginas): enviar el documento entero a Claude en una sola llamada.
+  // Esto preserva el contexto de tablas que cruzan páginas y evita problemas
+  // con layouts complejos al splitear.
+  if (pageCount <= 5) {
+    console.log(`  Procesando PDF completo (${pageCount} páginas) en una sola llamada...`);
+    const [header, items] = await Promise.all([
+      extractHeader({ base64: fileBase64, mediaType: "application/pdf" }),
+      extractItemsFromImage(fileBase64, "application/pdf", 1),
+    ]);
+    console.log(`Extracción completada: ${items.length} ítems`);
+    return { ...header, items: items.map((item, i) => ({ ...item, line_number: i + 1 })) };
+  }
+
+  // PDFs largos (>5 páginas): splitear por página con pausa entre cada una
   const pageBase64s = pdfBuffer
     ? await splitPdfPages(pdfBuffer)
     : [fileBase64];
 
-  console.log(`PDF de ${pageBase64s.length} página(s). Procesando en lotes...`);
-
-  // Extraer header de la primera página (es una llamada chica, 500 tokens)
+  // Extraer header de la primera página
   const header = await extractHeader({
     base64: pageBase64s[0],
     mediaType: "application/pdf",
   });
 
-  // Procesar UNA página a la vez con pausa entre cada una
-  // Tier 1 = 10k output tokens/min → cada página usa ~2-4k tokens
-  // Secuencial con pausa garantiza no reventar el rate limit
-  const DELAY_BETWEEN_PAGES_MS = 30_000; // 30s entre páginas
+  const DELAY_BETWEEN_PAGES_MS = 30_000;
   const pageResults: ExtractedItem[][] = [];
 
   for (let i = 0; i < pageBase64s.length; i++) {
@@ -343,7 +358,6 @@ export async function extractInvoiceData(
     pageResults.push(items);
     console.log(`  Página ${i + 1}: ${items.length} ítems extraídos.`);
 
-    // Pausa entre páginas (no después de la última)
     if (i < pageBase64s.length - 1) {
       console.log(`  Esperando ${DELAY_BETWEEN_PAGES_MS / 1000}s antes de la siguiente página...`);
       await sleep(DELAY_BETWEEN_PAGES_MS);
