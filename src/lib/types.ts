@@ -25,6 +25,8 @@ export type DespachoStatus = "abierto" | "en_proceso" | "despachado" | "cerrado"
 
 export type DocumentType = 'bl' | 'packing_list' | 'certificado_origen' | 'seguro' | 'permiso' | 'dua' | 'otro';
 
+export type PartidaStatus = "borrador" | "presentada" | "despachada";
+
 export interface Client {
   id: string;
   name: string;
@@ -48,6 +50,32 @@ export interface Despacho {
   client?: Client | null;
   invoices?: Invoice[];
   invoice_count?: number;
+}
+
+export interface Partida {
+  id: string;
+  reference: string;
+  despacho_id: string;
+  invoice_id: string;
+  status: PartidaStatus;
+  date: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined
+  invoice?: Invoice | null;
+  items?: PartidaItem[];
+  item_count?: number;
+}
+
+export interface PartidaItem {
+  id: string;
+  partida_id: string;
+  invoice_item_id: string;
+  dispatch_quantity: number;
+  created_at: string;
+  // Joined
+  invoice_item?: InvoiceItem | null;
 }
 
 export interface Provider {
@@ -290,4 +318,16 @@ export const DESPACHO_STATUS_COLORS: Record<DespachoStatus, string> = {
   en_proceso: "bg-yellow-100 text-yellow-700",
   despachado: "bg-green-100 text-green-700",
   cerrado: "bg-gray-100 text-gray-700",
+};
+
+export const PARTIDA_STATUS_LABELS: Record<PartidaStatus, string> = {
+  borrador: "Borrador",
+  presentada: "Presentada",
+  despachada: "Despachada",
+};
+
+export const PARTIDA_STATUS_COLORS: Record<PartidaStatus, string> = {
+  borrador: "bg-gray-100 text-gray-700",
+  presentada: "bg-blue-100 text-blue-700",
+  despachada: "bg-green-100 text-green-700",
 };
