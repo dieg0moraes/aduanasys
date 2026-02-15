@@ -17,6 +17,7 @@ import {
   Package,
   FileDown,
   MessageSquare,
+  Send,
 } from "lucide-react";
 import type { Despacho, Invoice, DespachoDocument, DocumentType, Partida, DespachoStatus } from "@/lib/types";
 import {
@@ -93,6 +94,11 @@ export default function DespachoDetailPage() {
   const [confirmDeleteDoc, setConfirmDeleteDoc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Journal notes
+  const [journalNotes, setJournalNotes] = useState<Array<{id: string, author_name: string, note_text: string, created_at: string}>>([]);
+  const [newNoteText, setNewNoteText] = useState("");
+  const [addingNote, setAddingNote] = useState(false);
+
   const fetchDespacho = useCallback(async () => {
     const res = await fetch(`/api/despachos/${id}`);
     if (res.ok) {
@@ -123,11 +129,20 @@ export default function DespachoDetailPage() {
     setLoadingPartidas(false);
   }, [id]);
 
+  const fetchJournalNotes = useCallback(async () => {
+    const res = await fetch(`/api/despachos/${id}/notes`);
+    if (res.ok) {
+      const data = await res.json();
+      setJournalNotes(data);
+    }
+  }, [id]);
+
   useEffect(() => {
     fetchDespacho();
     fetchDocuments();
     fetchPartidas();
-  }, [fetchDespacho, fetchDocuments, fetchPartidas]);
+    fetchJournalNotes();
+  }, [fetchDespacho, fetchDocuments, fetchPartidas, fetchJournalNotes]);
 
   const fetchAvailableInvoices = async () => {
     setLoadingAvailable(true);
@@ -266,6 +281,49 @@ export default function DespachoDetailPage() {
     setConfirmDeleteDoc(null);
   };
 
+  const handleAddNote = async () => {
+    if (!newNoteText.trim()) return;
+    setAddingNote(true);
+    const res = await fetch(`/api/despachos/${id}/notes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ note_text: newNoteText.trim() }),
+    });
+    if (res.ok) {
+      setNewNoteText("");
+      fetchJournalNotes();
+    }
+    setAddingNote(false);
+  };
+
+  // Deterministic avatar color from author name
+  const getAvatarColor = (name: string) => {
+    const colors = [
+      "#2563EB", "#7C3AED", "#DB2777", "#DC2626",
+      "#EA580C", "#CA8A04", "#16A34A", "#0891B2",
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  const formatRelativeTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Hace un momento";
+    if (diffMins < 60) return `Hace ${diffMins} min`;
+    if (diffHours < 24) return `Hace ${diffHours}h`;
+    if (diffDays < 7) return `Hace ${diffDays}d`;
+    return formatDate(dateStr);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -288,7 +346,7 @@ export default function DespachoDetailPage() {
     { key: "facturas", label: "Facturas", count: invoices.length },
     { key: "partidas", label: "Partidas", count: partidas.length },
     { key: "documentos", label: "Documentos", count: documents.length },
-    { key: "notas", label: "Notas", count: 0 },
+    { key: "notas", label: "Notas", count: journalNotes.length },
   ];
 
   return (
@@ -460,7 +518,7 @@ export default function DespachoDetailPage() {
                   : "text-[#71717A] hover:text-[#18181B]"
               }`}
             >
-              {tab.label} ({tab.key === "notas" ? "0" : tab.count})
+              {tab.label} ({tab.count})
             </button>
           ))}
         </nav>
@@ -857,12 +915,67 @@ export default function DespachoDetailPage() {
       )}
 
       {activeTab === "notas" && (
-        <div className="bg-white rounded-xl border border-[#E4E4E7] p-12 text-center">
-          <MessageSquare size={40} className="mx-auto text-[#D4D4D8] mb-3" />
-          <p className="text-[#71717A] text-sm font-medium">Proximamente</p>
-          <p className="text-[#A1A1AA] text-xs mt-1">
-            La seccion de notas estara disponible en una proxima actualizacion.
-          </p>
+        <div className="space-y-4">
+          {/* Add note form */}
+          <div className="bg-white rounded-xl border border-[#E4E4E7] p-4">
+            <textarea
+              value={newNoteText}
+              onChange={(e) => setNewNoteText(e.target.value)}
+              placeholder="Escribir una nota..."
+              rows={3}
+              className="w-full border border-[#E4E4E7] rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
+            />
+            <div className="flex justify-end mt-3">
+              <button
+                onClick={handleAddNote}
+                disabled={!newNoteText.trim() || addingNote}
+                className="flex items-center gap-2 bg-[#2563EB] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#1D4ED8] disabled:opacity-50 transition-colors"
+              >
+                {addingNote ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Send size={16} />
+                )}
+                Agregar
+              </button>
+            </div>
+          </div>
+
+          {/* Notes journal */}
+          {journalNotes.length === 0 ? (
+            <div className="bg-white rounded-xl border border-[#E4E4E7] p-12 text-center">
+              <MessageSquare size={40} className="mx-auto text-[#D4D4D8] mb-3" />
+              <p className="text-[#71717A] text-sm">No hay notas aun</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl border border-[#E4E4E7] divide-y divide-[#E4E4E7]">
+              {journalNotes.map((note) => (
+                <div key={note.id} className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium shrink-0"
+                      style={{ backgroundColor: getAvatarColor(note.author_name) }}
+                    >
+                      {note.author_name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-[#18181B]">
+                          {note.author_name}
+                        </span>
+                        <span className="text-xs text-[#A1A1AA]">
+                          {formatRelativeTime(note.created_at)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-[#71717A] mt-1 whitespace-pre-wrap">
+                        {note.note_text}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
