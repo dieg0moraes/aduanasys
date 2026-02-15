@@ -100,6 +100,8 @@ export interface Invoice {
   raw_extraction: Record<string, unknown>;
   processing_error: string | null;
   country_code: number | null;
+  invoice_date: string | null;
+  invoice_number: string | null;
   created_at: string;
   despacho_id: string | null;
   updated_at: string;

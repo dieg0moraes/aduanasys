@@ -164,6 +164,8 @@ async function processInvoiceInBackground(id: string) {
         items_auto_classified: exactMatches + semanticMatches,
         raw_extraction: extraction as unknown as Record<string, unknown>,
         processing_error: null,
+        invoice_date: extraction.invoice_date || null,
+        invoice_number: extraction.invoice_number || null,
       })
       .eq("id", id);
 
