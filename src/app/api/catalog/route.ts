@@ -124,6 +124,8 @@ export async function PATCH(request: NextRequest) {
       allowedUpdates.apertura = updates.apertura;
     if (updates.internal_description !== undefined)
       allowedUpdates.internal_description = updates.internal_description;
+    if (updates.provider_id !== undefined)
+      allowedUpdates.provider_id = updates.provider_id;
 
     console.log("[Catalog PATCH] id:", id, "updates:", allowedUpdates);
 
@@ -136,6 +138,12 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       console.error("[Catalog PATCH] Error:", error);
+      if (error.code === "23505") {
+        return NextResponse.json(
+          { error: "Ya existe un producto con ese SKU para el proveedor destino" },
+          { status: 409 }
+        );
+      }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
