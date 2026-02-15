@@ -10,6 +10,7 @@ import {
   FileText,
   ChevronRight,
 } from "lucide-react";
+import MercaderiaSearch from "@/components/catalog/mercaderia-search";
 
 interface Provider {
   id: string;
@@ -21,6 +22,7 @@ interface Provider {
 }
 
 export default function CatalogoPage() {
+  const [activeTab, setActiveTab] = useState<"proveedores" | "mercaderia">("proveedores");
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState("");
@@ -63,83 +65,116 @@ export default function CatalogoPage() {
           Catálogo de Productos
         </h1>
         <p className="text-sm text-gray-500 mt-1">
-          Seleccioná un proveedor para ver y editar sus productos. El catálogo
-          se construye automáticamente con cada factura aprobada.
+          {activeTab === "proveedores"
+            ? "Seleccioná un proveedor para ver y editar sus productos. El catálogo se construye automáticamente con cada factura aprobada."
+            : "Buscá productos en todo el catálogo por SKU, descripción, NCM o proveedor."}
         </p>
       </div>
 
-      {/* Search + Stats */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="flex-1 relative">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="Buscar proveedor..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]/20 focus:border-[#2E86C1]"
-          />
-        </div>
-        <div className="text-sm text-gray-500 whitespace-nowrap">
-          {providers.length} proveedor{providers.length !== 1 ? "es" : ""} · {totalProducts} producto{totalProducts !== 1 ? "s" : ""}
-        </div>
+      {/* Tabs */}
+      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg mb-6">
+        <button
+          onClick={() => setActiveTab("proveedores")}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            activeTab === "proveedores"
+              ? "bg-white text-gray-900 shadow-sm"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Proveedores
+        </button>
+        <button
+          onClick={() => setActiveTab("mercaderia")}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            activeTab === "mercaderia"
+              ? "bg-white text-gray-900 shadow-sm"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Mercadería
+        </button>
       </div>
 
-      {/* Provider list */}
-      <div className="space-y-2">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 size={24} className="animate-spin text-[#2E86C1]" />
-          </div>
-        ) : providers.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">
-            {search
-              ? "No se encontraron proveedores con esa búsqueda."
-              : "No hay proveedores todavía. Procesá y aprobá facturas para que aparezcan acá."}
-          </div>
-        ) : (
-          providers.map((provider) => (
-            <Link
-              key={provider.id}
-              href={`/catalogo/${provider.id}`}
-              className="flex items-center gap-4 p-4 bg-white rounded-xl border hover:border-[#2E86C1]/30 hover:shadow-sm transition-all group"
-            >
-              <div className="w-10 h-10 rounded-lg bg-[#2E86C1]/10 flex items-center justify-center flex-shrink-0">
-                <Building2 size={20} className="text-[#2E86C1]" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-gray-900 group-hover:text-[#2E86C1] transition-colors">
-                  {provider.name}
-                </h3>
-                {provider.country && (
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {provider.country}
-                  </p>
-                )}
-              </div>
-              <div className="flex items-center gap-6 text-sm text-gray-500">
-                <div className="flex items-center gap-1.5" title="Productos en catálogo">
-                  <Package size={14} className="text-gray-400" />
-                  <span className="font-medium">{provider.product_count}</span>
-                  <span className="text-xs text-gray-400">productos</span>
-                </div>
-                <div className="flex items-center gap-1.5" title="Facturas procesadas">
-                  <FileText size={14} className="text-gray-400" />
-                  <span className="font-medium">{provider.invoice_count}</span>
-                  <span className="text-xs text-gray-400">facturas</span>
-                </div>
-              </div>
-              <ChevronRight
+      {/* Proveedores tab */}
+      {activeTab === "proveedores" && (
+        <>
+          {/* Search + Stats */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex-1 relative">
+              <Search
                 size={16}
-                className="text-gray-300 group-hover:text-[#2E86C1] transition-colors"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
               />
-            </Link>
-          ))
-        )}
-      </div>
+              <input
+                type="text"
+                placeholder="Buscar proveedor..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]/20 focus:border-[#2E86C1]"
+              />
+            </div>
+            <div className="text-sm text-gray-500 whitespace-nowrap">
+              {providers.length} proveedor{providers.length !== 1 ? "es" : ""} · {totalProducts} producto{totalProducts !== 1 ? "s" : ""}
+            </div>
+          </div>
+
+          {/* Provider list */}
+          <div className="space-y-2">
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 size={24} className="animate-spin text-[#2E86C1]" />
+              </div>
+            ) : providers.length === 0 ? (
+              <div className="text-center py-20 text-gray-400">
+                {search
+                  ? "No se encontraron proveedores con esa búsqueda."
+                  : "No hay proveedores todavía. Procesá y aprobá facturas para que aparezcan acá."}
+              </div>
+            ) : (
+              providers.map((provider) => (
+                <Link
+                  key={provider.id}
+                  href={`/catalogo/${provider.id}`}
+                  className="flex items-center gap-4 p-4 bg-white rounded-xl border hover:border-[#2E86C1]/30 hover:shadow-sm transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-[#2E86C1]/10 flex items-center justify-center flex-shrink-0">
+                    <Building2 size={20} className="text-[#2E86C1]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-gray-900 group-hover:text-[#2E86C1] transition-colors">
+                      {provider.name}
+                    </h3>
+                    {provider.country && (
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {provider.country}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-6 text-sm text-gray-500">
+                    <div className="flex items-center gap-1.5" title="Productos en catálogo">
+                      <Package size={14} className="text-gray-400" />
+                      <span className="font-medium">{provider.product_count}</span>
+                      <span className="text-xs text-gray-400">productos</span>
+                    </div>
+                    <div className="flex items-center gap-1.5" title="Facturas procesadas">
+                      <FileText size={14} className="text-gray-400" />
+                      <span className="font-medium">{provider.invoice_count}</span>
+                      <span className="text-xs text-gray-400">facturas</span>
+                    </div>
+                  </div>
+                  <ChevronRight
+                    size={16}
+                    className="text-gray-300 group-hover:text-[#2E86C1] transition-colors"
+                  />
+                </Link>
+              ))
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Mercadería tab */}
+      {activeTab === "mercaderia" && <MercaderiaSearch />}
     </div>
   );
 }
