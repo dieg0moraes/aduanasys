@@ -231,7 +231,7 @@ async function splitPdfPages(
   pdfBuffer: Buffer
 ): Promise<string[]> {
   try {
-    const srcDoc = await PDFDocument.load(pdfBuffer);
+    const srcDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
     const totalPages = srcDoc.getPageCount();
 
     if (totalPages <= 1) {
@@ -316,21 +316,31 @@ export async function extractInvoiceData(
 
   // --- CASO 2: PDF ---
   const pageCount = pdfBuffer
-    ? (await PDFDocument.load(pdfBuffer)).getPageCount()
+    ? (await PDFDocument.load(pdfBuffer, { ignoreEncryption: true })).getPageCount()
     : 1;
 
-  console.log(`PDF de ${pageCount} página(s).`);
+  // Detectar si el PDF está encriptado
+  let isEncrypted = false;
+  if (pdfBuffer) {
+    try {
+      await PDFDocument.load(pdfBuffer);
+    } catch {
+      isEncrypted = true;
+    }
+  }
 
-  // PDFs cortos (≤5 páginas): enviar el documento entero a Claude en una sola llamada.
-  // Esto preserva el contexto de tablas que cruzan páginas y evita problemas
-  // con layouts complejos al splitear.
-  if (pageCount <= 5) {
-    console.log(`  Procesando PDF completo (${pageCount} páginas) en una sola llamada...`);
+  console.log(`PDF de ${pageCount} página(s).${isEncrypted ? " [ENCRIPTADO]" : ""}`);
+
+  // PDFs cortos (≤5 páginas) o encriptados: enviar completo a Claude.
+  // Los PDFs encriptados no se pueden splitear (las páginas quedan en blanco).
+  if (pageCount <= 5 || isEncrypted) {
+    const reason = isEncrypted ? "encriptado" : `≤5 páginas`;
+    console.log(`  Procesando PDF completo (${reason}, ${pageCount} páginas) en una sola llamada...`);
     const [header, items] = await Promise.all([
       extractHeader({ base64: fileBase64, mediaType: "application/pdf" }),
       extractItemsFromImage(fileBase64, "application/pdf", 1),
     ]);
-    console.log(`Extracción completada: ${items.length} ítems`);
+    console.log(`Extracción completada: ${items.length} ítems${isEncrypted ? " (flujo PDF encriptado)" : ""}`);
     return { ...header, items: items.map((item, i) => ({ ...item, line_number: i + 1 })) };
   }
 

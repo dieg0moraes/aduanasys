@@ -92,6 +92,7 @@ export async function expandQuery(query: string): Promise<string> {
     const response = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 200,
+      temperature: 0,
       messages: [
         {
           role: "user",
@@ -774,6 +775,7 @@ async function batchExpandQueries(descriptions: string[]): Promise<string[]> {
     const response = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 2000,
+      temperature: 0,
       messages: [
         {
           role: "user",
@@ -781,9 +783,19 @@ async function batchExpandQueries(descriptions: string[]): Promise<string[]> {
 Para cada producto, generá UNA frase corta (máx 12 palabras) con la descripción que usaría el nomenclador NCM.
 
 REGLAS:
-- Clasificá la CATEGORÍA en terminología aduanera
-- NO agregues atributos que no estén en el texto
+- UNA sola frase por producto, máximo 12 palabras
+- Clasificá la CATEGORÍA del producto en terminología aduanera (ej: "mouse" → "unidad de entrada para máquinas de procesamiento de datos")
+- NO agregues atributos técnicos específicos que no estén en el texto (ej: no decir "LCD" si no lo menciona)
+- NO uses listas, sinónimos ni explicaciones
 - Respondé SOLO con la lista numerada, una línea por producto
+
+Ejemplos:
+- "mouse inalámbrico" → "Unidad de entrada inalámbrica para máquinas de procesamiento de datos"
+- "televisor 50 pulgadas" → "Aparato receptor de televisión de 50 pulgadas"
+- "perfume Chanel" → "Perfume, extracto de perfumería"
+- "tornillos de acero" → "Tornillos de acero, de hierro o acero"
+- "cable USB" → "Cable eléctrico para transmisión de datos"
+- "ibuprofeno 400mg" → "Medicamento que contiene ibuprofeno, dosificado para venta al por menor"
 
 Productos:
 ${numberedList}`,
