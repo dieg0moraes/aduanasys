@@ -115,6 +115,11 @@ export function InvoiceList() {
                       {truncate(invoice.file_name, 50)}
                     </p>
                     <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                      {invoice.invoice_number && (
+                        <span className="font-mono text-xs">
+                          #{invoice.invoice_number}
+                        </span>
+                      )}
                       {invoice.provider && (
                         <span>
                           {
@@ -124,7 +129,11 @@ export function InvoiceList() {
                           }
                         </span>
                       )}
-                      <span>{formatDate(invoice.created_at)}</span>
+                      <span>
+                        {invoice.invoice_date
+                          ? formatDate(invoice.invoice_date)
+                          : formatDate(invoice.created_at)}
+                      </span>
                       {invoice.total_items > 0 && (
                         <span>{invoice.total_items} ítems</span>
                       )}
