@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
-import { ArrowLeft, Loader2, Package } from "lucide-react";
+import { Loader2, Package } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import type { InvoiceItem, Invoice } from "@/lib/types";
 
 interface DispatchInfo {
@@ -224,22 +225,22 @@ export default function NuevaPartidaPage() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      {/* Back */}
-      <button
-        onClick={() => router.push(`/despachos/${despachoId}`)}
-        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
-      >
-        <ArrowLeft size={16} />
-        Volver al despacho
-      </button>
+      {/* Breadcrumb */}
+      <Breadcrumb
+        items={[
+          { label: "Despachos", href: "/despachos" },
+          { label: `DES-${despachoId.slice(0, 8)}`, href: `/despachos/${despachoId}` },
+          { label: "Nueva Partida" },
+        ]}
+      />
 
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Nueva Partida</h1>
+      <div className="mt-4 mb-6">
+        <h1 className="text-2xl font-bold text-[#18181B]">Nueva Partida</h1>
         {invoice && (
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-[#71717A] mt-1">
             Factura: {invoice.file_name}
-            {invoice.provider && ` - ${invoice.provider.name}`}
+            {invoice.provider && ` — ${invoice.provider.name}`}
           </p>
         )}
       </div>
@@ -349,7 +350,7 @@ export default function NuevaPartidaPage() {
                         isDisabled
                           ? "bg-gray-50 opacity-60"
                           : row.checked
-                          ? "bg-blue-50/30"
+                          ? "bg-[#EFF6FF]/50"
                           : "hover:bg-gray-50"
                       }`}
                     >
@@ -384,6 +385,11 @@ export default function NuevaPartidaPage() {
                             ? `${row.item.original_description.slice(0, 60)}...`
                             : row.item.original_description}
                         </span>
+                        {row.item.ncm_code && (
+                          <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 inline-block mt-1">
+                            {row.item.ncm_code}
+                          </span>
+                        )}
                       </td>
 
                       {/* Total quantity */}
@@ -441,12 +447,16 @@ export default function NuevaPartidaPage() {
 
       {/* Summary + Footer */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">
-          {selectedItems.length} item{selectedItems.length !== 1 ? "s" : ""}{" "}
-          seleccionado{selectedItems.length !== 1 ? "s" : ""} &middot;{" "}
-          {selectedItems.reduce((sum, r) => sum + r.dispatchQuantity, 0)}{" "}
-          unidades a despachar
-        </p>
+        <div className="flex items-center gap-3">
+          <span className="bg-[#EFF6FF] text-[#2563EB] px-3 py-1 rounded-full text-sm font-medium">
+            {selectedItems.length} item{selectedItems.length !== 1 ? "s" : ""}{" "}
+            seleccionado{selectedItems.length !== 1 ? "s" : ""}
+          </span>
+          <span className="text-sm text-[#71717A]">
+            {selectedItems.reduce((sum, r) => sum + r.dispatchQuantity, 0)}{" "}
+            unidades a despachar
+          </span>
+        </div>
 
         <div className="flex items-center gap-3">
           <button
