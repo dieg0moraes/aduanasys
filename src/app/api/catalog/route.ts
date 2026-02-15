@@ -111,16 +111,13 @@ export async function POST(request: NextRequest) {
     if (!body.sku || !body.sku.trim()) {
       return NextResponse.json({ error: "SKU es obligatorio" }, { status: 400 });
     }
-    if (!body.provider_description || !body.provider_description.trim()) {
-      return NextResponse.json({ error: "Descripción del proveedor es obligatoria" }, { status: 400 });
-    }
 
     const { data, error } = await supabase
       .from("product_catalog")
       .insert({
         provider_id: body.provider_id,
         sku: body.sku.trim(),
-        provider_description: body.provider_description.trim(),
+        provider_description: body.provider_description?.trim() || "",
         customs_description: body.customs_description?.trim() || "",
         internal_description: body.internal_description?.trim() || null,
         ncm_code: body.ncm_code?.trim() || "",

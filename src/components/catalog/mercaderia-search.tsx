@@ -772,13 +772,13 @@ export default function MercaderiaSearch() {
               {/* Provider description */}
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">
-                  Descripción del proveedor <span className="text-red-400">*</span>
+                  Descripción del proveedor
                 </label>
                 <textarea
                   value={newProduct.provider_description}
                   onChange={(e) => setNewProduct((p) => ({ ...p, provider_description: e.target.value }))}
                   className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
-                  placeholder="Descripción tal como aparece en la factura"
+                  placeholder="Descripción del producto"
                 />
               </div>
 
@@ -883,7 +883,7 @@ export default function MercaderiaSearch() {
               </button>
               <button
                 onClick={handleCreateProduct}
-                disabled={creating || !newProduct.provider_id || !newProduct.sku.trim() || !newProduct.provider_description.trim()}
+                disabled={creating || !newProduct.provider_id || !newProduct.sku.trim()}
                 className="px-4 py-2 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] disabled:opacity-50 flex items-center gap-2"
               >
                 {creating && <Loader2 size={14} className="animate-spin" />}
