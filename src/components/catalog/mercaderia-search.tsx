@@ -10,6 +10,9 @@ import {
   ChevronRight,
   Users,
   Package,
+  Plus,
+  X,
+  Building2,
 } from "lucide-react";
 import { formatDate, formatCurrency } from "@/lib/utils";
 
@@ -187,6 +190,32 @@ export default function MercaderiaSearch() {
   // Expanded cards
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  // Create product modal
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState("");
+  const [newProduct, setNewProduct] = useState({
+    provider_id: "",
+    sku: "",
+    provider_description: "",
+    customs_description: "",
+    internal_description: "",
+    ncm_code: "",
+    latu: null as boolean | null,
+    imesi: null as boolean | null,
+    exonera_iva: null as boolean | null,
+    apertura: null as number | null,
+  });
+
+  // Provider search for modal
+  const [modalProviderSearch, setModalProviderSearch] = useState("");
+  const [modalProviders, setModalProviders] = useState<ProviderOption[]>([]);
+  const [loadingModalProviders, setLoadingModalProviders] = useState(false);
+  const [showModalProviderDropdown, setShowModalProviderDropdown] = useState(false);
+  const [selectedProviderName, setSelectedProviderName] = useState("");
+  const [creatingProvider, setCreatingProvider] = useState(false);
+  const [newProviderName, setNewProviderName] = useState("");
+
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -276,6 +305,92 @@ export default function MercaderiaSearch() {
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
+  // Fetch providers for create modal
+  useEffect(() => {
+    if (!showModalProviderDropdown) return;
+
+    const timer = setTimeout(async () => {
+      setLoadingModalProviders(true);
+      try {
+        const params = new URLSearchParams();
+        if (modalProviderSearch.trim()) params.set("search", modalProviderSearch.trim());
+        const res = await fetch(`/api/providers?${params}`);
+        if (res.ok) {
+          const data = await res.json();
+          setModalProviders(data.providers || []);
+        }
+      } catch {
+        // ignore
+      }
+      setLoadingModalProviders(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [showModalProviderDropdown, modalProviderSearch]);
+
+  const handleCreateProviderInModal = async () => {
+    if (!newProviderName.trim()) return;
+    setCreatingProvider(true);
+    try {
+      const res = await fetch("/api/providers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newProviderName.trim() }),
+      });
+      if (res.ok) {
+        const provider = await res.json();
+        setNewProduct((p) => ({ ...p, provider_id: provider.id }));
+        setSelectedProviderName(provider.name);
+        setShowModalProviderDropdown(false);
+        setNewProviderName("");
+        setModalProviderSearch("");
+      }
+    } catch {
+      // ignore
+    }
+    setCreatingProvider(false);
+  };
+
+  const resetCreateForm = () => {
+    setNewProduct({
+      provider_id: "",
+      sku: "",
+      provider_description: "",
+      customs_description: "",
+      internal_description: "",
+      ncm_code: "",
+      latu: null,
+      imesi: null,
+      exonera_iva: null,
+      apertura: null,
+    });
+    setSelectedProviderName("");
+    setCreateError("");
+  };
+
+  const handleCreateProduct = async () => {
+    setCreateError("");
+    setCreating(true);
+    try {
+      const res = await fetch("/api/catalog", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newProduct),
+      });
+      if (res.ok) {
+        setShowCreateModal(false);
+        resetCreateForm();
+        fetchItems();
+      } else {
+        const err = await res.json();
+        setCreateError(err.error || "Error al crear producto");
+      }
+    } catch {
+      setCreateError("Error de conexión");
+    }
+    setCreating(false);
+  };
+
   return (
     <div>
       {/* Search bar */}
@@ -303,6 +418,13 @@ export default function MercaderiaSearch() {
         >
           <Filter size={14} />
           Filtros
+        </button>
+        <button
+          onClick={() => { resetCreateForm(); setShowCreateModal(true); }}
+          className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] transition-colors"
+        >
+          <Plus size={14} />
+          Nueva
         </button>
       </div>
 
@@ -517,6 +639,258 @@ export default function MercaderiaSearch() {
             Siguiente
             <ChevronRight size={14} />
           </button>
+        </div>
+      )}
+
+      {/* Create product modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/30" onClick={() => setShowCreateModal(false)} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4">
+            <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white rounded-t-xl">
+              <h2 className="font-semibold text-gray-900">Nueva Mercadería</h2>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-4">
+              {createError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700">
+                  {createError}
+                </div>
+              )}
+
+              {/* Provider selector */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">
+                  Proveedor <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  {showModalProviderDropdown ? (
+                    <div>
+                      <input
+                        type="text"
+                        value={modalProviderSearch}
+                        onChange={(e) => setModalProviderSearch(e.target.value)}
+                        placeholder="Buscar proveedor..."
+                        className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Escape") {
+                            setShowModalProviderDropdown(false);
+                            setModalProviderSearch("");
+                          }
+                        }}
+                      />
+                      <div className="absolute z-10 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                        {loadingModalProviders ? (
+                          <div className="flex items-center justify-center py-3">
+                            <Loader2 size={14} className="animate-spin text-[#2E86C1]" />
+                          </div>
+                        ) : (
+                          <>
+                            {modalProviders.map((p) => (
+                              <button
+                                key={p.id}
+                                onClick={() => {
+                                  setNewProduct((prev) => ({ ...prev, provider_id: p.id }));
+                                  setSelectedProviderName(p.name);
+                                  setShowModalProviderDropdown(false);
+                                  setModalProviderSearch("");
+                                }}
+                                className={`w-full text-left px-3 py-2 text-sm hover:bg-[#EBF5FB] ${
+                                  newProduct.provider_id === p.id ? "bg-blue-50 font-medium" : ""
+                                }`}
+                              >
+                                {p.name}
+                              </button>
+                            ))}
+                            {modalProviders.length === 0 && modalProviderSearch.trim() && (
+                              <p className="px-3 py-2 text-sm text-gray-400">Sin resultados</p>
+                            )}
+                          </>
+                        )}
+                        {/* Create new provider */}
+                        <div className="border-t px-3 py-2">
+                          <p className="text-xs text-gray-400 mb-1.5">Crear nuevo proveedor</p>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={newProviderName}
+                              onChange={(e) => setNewProviderName(e.target.value)}
+                              placeholder="Nombre"
+                              className="flex-1 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#2E86C1]"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleCreateProviderInModal();
+                              }}
+                            />
+                            <button
+                              onClick={handleCreateProviderInModal}
+                              disabled={creatingProvider || !newProviderName.trim()}
+                              className="px-2 py-1 rounded bg-[#2E86C1] text-white text-xs font-medium hover:bg-[#2574A9] disabled:opacity-50"
+                            >
+                              {creatingProvider ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setShowModalProviderDropdown(true)}
+                      className="flex items-center gap-2 w-full px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 text-left"
+                    >
+                      <Building2 size={14} className="text-gray-400" />
+                      {selectedProviderName ? (
+                        <span className="text-gray-900">{selectedProviderName}</span>
+                      ) : (
+                        <span className="text-gray-400">Seleccionar proveedor</span>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* SKU */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">
+                  SKU <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={newProduct.sku}
+                  onChange={(e) => setNewProduct((p) => ({ ...p, sku: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                  placeholder="Código del producto"
+                />
+              </div>
+
+              {/* Provider description */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">
+                  Descripción del proveedor <span className="text-red-400">*</span>
+                </label>
+                <textarea
+                  value={newProduct.provider_description}
+                  onChange={(e) => setNewProduct((p) => ({ ...p, provider_description: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
+                  placeholder="Descripción tal como aparece en la factura"
+                />
+              </div>
+
+              {/* Customs description */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">
+                  Descripción aduanera
+                </label>
+                <textarea
+                  value={newProduct.customs_description}
+                  onChange={(e) => setNewProduct((p) => ({ ...p, customs_description: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
+                  placeholder="Descripción para aduana"
+                />
+              </div>
+
+              {/* Internal description */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">
+                  Descripción interna
+                </label>
+                <textarea
+                  value={newProduct.internal_description}
+                  onChange={(e) => setNewProduct((p) => ({ ...p, internal_description: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
+                  placeholder="Descripción para uso interno"
+                />
+              </div>
+
+              {/* NCM */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">
+                  NCM
+                </label>
+                <input
+                  type="text"
+                  value={newProduct.ncm_code}
+                  onChange={(e) => setNewProduct((p) => ({ ...p, ncm_code: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                  placeholder="Ej: 6204.62.00.00"
+                />
+              </div>
+
+              {/* Flags row */}
+              <div className="grid grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">LATU</label>
+                  <select
+                    value={newProduct.latu === null ? "" : newProduct.latu ? "true" : "false"}
+                    onChange={(e) => setNewProduct((p) => ({ ...p, latu: e.target.value === "" ? null : e.target.value === "true" }))}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                  >
+                    <option value="">—</option>
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">IMESI</label>
+                  <select
+                    value={newProduct.imesi === null ? "" : newProduct.imesi ? "true" : "false"}
+                    onChange={(e) => setNewProduct((p) => ({ ...p, imesi: e.target.value === "" ? null : e.target.value === "true" }))}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                  >
+                    <option value="">—</option>
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Exonera IVA</label>
+                  <select
+                    value={newProduct.exonera_iva === null ? "" : newProduct.exonera_iva ? "true" : "false"}
+                    onChange={(e) => setNewProduct((p) => ({ ...p, exonera_iva: e.target.value === "" ? null : e.target.value === "true" }))}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                  >
+                    <option value="">—</option>
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Apertura</label>
+                  <input
+                    type="number"
+                    value={newProduct.apertura ?? ""}
+                    onChange={(e) => setNewProduct((p) => ({ ...p, apertura: e.target.value === "" ? null : Number(e.target.value) }))}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                    placeholder="—"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-2 p-4 border-t sticky bottom-0 bg-white rounded-b-xl">
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="px-4 py-2 rounded-lg border text-sm font-medium text-gray-600 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleCreateProduct}
+                disabled={creating || !newProduct.provider_id || !newProduct.sku.trim() || !newProduct.provider_description.trim()}
+                className="px-4 py-2 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] disabled:opacity-50 flex items-center gap-2"
+              >
+                {creating && <Loader2 size={14} className="animate-spin" />}
+                Crear producto
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
