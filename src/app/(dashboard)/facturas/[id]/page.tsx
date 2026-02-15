@@ -12,6 +12,7 @@ import {
   Globe,
   Package,
   Plus,
+  Building2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Invoice, InvoiceItem, Partida } from "@/lib/types";
@@ -43,6 +44,15 @@ export default function InvoiceDetailPage() {
   const [countrySearch, setCountrySearch] = useState("");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [savingCountry, setSavingCountry] = useState(false);
+
+  // Provider selector
+  const [providerSearch, setProviderSearch] = useState("");
+  const [showProviderDropdown, setShowProviderDropdown] = useState(false);
+  const [savingProvider, setSavingProvider] = useState(false);
+  const [providers, setProviders] = useState<{ id: string; name: string }[]>([]);
+  const [loadingProviders, setLoadingProviders] = useState(false);
+  const [creatingProvider, setCreatingProvider] = useState(false);
+  const [newProviderName, setNewProviderName] = useState("");
 
   const fetchInvoice = async () => {
     const { data: invoiceData, error: invoiceError } = await supabase
@@ -147,6 +157,66 @@ export default function InvoiceDetailPage() {
         String(c.code).includes(countrySearch)
       )
     : COUNTRIES;
+
+  // Fetch providers when dropdown opens or search changes
+  useEffect(() => {
+    if (!showProviderDropdown) return;
+
+    const timer = setTimeout(async () => {
+      setLoadingProviders(true);
+      try {
+        const params = new URLSearchParams();
+        if (providerSearch.trim()) params.set("search", providerSearch.trim());
+        const res = await fetch(`/api/providers?${params}`);
+        if (res.ok) {
+          const data = await res.json();
+          setProviders(data.providers || []);
+        }
+      } catch {
+        // ignore
+      }
+      setLoadingProviders(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [showProviderDropdown, providerSearch]);
+
+  const handleProviderSelect = async (providerId: string | null) => {
+    setSavingProvider(true);
+    setShowProviderDropdown(false);
+    setProviderSearch("");
+    const res = await fetch(`/api/invoices/${invoiceId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ provider_id: providerId }),
+    });
+    if (res.ok) {
+      await fetchInvoice();
+    }
+    setSavingProvider(false);
+  };
+
+  const handleCreateProvider = async () => {
+    if (!newProviderName.trim()) return;
+    setCreatingProvider(true);
+    try {
+      const res = await fetch("/api/providers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newProviderName.trim() }),
+      });
+      if (res.ok) {
+        const provider = await res.json();
+        await handleProviderSelect(provider.id);
+        setNewProviderName("");
+      }
+    } catch {
+      // ignore
+    }
+    setCreatingProvider(false);
+  };
+
+  const canEditProvider = invoice?.status === "uploaded" || invoice?.status === "review";
 
   const handleDelete = async () => {
     if (!window.confirm("¿Estás seguro de que querés eliminar esta factura? Esta acción no se puede deshacer.")) {
@@ -410,6 +480,123 @@ export default function InvoiceDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Provider selector */}
+      {canEditProvider && (
+        <div className="bg-white rounded-xl border p-4 mb-6">
+          <div className="flex items-center gap-3">
+            <Building2 size={16} className="text-gray-400 shrink-0" />
+            <label className="text-sm font-medium text-gray-700 shrink-0">
+              Proveedor
+            </label>
+            <div className="relative flex-1 max-w-sm">
+              {showProviderDropdown ? (
+                <div>
+                  <input
+                    type="text"
+                    value={providerSearch}
+                    onChange={(e) => setProviderSearch(e.target.value)}
+                    placeholder="Buscar proveedor..."
+                    className="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setShowProviderDropdown(false);
+                        setProviderSearch("");
+                      }
+                    }}
+                  />
+                  <div
+                    className="fixed inset-0 z-[9]"
+                    onClick={() => { setShowProviderDropdown(false); setProviderSearch(""); }}
+                  />
+                  <div className="absolute z-10 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {invoice?.provider_id && (
+                      <button
+                        onClick={() => handleProviderSelect(null)}
+                        className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 border-b"
+                      >
+                        Quitar proveedor
+                      </button>
+                    )}
+                    {loadingProviders ? (
+                      <div className="flex items-center justify-center py-3">
+                        <Loader2 size={16} className="animate-spin text-[#2E86C1]" />
+                      </div>
+                    ) : (
+                      <>
+                        {providers.map((p) => (
+                          <button
+                            key={p.id}
+                            onClick={() => handleProviderSelect(p.id)}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-[#EBF5FB] ${
+                              invoice?.provider_id === p.id ? "bg-blue-50 font-medium" : ""
+                            }`}
+                          >
+                            {p.name}
+                          </button>
+                        ))}
+                        {providers.length === 0 && providerSearch.trim() && (
+                          <p className="px-3 py-2 text-sm text-gray-400">Sin resultados</p>
+                        )}
+                      </>
+                    )}
+                    {/* Create new */}
+                    <div className="border-t px-3 py-2">
+                      <p className="text-xs text-gray-400 mb-1.5">Crear nuevo proveedor</p>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={newProviderName}
+                          onChange={(e) => setNewProviderName(e.target.value)}
+                          placeholder="Nombre del proveedor"
+                          className="flex-1 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#2E86C1]"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleCreateProvider();
+                          }}
+                        />
+                        <button
+                          onClick={handleCreateProvider}
+                          disabled={creatingProvider || !newProviderName.trim()}
+                          className="px-2 py-1 rounded bg-[#2E86C1] text-white text-xs font-medium hover:bg-[#2574A9] disabled:opacity-50"
+                        >
+                          {creatingProvider ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowProviderDropdown(true)}
+                  className="flex items-center gap-2 px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50 transition-colors w-full text-left"
+                >
+                  {savingProvider ? (
+                    <Loader2 size={14} className="animate-spin text-[#2E86C1]" />
+                  ) : invoice?.provider?.name ? (
+                    <span className="text-gray-900">{invoice.provider.name}</span>
+                  ) : (
+                    <span className="text-gray-400">Sin proveedor asignado</span>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Provider display (when not editable) */}
+      {!canEditProvider && invoice?.provider?.name && (
+        <div className="bg-white rounded-xl border p-4 mb-6">
+          <div className="flex items-center gap-3">
+            <Building2 size={16} className="text-gray-400 shrink-0" />
+            <label className="text-sm font-medium text-gray-700 shrink-0">
+              Proveedor
+            </label>
+            <span className="text-sm text-gray-900">{invoice.provider.name}</span>
+          </div>
+        </div>
+      )}
 
       {/* Error */}
       {invoice.processing_error && (
