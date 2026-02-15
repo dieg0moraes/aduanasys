@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase-server";
 
 /**
- * GET /api/catalog?search=...&provider_id=...&page=1&limit=50
+ * GET /api/catalog?search=...&provider_id=...&client_id=...&page=1&limit=50
  *
  * Lista y busca productos en el catálogo.
  * Soporta búsqueda por texto (SKU, descripción, NCM) y filtro por proveedor.
@@ -30,6 +30,29 @@ export async function GET(request: NextRequest) {
     // Filtro por proveedor
     if (providerId) {
       query = query.eq("provider_id", providerId);
+    }
+
+    const clientId = searchParams.get("client_id") || "";
+
+    if (clientId) {
+      // Find provider_ids from invoices linked to this client's despachos
+      const { data: clientInvoices } = await supabase
+        .from("invoices")
+        .select("provider_id, despacho:despachos!inner(client_id)")
+        .eq("despacho.client_id", clientId)
+        .not("provider_id", "is", null);
+
+      const providerIds = [...new Set(
+        (clientInvoices || [])
+          .map((inv: Record<string, unknown>) => inv.provider_id as string)
+          .filter(Boolean)
+      )];
+
+      if (providerIds.length > 0) {
+        query = query.in("provider_id", providerIds);
+      } else {
+        return NextResponse.json({ items: [], total: 0, page, limit, totalPages: 0 });
+      }
     }
 
     // Búsqueda por texto en múltiples campos
