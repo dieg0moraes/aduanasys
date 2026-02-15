@@ -139,7 +139,7 @@ export default function ClientDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 size={32} className="animate-spin text-[#2E86C1]" />
+        <Loader2 size={32} className="animate-spin text-[#2563EB]" />
       </div>
     );
   }
@@ -173,21 +173,21 @@ export default function ClientDetailPage() {
                     type="text"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="px-3 py-1.5 border rounded-lg text-lg font-bold focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                    className="px-3 py-1.5 border rounded-lg text-lg font-bold focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     placeholder="Nombre"
                   />
                   <input
                     type="text"
                     value={editCuit}
                     onChange={(e) => setEditCuit(e.target.value)}
-                    className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] block"
+                    className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] block"
                     placeholder="CUIT (opcional)"
                   />
                 </div>
                 <button
                   onClick={handleSaveClient}
                   disabled={saving}
-                  className="px-3 py-1.5 rounded-lg bg-[#2E86C1] text-white text-sm hover:bg-[#2574A9] disabled:opacity-50"
+                  className="px-3 py-1.5 rounded-lg bg-[#2563EB] text-white text-sm hover:bg-[#1D4ED8] disabled:opacity-50"
                 >
                   {saving ? "Guardando..." : "Guardar"}
                 </button>
@@ -261,7 +261,7 @@ export default function ClientDetailPage() {
         <h2 className="text-lg font-semibold text-gray-900">Despachos</h2>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1B4F72] text-white text-sm font-medium hover:bg-[#154360] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1B2A4A] text-white text-sm font-medium hover:bg-[#162240] transition-colors"
         >
           <Plus size={16} />
           Nuevo Despacho
@@ -276,7 +276,7 @@ export default function ClientDetailPage() {
             placeholder="Referencia del despacho"
             value={newReference}
             onChange={(e) => setNewReference(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] focus:border-transparent"
+            className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
             autoFocus
           />
           <input
@@ -284,13 +284,13 @@ export default function ClientDetailPage() {
             placeholder="Notas (opcional)"
             value={newNotes}
             onChange={(e) => setNewNotes(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] focus:border-transparent"
+            className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
           />
           <div className="flex items-center gap-2">
             <button
               type="submit"
               disabled={creating || !newReference.trim()}
-              className="px-4 py-2 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] disabled:opacity-50"
+              className="px-4 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] disabled:opacity-50"
             >
               {creating ? <Loader2 size={16} className="animate-spin" /> : "Crear Despacho"}
             </button>
@@ -314,7 +314,7 @@ export default function ClientDetailPage() {
             placeholder="Buscar por referencia o DUA..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -323,7 +323,7 @@ export default function ClientDetailPage() {
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="px-3 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+            className="px-3 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             placeholder="Desde"
           />
           <span className="text-gray-400 text-sm">—</span>
@@ -331,7 +331,7 @@ export default function ClientDetailPage() {
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="px-3 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+            className="px-3 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             placeholder="Hasta"
           />
           {(dateFrom || dateTo) && (
@@ -349,7 +349,7 @@ export default function ClientDetailPage() {
       {/* Despachos list */}
       {loadingDespachos ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 size={32} className="animate-spin text-[#2E86C1]" />
+          <Loader2 size={32} className="animate-spin text-[#2563EB]" />
         </div>
       ) : despachos.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl border">
@@ -366,7 +366,7 @@ export default function ClientDetailPage() {
             <button
               key={despacho.id}
               onClick={() => router.push(`/despachos/${despacho.id}`)}
-              className="w-full bg-white rounded-xl border p-5 text-left hover:border-[#2E86C1] hover:shadow-md transition-all"
+              className="w-full bg-white rounded-xl border p-5 text-left hover:border-[#2563EB] hover:shadow-md transition-all"
             >
               <div className="flex items-center justify-between">
                 <div>

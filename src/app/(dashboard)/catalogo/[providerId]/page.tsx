@@ -291,8 +291,8 @@ export default function ProviderCatalogPage() {
         >
           <ArrowLeft size={20} />
         </button>
-        <div className="w-10 h-10 rounded-lg bg-[#2E86C1]/10 flex items-center justify-center flex-shrink-0">
-          <Building2 size={20} className="text-[#2E86C1]" />
+        <div className="w-10 h-10 rounded-lg bg-[#2563EB]/10 flex items-center justify-center flex-shrink-0">
+          <Building2 size={20} className="text-[#2563EB]" />
         </div>
         <div className="flex-1">
           <h1 className="text-xl font-bold text-gray-900">
@@ -318,7 +318,7 @@ export default function ProviderCatalogPage() {
           <div className="bg-white rounded-xl border divide-y mb-2">
             {loadingInvoices ? (
               <div className="flex items-center justify-center py-6">
-                <Loader2 size={20} className="animate-spin text-[#2E86C1]" />
+                <Loader2 size={20} className="animate-spin text-[#2563EB]" />
               </div>
             ) : invoices.length === 0 ? (
               <p className="text-gray-400 text-sm text-center py-6">
@@ -369,7 +369,7 @@ export default function ProviderCatalogPage() {
             placeholder="Buscar por SKU, descripción o NCM..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]/20 focus:border-[#2E86C1]"
+            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]"
           />
         </div>
       </div>
@@ -403,7 +403,7 @@ export default function ProviderCatalogPage() {
                   <td colSpan={7} className="px-4 py-12 text-center">
                     <Loader2
                       size={24}
-                      className="animate-spin text-[#2E86C1] mx-auto"
+                      className="animate-spin text-[#2563EB] mx-auto"
                     />
                   </td>
                 </tr>
@@ -497,7 +497,7 @@ export default function ProviderCatalogPage() {
                                       }))
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] min-h-[60px] resize-y"
                                     placeholder="Descripción para aduana"
                                   />
                                 </div>
@@ -514,7 +514,7 @@ export default function ProviderCatalogPage() {
                                       }))
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] min-h-[60px] resize-y"
                                     placeholder="Descripción interna (uso propio)"
                                   />
                                 </div>
@@ -536,7 +536,7 @@ export default function ProviderCatalogPage() {
                                       }))
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                                   />
                                 </div>
                                 <div>
@@ -552,7 +552,7 @@ export default function ProviderCatalogPage() {
                                       }))
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                                   >
                                     <option value="">—</option>
                                     <option value="true">Sí</option>
@@ -572,7 +572,7 @@ export default function ProviderCatalogPage() {
                                       }))
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                                   >
                                     <option value="">—</option>
                                     <option value="true">Sí</option>
@@ -592,7 +592,7 @@ export default function ProviderCatalogPage() {
                                       }))
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                                   >
                                     <option value="">—</option>
                                     <option value="true">Sí</option>
@@ -613,7 +613,7 @@ export default function ProviderCatalogPage() {
                                       }))
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                                     placeholder="—"
                                   />
                                 </div>
@@ -627,7 +627,7 @@ export default function ProviderCatalogPage() {
                                     saveEdit();
                                   }}
                                   disabled={saving}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] disabled:opacity-50 transition-colors"
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] disabled:opacity-50 transition-colors"
                                 >
                                   {saving ? (
                                     <Loader2 size={14} className="animate-spin" />
@@ -660,7 +660,7 @@ export default function ProviderCatalogPage() {
                                             value={moveProviderSearch}
                                             onChange={(e) => setMoveProviderSearch(e.target.value)}
                                             placeholder="Buscar proveedor destino..."
-                                            className="w-full px-2 py-1.5 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#2E86C1]"
+                                            className="w-full px-2 py-1.5 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
                                             autoFocus
                                             onClick={(e) => e.stopPropagation()}
                                             onKeyDown={(e) => {
@@ -674,7 +674,7 @@ export default function ProviderCatalogPage() {
                                         <div className="max-h-40 overflow-y-auto">
                                           {loadingMoveProviders ? (
                                             <div className="flex items-center justify-center py-3">
-                                              <Loader2 size={14} className="animate-spin text-[#2E86C1]" />
+                                              <Loader2 size={14} className="animate-spin text-[#2563EB]" />
                                             </div>
                                           ) : moveProviders.length === 0 ? (
                                             <p className="px-3 py-2 text-sm text-gray-400">Sin proveedores disponibles</p>
@@ -687,7 +687,7 @@ export default function ProviderCatalogPage() {
                                                   handleMoveProduct(item.id, p.id, p.name);
                                                 }}
                                                 disabled={movingInProgress}
-                                                className="w-full text-left px-3 py-2 text-sm hover:bg-[#EBF5FB] disabled:opacity-50"
+                                                className="w-full text-left px-3 py-2 text-sm hover:bg-[#EFF6FF] disabled:opacity-50"
                                               >
                                                 {p.name}
                                               </button>

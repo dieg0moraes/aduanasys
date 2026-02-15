@@ -222,7 +222,7 @@ export default function PartidaDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 size={32} className="animate-spin text-[#2E86C1]" />
+        <Loader2 size={32} className="animate-spin text-[#2563EB]" />
       </div>
     );
   }
@@ -267,7 +267,7 @@ export default function PartidaDetailPage() {
           <button
             onClick={handleExportDUA}
             disabled={exporting}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] disabled:opacity-50 transition-colors"
           >
             {exporting ? (
               <Loader2 size={16} className="animate-spin" />
@@ -359,14 +359,14 @@ export default function PartidaDetailPage() {
                 type="text"
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
-                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] flex-1"
+                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] flex-1"
                 placeholder="P-001"
                 autoFocus
               />
               <button
                 onClick={handleSaveReference}
                 disabled={savingReference}
-                className="p-1.5 rounded-lg bg-[#2E86C1] text-white hover:bg-[#2574A9] disabled:opacity-50"
+                className="p-1.5 rounded-lg bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:opacity-50"
               >
                 <Check size={16} />
               </button>
@@ -410,13 +410,13 @@ export default function PartidaDetailPage() {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] flex-1"
+                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] flex-1"
                 autoFocus
               />
               <button
                 onClick={handleSaveDate}
                 disabled={savingDate}
-                className="p-1.5 rounded-lg bg-[#2E86C1] text-white hover:bg-[#2574A9] disabled:opacity-50"
+                className="p-1.5 rounded-lg bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:opacity-50"
               >
                 <Check size={16} />
               </button>
@@ -465,7 +465,7 @@ export default function PartidaDetailPage() {
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] flex-1 min-h-[60px]"
+                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] flex-1 min-h-[60px]"
                 placeholder="Notas de la partida"
                 autoFocus
               />
@@ -473,7 +473,7 @@ export default function PartidaDetailPage() {
                 <button
                   onClick={handleSaveNotes}
                   disabled={savingNotes}
-                  className="p-1.5 rounded-lg bg-[#2E86C1] text-white hover:bg-[#2574A9] disabled:opacity-50"
+                  className="p-1.5 rounded-lg bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:opacity-50"
                 >
                   <Check size={16} />
                 </button>

@@ -59,7 +59,7 @@ export function InvoiceList() {
             onClick={() => setFilter(s)}
             className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
               filter === s
-                ? "bg-[#1B4F72] text-white"
+                ? "bg-[#1B2A4A] text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
@@ -102,12 +102,12 @@ export function InvoiceList() {
             <Link
               key={invoice.id}
               href={`/facturas/${invoice.id}`}
-              className="block bg-white rounded-xl border hover:border-[#2E86C1] hover:shadow-sm transition-all p-4"
+              className="block bg-white rounded-xl border hover:border-[#2563EB] hover:shadow-sm transition-all p-4"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
                   <FileText
-                    className="text-[#2E86C1] flex-shrink-0"
+                    className="text-[#2563EB] flex-shrink-0"
                     size={20}
                   />
                   <div className="min-w-0">

@@ -234,7 +234,7 @@ export default function DespachoDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 size={32} className="animate-spin text-[#2E86C1]" />
+        <Loader2 size={32} className="animate-spin text-[#2563EB]" />
       </div>
     );
   }
@@ -314,14 +314,14 @@ export default function DespachoDetailPage() {
                 type="text"
                 value={customsCode}
                 onChange={(e) => setCustomsCode(e.target.value)}
-                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] flex-1"
+                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] flex-1"
                 placeholder="Número de DUA"
                 autoFocus
               />
               <button
                 onClick={handleSaveCustomsCode}
                 disabled={savingCode}
-                className="p-1.5 rounded-lg bg-[#2E86C1] text-white hover:bg-[#2574A9] disabled:opacity-50"
+                className="p-1.5 rounded-lg bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:opacity-50"
               >
                 <Check size={16} />
               </button>
@@ -357,7 +357,7 @@ export default function DespachoDetailPage() {
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] flex-1 min-h-[60px]"
+                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] flex-1 min-h-[60px]"
                 placeholder="Notas del despacho"
                 autoFocus
               />
@@ -365,7 +365,7 @@ export default function DespachoDetailPage() {
                 <button
                   onClick={handleSaveNotes}
                   disabled={savingNotes}
-                  className="p-1.5 rounded-lg bg-[#2E86C1] text-white hover:bg-[#2574A9] disabled:opacity-50"
+                  className="p-1.5 rounded-lg bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:opacity-50"
                 >
                   <Check size={16} />
                 </button>
@@ -411,7 +411,7 @@ export default function DespachoDetailPage() {
           </button>
           <button
             onClick={() => router.push(`/facturas?action=upload&despacho_id=${id}`)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1B4F72] text-white text-sm font-medium hover:bg-[#154360] transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1B2A4A] text-white text-sm font-medium hover:bg-[#162240] transition-colors"
           >
             <Upload size={16} />
             Subir Factura
@@ -467,7 +467,7 @@ export default function DespachoDetailPage() {
                     e.stopPropagation();
                     router.push(`/despachos/${id}/partidas/nueva?invoice=${invoice.id}`);
                   }}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-[#2E86C1] hover:bg-[#EBF5FB] transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
                   title="Crear partida desde esta factura"
                 >
                   <Plus size={14} />
@@ -495,7 +495,7 @@ export default function DespachoDetailPage() {
 
       {loadingPartidas ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={24} className="animate-spin text-[#2E86C1]" />
+          <Loader2 size={24} className="animate-spin text-[#2563EB]" />
         </div>
       ) : partidas.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-xl border">
@@ -556,7 +556,7 @@ export default function DespachoDetailPage() {
         </h2>
         <button
           onClick={() => setShowUploadForm(!showUploadForm)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1B4F72] text-white text-sm font-medium hover:bg-[#154360] transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1B2A4A] text-white text-sm font-medium hover:bg-[#162240] transition-colors"
         >
           <Upload size={16} />
           Subir Documento
@@ -574,7 +574,7 @@ export default function DespachoDetailPage() {
               <select
                 value={uploadDocType}
                 onChange={(e) => setUploadDocType(e.target.value as DocumentType)}
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               >
                 {DOCUMENT_TYPES.map((type) => (
                   <option key={type} value={type}>
@@ -593,7 +593,7 @@ export default function DespachoDetailPage() {
                   type="text"
                   value={uploadLabel}
                   onChange={(e) => setUploadLabel(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   placeholder="Nombre del documento"
                 />
               </div>
@@ -608,7 +608,7 @@ export default function DespachoDetailPage() {
               type="text"
               value={uploadNotes}
               onChange={(e) => setUploadNotes(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               placeholder="Notas sobre el documento"
             />
           </div>
@@ -622,7 +622,7 @@ export default function DespachoDetailPage() {
               type="file"
               accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx"
               onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-              className="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#EBF5FB] file:text-[#2E86C1] hover:file:bg-[#D6EAF8]"
+              className="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#EFF6FF] file:text-[#2563EB] hover:file:bg-[#DBEAFE]"
             />
           </div>
 
@@ -630,7 +630,7 @@ export default function DespachoDetailPage() {
             <button
               onClick={handleUploadDocument}
               disabled={!uploadFile || uploading}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] disabled:opacity-50 transition-colors"
             >
               {uploading ? (
                 <Loader2 size={16} className="animate-spin" />
@@ -659,7 +659,7 @@ export default function DespachoDetailPage() {
       {/* Documents list */}
       {loadingDocs ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={24} className="animate-spin text-[#2E86C1]" />
+          <Loader2 size={24} className="animate-spin text-[#2563EB]" />
         </div>
       ) : documents.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-xl border">
@@ -683,7 +683,7 @@ export default function DespachoDetailPage() {
                       href={`/api/despachos/${id}/documents/${doc.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-medium text-gray-900 truncate hover:text-[#2E86C1] transition-colors"
+                      className="font-medium text-gray-900 truncate hover:text-[#2563EB] transition-colors"
                     >
                       {doc.file_name}
                     </a>
@@ -714,7 +714,7 @@ export default function DespachoDetailPage() {
                   href={`/api/despachos/${id}/documents/${doc.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-[#2E86C1] hover:bg-[#EBF5FB] transition-colors"
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
                   title="Descargar"
                 >
                   <Download size={16} />
@@ -772,7 +772,7 @@ export default function DespachoDetailPage() {
             <div className="overflow-y-auto flex-1 p-4">
               {loadingAvailable ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 size={24} className="animate-spin text-[#2E86C1]" />
+                  <Loader2 size={24} className="animate-spin text-[#2563EB]" />
                 </div>
               ) : availableInvoices.length === 0 ? (
                 <p className="text-gray-500 text-center py-8 text-sm">
@@ -785,7 +785,7 @@ export default function DespachoDetailPage() {
                       key={inv.id}
                       onClick={() => handleLinkInvoice(inv.id)}
                       disabled={linking === inv.id}
-                      className="w-full flex items-center justify-between p-3 rounded-lg border hover:border-[#2E86C1] hover:bg-[#EBF5FB]/30 transition-all text-left disabled:opacity-50"
+                      className="w-full flex items-center justify-between p-3 rounded-lg border hover:border-[#2563EB] hover:bg-[#EFF6FF]/30 transition-all text-left disabled:opacity-50"
                     >
                       <div className="min-w-0">
                         <p className="font-medium text-gray-900 text-sm truncate">
@@ -796,7 +796,7 @@ export default function DespachoDetailPage() {
                         </p>
                       </div>
                       {linking === inv.id ? (
-                        <Loader2 size={16} className="animate-spin text-[#2E86C1] shrink-0" />
+                        <Loader2 size={16} className="animate-spin text-[#2563EB] shrink-0" />
                       ) : (
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${STATUS_COLORS[inv.status]}`}>
                           {STATUS_LABELS[inv.status]}

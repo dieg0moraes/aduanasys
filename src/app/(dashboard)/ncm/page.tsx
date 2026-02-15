@@ -171,7 +171,7 @@ export default function NCMPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 mb-2">
-          <BookOpen size={28} className="text-[#2E86C1]" />
+          <BookOpen size={28} className="text-[#2563EB]" />
           Búsqueda de Códigos NCM
         </h1>
         <p className="text-sm text-gray-500">
@@ -194,14 +194,14 @@ export default function NCMPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               disabled={loading}
-              className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 text-base focus:outline-none focus:ring-2 focus:ring-[#2E86C1]/20 focus:border-[#2E86C1] disabled:bg-gray-50 disabled:text-gray-400"
+              className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 text-base focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] disabled:bg-gray-50 disabled:text-gray-400"
               autoFocus
             />
           </div>
           <button
             type="submit"
             disabled={loading || !query.trim()}
-            className="px-6 py-3 bg-[#2E86C1] text-white rounded-lg font-medium hover:bg-[#2874A6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            className="px-6 py-3 bg-[#2563EB] text-white rounded-lg font-medium hover:bg-[#1D4ED8] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >
             {loading ? (
               <>
@@ -283,7 +283,7 @@ export default function NCMPage() {
       {/* Loading State */}
       {loading && (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <Loader2 size={32} className="animate-spin text-[#2E86C1]" />
+          <Loader2 size={32} className="animate-spin text-[#2563EB]" />
           <p className="text-sm text-gray-500">
             Buscando en catálogo, texto, semántica y grafo...
           </p>
@@ -312,12 +312,12 @@ export default function NCMPage() {
             {results.map((result) => (
               <div
                 key={`${result.match_type}-${result.id}`}
-                className="bg-white rounded-lg border border-gray-200 hover:border-[#2E86C1]/30 hover:shadow-sm transition-all p-5"
+                className="bg-white rounded-lg border border-gray-200 hover:border-[#2563EB]/30 hover:shadow-sm transition-all p-5"
               >
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-lg bg-[#2E86C1]/10 flex items-center justify-center flex-shrink-0">
-                      <Hash size={18} className="text-[#2E86C1]" />
+                    <div className="w-11 h-11 rounded-lg bg-[#2563EB]/10 flex items-center justify-center flex-shrink-0">
+                      <Hash size={18} className="text-[#2563EB]" />
                     </div>
                     <div>
                       <span className="font-mono text-lg font-bold text-gray-900">

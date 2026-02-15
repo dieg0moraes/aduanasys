@@ -83,10 +83,10 @@ export function UploadZone({ onUpload, isUploading }: UploadZoneProps) {
         onClick={() => !selectedFile && inputRef.current?.click()}
         className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all ${
           isDragging
-            ? "border-[#2E86C1] bg-[#EBF5FB]"
+            ? "border-[#2563EB] bg-[#EFF6FF]"
             : selectedFile
             ? "border-green-300 bg-green-50"
-            : "border-gray-300 hover:border-[#2E86C1] hover:bg-[#EBF5FB]/50"
+            : "border-gray-300 hover:border-[#2563EB] hover:bg-[#EFF6FF]/50"
         }`}
       >
         <input
@@ -148,7 +148,7 @@ export function UploadZone({ onUpload, isUploading }: UploadZoneProps) {
         <button
           onClick={handleUpload}
           disabled={isUploading}
-          className="w-full py-3 px-6 rounded-lg bg-[#1B4F72] text-white font-medium hover:bg-[#154360] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3 px-6 rounded-lg bg-[#1B2A4A] text-white font-medium hover:bg-[#162240] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
         >
           {isUploading ? (
             <>

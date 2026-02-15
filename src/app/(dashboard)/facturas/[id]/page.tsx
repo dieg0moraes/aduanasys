@@ -367,7 +367,7 @@ export default function InvoiceDetailPage() {
     return (
       <div className="p-6 xl:p-8">
         <div className="flex items-center justify-center py-20">
-          <Loader2 size={32} className="animate-spin text-[#2E86C1]" />
+          <Loader2 size={32} className="animate-spin text-[#2563EB]" />
         </div>
       </div>
     );
@@ -452,7 +452,7 @@ export default function InvoiceDetailPage() {
             <button
               onClick={handleProcess}
               disabled={processing}
-              className="px-4 py-2 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2471A3] disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] disabled:opacity-50 flex items-center gap-2"
             >
               {processing ? (
                 <>
@@ -520,7 +520,7 @@ export default function InvoiceDetailPage() {
                     value={providerSearch}
                     onChange={(e) => setProviderSearch(e.target.value)}
                     placeholder="Buscar proveedor..."
-                    className="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                    className="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === "Escape") {
@@ -544,7 +544,7 @@ export default function InvoiceDetailPage() {
                     )}
                     {loadingProviders ? (
                       <div className="flex items-center justify-center py-3">
-                        <Loader2 size={16} className="animate-spin text-[#2E86C1]" />
+                        <Loader2 size={16} className="animate-spin text-[#2563EB]" />
                       </div>
                     ) : (
                       <>
@@ -552,7 +552,7 @@ export default function InvoiceDetailPage() {
                           <button
                             key={p.id}
                             onClick={() => handleProviderSelect(p.id)}
-                            className={`w-full text-left px-3 py-2 text-sm hover:bg-[#EBF5FB] ${
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-[#EFF6FF] ${
                               invoice?.provider_id === p.id ? "bg-blue-50 font-medium" : ""
                             }`}
                           >
@@ -573,7 +573,7 @@ export default function InvoiceDetailPage() {
                           value={newProviderName}
                           onChange={(e) => setNewProviderName(e.target.value)}
                           placeholder="Nombre del proveedor"
-                          className="flex-1 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#2E86C1]"
+                          className="flex-1 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
                           onKeyDown={(e) => {
                             if (e.key === "Enter") handleCreateProvider();
                           }}
@@ -581,7 +581,7 @@ export default function InvoiceDetailPage() {
                         <button
                           onClick={handleCreateProvider}
                           disabled={creatingProvider || !newProviderName.trim()}
-                          className="px-2 py-1 rounded bg-[#2E86C1] text-white text-xs font-medium hover:bg-[#2574A9] disabled:opacity-50"
+                          className="px-2 py-1 rounded bg-[#2563EB] text-white text-xs font-medium hover:bg-[#1D4ED8] disabled:opacity-50"
                         >
                           {creatingProvider ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
                         </button>
@@ -595,7 +595,7 @@ export default function InvoiceDetailPage() {
                   className="flex items-center gap-2 px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50 transition-colors w-full text-left"
                 >
                   {savingProvider ? (
-                    <Loader2 size={14} className="animate-spin text-[#2E86C1]" />
+                    <Loader2 size={14} className="animate-spin text-[#2563EB]" />
                   ) : invoice?.provider?.name ? (
                     <span className="text-gray-900">{invoice.provider.name}</span>
                   ) : (
@@ -637,7 +637,7 @@ export default function InvoiceDetailPage() {
                 onChange={(e) => setEditingInvoiceNumber(e.target.value)}
                 onBlur={() => handleSaveInvoiceField("invoice_number", editingInvoiceNumber)}
                 placeholder="Sin número"
-                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] w-40"
+                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] w-40"
               />
             ) : (
               <span className="text-sm text-gray-900">
@@ -660,7 +660,7 @@ export default function InvoiceDetailPage() {
                   setEditingInvoiceDate(e.target.value);
                   handleSaveInvoiceField("invoice_date", e.target.value);
                 }}
-                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               />
             ) : (
               <span className="text-sm text-gray-900">
@@ -670,7 +670,7 @@ export default function InvoiceDetailPage() {
           </div>
 
           {savingInvoiceFields && (
-            <Loader2 size={14} className="animate-spin text-[#2E86C1]" />
+            <Loader2 size={14} className="animate-spin text-[#2563EB]" />
           )}
         </div>
       </div>
@@ -720,7 +720,7 @@ export default function InvoiceDetailPage() {
                   value={countrySearch}
                   onChange={(e) => setCountrySearch(e.target.value)}
                   placeholder="Buscar país..."
-                  className="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                  className="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === "Escape") {
@@ -746,7 +746,7 @@ export default function InvoiceDetailPage() {
                     <button
                       key={c.code}
                       onClick={() => handleCountrySelect(c.code)}
-                      className={`w-full text-left px-3 py-2 text-sm hover:bg-[#EBF5FB] ${
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-[#EFF6FF] ${
                         invoice?.country_code === c.code ? "bg-blue-50 font-medium" : ""
                       }`}
                     >
@@ -765,7 +765,7 @@ export default function InvoiceDetailPage() {
                 className="flex items-center gap-2 px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50 transition-colors w-full text-left"
               >
                 {savingCountry ? (
-                  <Loader2 size={14} className="animate-spin text-[#2E86C1]" />
+                  <Loader2 size={14} className="animate-spin text-[#2563EB]" />
                 ) : invoice?.country_code ? (
                   <>
                     <span className="text-gray-400 font-mono">{invoice.country_code}</span>
@@ -839,7 +839,7 @@ export default function InvoiceDetailPage() {
               </h3>
               <button
                 onClick={() => router.push(`/despachos/${invoice.despacho_id}/partidas/nueva?invoice=${invoiceId}`)}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#2E86C1] text-white text-xs font-medium hover:bg-[#2574A9] transition-colors"
+                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#2563EB] text-white text-xs font-medium hover:bg-[#1D4ED8] transition-colors"
               >
                 <Plus size={12} />
                 Nueva

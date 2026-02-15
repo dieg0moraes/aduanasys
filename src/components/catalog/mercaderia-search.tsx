@@ -405,14 +405,14 @@ export default function MercaderiaSearch() {
             placeholder="Buscar por SKU, descripción, NCM..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]/20 focus:border-[#2E86C1]"
+            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]"
           />
         </div>
         <button
           onClick={() => setShowFilters((v) => !v)}
           className={`flex items-center gap-1.5 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
             showFilters
-              ? "bg-[#2E86C1] text-white border-[#2E86C1]"
+              ? "bg-[#2563EB] text-white border-[#2563EB]"
               : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
           }`}
         >
@@ -421,7 +421,7 @@ export default function MercaderiaSearch() {
         </button>
         <button
           onClick={() => { resetCreateForm(); setShowCreateModal(true); }}
-          className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] transition-colors"
+          className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
         >
           <Plus size={14} />
           Nueva
@@ -438,7 +438,7 @@ export default function MercaderiaSearch() {
             <select
               value={providerId}
               onChange={(e) => setProviderId(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             >
               <option value="">Todos</option>
               {providers.map((p) => (
@@ -457,7 +457,7 @@ export default function MercaderiaSearch() {
               placeholder="Ej: 6204"
               value={ncmFilter}
               onChange={(e) => setNcmFilter(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             />
           </div>
           <div>
@@ -467,7 +467,7 @@ export default function MercaderiaSearch() {
             <select
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             >
               <option value="">Todos</option>
               {clients.map((c) => (
@@ -496,7 +496,7 @@ export default function MercaderiaSearch() {
       <div className="space-y-2">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 size={24} className="animate-spin text-[#2E86C1]" />
+            <Loader2 size={24} className="animate-spin text-[#2563EB]" />
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
@@ -531,7 +531,7 @@ export default function MercaderiaSearch() {
                   </span>
 
                   {/* NCM code */}
-                  <span className="px-2 py-0.5 rounded bg-blue-50 text-[11px] font-mono text-[#2E86C1] flex-shrink-0">
+                  <span className="px-2 py-0.5 rounded bg-blue-50 text-[11px] font-mono text-[#2563EB] flex-shrink-0">
                     {item.ncm_code}
                   </span>
 
@@ -677,7 +677,7 @@ export default function MercaderiaSearch() {
                         value={modalProviderSearch}
                         onChange={(e) => setModalProviderSearch(e.target.value)}
                         placeholder="Buscar proveedor..."
-                        className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                        className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                         autoFocus
                         onKeyDown={(e) => {
                           if (e.key === "Escape") {
@@ -689,7 +689,7 @@ export default function MercaderiaSearch() {
                       <div className="absolute z-10 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
                         {loadingModalProviders ? (
                           <div className="flex items-center justify-center py-3">
-                            <Loader2 size={14} className="animate-spin text-[#2E86C1]" />
+                            <Loader2 size={14} className="animate-spin text-[#2563EB]" />
                           </div>
                         ) : (
                           <>
@@ -702,7 +702,7 @@ export default function MercaderiaSearch() {
                                   setShowModalProviderDropdown(false);
                                   setModalProviderSearch("");
                                 }}
-                                className={`w-full text-left px-3 py-2 text-sm hover:bg-[#EBF5FB] ${
+                                className={`w-full text-left px-3 py-2 text-sm hover:bg-[#EFF6FF] ${
                                   newProduct.provider_id === p.id ? "bg-blue-50 font-medium" : ""
                                 }`}
                               >
@@ -723,7 +723,7 @@ export default function MercaderiaSearch() {
                               value={newProviderName}
                               onChange={(e) => setNewProviderName(e.target.value)}
                               placeholder="Nombre"
-                              className="flex-1 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#2E86C1]"
+                              className="flex-1 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
                               onKeyDown={(e) => {
                                 if (e.key === "Enter") handleCreateProviderInModal();
                               }}
@@ -731,7 +731,7 @@ export default function MercaderiaSearch() {
                             <button
                               onClick={handleCreateProviderInModal}
                               disabled={creatingProvider || !newProviderName.trim()}
-                              className="px-2 py-1 rounded bg-[#2E86C1] text-white text-xs font-medium hover:bg-[#2574A9] disabled:opacity-50"
+                              className="px-2 py-1 rounded bg-[#2563EB] text-white text-xs font-medium hover:bg-[#1D4ED8] disabled:opacity-50"
                             >
                               {creatingProvider ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
                             </button>
@@ -764,7 +764,7 @@ export default function MercaderiaSearch() {
                   type="text"
                   value={newProduct.sku}
                   onChange={(e) => setNewProduct((p) => ({ ...p, sku: e.target.value }))}
-                  className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                  className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   placeholder="Código del producto"
                 />
               </div>
@@ -777,7 +777,7 @@ export default function MercaderiaSearch() {
                 <textarea
                   value={newProduct.provider_description}
                   onChange={(e) => setNewProduct((p) => ({ ...p, provider_description: e.target.value }))}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] min-h-[60px] resize-y"
                   placeholder="Descripción del producto"
                 />
               </div>
@@ -790,7 +790,7 @@ export default function MercaderiaSearch() {
                 <textarea
                   value={newProduct.customs_description}
                   onChange={(e) => setNewProduct((p) => ({ ...p, customs_description: e.target.value }))}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] min-h-[60px] resize-y"
                   placeholder="Descripción para aduana"
                 />
               </div>
@@ -803,7 +803,7 @@ export default function MercaderiaSearch() {
                 <textarea
                   value={newProduct.internal_description}
                   onChange={(e) => setNewProduct((p) => ({ ...p, internal_description: e.target.value }))}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] min-h-[60px] resize-y"
                   placeholder="Descripción para uso interno"
                 />
               </div>
@@ -817,7 +817,7 @@ export default function MercaderiaSearch() {
                   type="text"
                   value={newProduct.ncm_code}
                   onChange={(e) => setNewProduct((p) => ({ ...p, ncm_code: e.target.value }))}
-                  className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                  className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   placeholder="Ej: 6204.62.00.00"
                 />
               </div>
@@ -829,7 +829,7 @@ export default function MercaderiaSearch() {
                   <select
                     value={newProduct.latu === null ? "" : newProduct.latu ? "true" : "false"}
                     onChange={(e) => setNewProduct((p) => ({ ...p, latu: e.target.value === "" ? null : e.target.value === "true" }))}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   >
                     <option value="">—</option>
                     <option value="true">Sí</option>
@@ -841,7 +841,7 @@ export default function MercaderiaSearch() {
                   <select
                     value={newProduct.imesi === null ? "" : newProduct.imesi ? "true" : "false"}
                     onChange={(e) => setNewProduct((p) => ({ ...p, imesi: e.target.value === "" ? null : e.target.value === "true" }))}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   >
                     <option value="">—</option>
                     <option value="true">Sí</option>
@@ -853,7 +853,7 @@ export default function MercaderiaSearch() {
                   <select
                     value={newProduct.exonera_iva === null ? "" : newProduct.exonera_iva ? "true" : "false"}
                     onChange={(e) => setNewProduct((p) => ({ ...p, exonera_iva: e.target.value === "" ? null : e.target.value === "true" }))}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   >
                     <option value="">—</option>
                     <option value="true">Sí</option>
@@ -866,7 +866,7 @@ export default function MercaderiaSearch() {
                     type="number"
                     value={newProduct.apertura ?? ""}
                     onChange={(e) => setNewProduct((p) => ({ ...p, apertura: e.target.value === "" ? null : Number(e.target.value) }))}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     placeholder="—"
                   />
                 </div>
@@ -884,7 +884,7 @@ export default function MercaderiaSearch() {
               <button
                 onClick={handleCreateProduct}
                 disabled={creating || !newProduct.provider_id || !newProduct.sku.trim()}
-                className="px-4 py-2 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] disabled:opacity-50 flex items-center gap-2"
               >
                 {creating && <Loader2 size={14} className="animate-spin" />}
                 Crear producto

@@ -61,7 +61,7 @@ export default function CatalogoPage() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-          <Package size={24} className="text-[#2E86C1]" />
+          <Package size={24} className="text-[#2563EB]" />
           Catálogo de Productos
         </h1>
         <p className="text-sm text-gray-500 mt-1">
@@ -110,7 +110,7 @@ export default function CatalogoPage() {
                 placeholder="Buscar proveedor..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]/20 focus:border-[#2E86C1]"
+                className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]"
               />
             </div>
             <div className="text-sm text-gray-500 whitespace-nowrap">
@@ -122,7 +122,7 @@ export default function CatalogoPage() {
           <div className="space-y-2">
             {loading ? (
               <div className="flex items-center justify-center py-20">
-                <Loader2 size={24} className="animate-spin text-[#2E86C1]" />
+                <Loader2 size={24} className="animate-spin text-[#2563EB]" />
               </div>
             ) : providers.length === 0 ? (
               <div className="text-center py-20 text-gray-400">
@@ -135,13 +135,13 @@ export default function CatalogoPage() {
                 <Link
                   key={provider.id}
                   href={`/catalogo/${provider.id}`}
-                  className="flex items-center gap-4 p-4 bg-white rounded-xl border hover:border-[#2E86C1]/30 hover:shadow-sm transition-all group"
+                  className="flex items-center gap-4 p-4 bg-white rounded-xl border hover:border-[#2563EB]/30 hover:shadow-sm transition-all group"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-[#2E86C1]/10 flex items-center justify-center flex-shrink-0">
-                    <Building2 size={20} className="text-[#2E86C1]" />
+                  <div className="w-10 h-10 rounded-lg bg-[#2563EB]/10 flex items-center justify-center flex-shrink-0">
+                    <Building2 size={20} className="text-[#2563EB]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 group-hover:text-[#2E86C1] transition-colors">
+                    <h3 className="font-medium text-gray-900 group-hover:text-[#2563EB] transition-colors">
                       {provider.name}
                     </h3>
                     {provider.country && (
@@ -164,7 +164,7 @@ export default function CatalogoPage() {
                   </div>
                   <ChevronRight
                     size={16}
-                    className="text-gray-300 group-hover:text-[#2E86C1] transition-colors"
+                    className="text-gray-300 group-hover:text-[#2563EB] transition-colors"
                   />
                 </Link>
               ))

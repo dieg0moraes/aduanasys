@@ -207,7 +207,7 @@ export default function NuevaPartidaPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 size={32} className="animate-spin text-[#2E86C1]" />
+        <Loader2 size={32} className="animate-spin text-[#2563EB]" />
       </div>
     );
   }
@@ -262,7 +262,7 @@ export default function NuevaPartidaPage() {
               type="text"
               value={reference}
               onChange={(e) => setReference(e.target.value)}
-              className="mt-1 w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+              className="mt-1 w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               placeholder="P-001"
             />
           </div>
@@ -275,7 +275,7 @@ export default function NuevaPartidaPage() {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="mt-1 w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+              className="mt-1 w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             />
           </div>
 
@@ -286,7 +286,7 @@ export default function NuevaPartidaPage() {
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="mt-1 w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[36px]"
+              className="mt-1 w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] min-h-[36px]"
               placeholder="Notas opcionales..."
               rows={1}
             />
@@ -360,7 +360,7 @@ export default function NuevaPartidaPage() {
                           checked={row.checked}
                           disabled={isDisabled}
                           onChange={() => handleToggleItem(index)}
-                          className="rounded border-gray-300 text-[#2E86C1] focus:ring-[#2E86C1] disabled:opacity-50"
+                          className="rounded border-gray-300 text-[#2563EB] focus:ring-[#2563EB] disabled:opacity-50"
                         />
                       </td>
 
@@ -427,7 +427,7 @@ export default function NuevaPartidaPage() {
                               parseFloat(e.target.value) || 0
                             )
                           }
-                          className="w-20 px-2 py-1 border rounded-lg text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#2E86C1] disabled:bg-gray-100 disabled:text-gray-400 tabular-nums"
+                          className="w-20 px-2 py-1 border rounded-lg text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#2563EB] disabled:bg-gray-100 disabled:text-gray-400 tabular-nums"
                         />
                       </td>
                     </tr>
@@ -458,7 +458,7 @@ export default function NuevaPartidaPage() {
           <button
             onClick={handleSubmit}
             disabled={submitting || selectedItems.length === 0}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] disabled:opacity-50 transition-colors"
           >
             {submitting ? (
               <Loader2 size={16} className="animate-spin" />

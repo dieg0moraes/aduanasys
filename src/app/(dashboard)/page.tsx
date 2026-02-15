@@ -64,7 +64,7 @@ export default function ClientesPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1B4F72] text-white text-sm font-medium hover:bg-[#154360] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1B2A4A] text-white text-sm font-medium hover:bg-[#162240] transition-colors"
         >
           <Plus size={16} />
           Nuevo Cliente
@@ -78,13 +78,13 @@ export default function ClientesPage() {
             placeholder="Nombre del cliente"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] focus:border-transparent"
+            className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
             autoFocus
           />
           <button
             type="submit"
             disabled={creating || !newName.trim()}
-            className="px-4 py-2 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] transition-colors disabled:opacity-50"
           >
             {creating ? <Loader2 size={16} className="animate-spin" /> : "Crear"}
           </button>
@@ -105,13 +105,13 @@ export default function ClientesPage() {
           placeholder="Buscar cliente por nombre..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] focus:border-transparent"
+          className="w-full pl-10 pr-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
         />
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 size={32} className="animate-spin text-[#2E86C1]" />
+          <Loader2 size={32} className="animate-spin text-[#2563EB]" />
         </div>
       ) : clients.length === 0 ? (
         <div className="text-center py-20">
@@ -128,11 +128,11 @@ export default function ClientesPage() {
             <button
               key={client.id}
               onClick={() => router.push(`/clientes/${client.id}`)}
-              className="bg-white rounded-xl border p-5 text-left hover:border-[#2E86C1] hover:shadow-md transition-all group"
+              className="bg-white rounded-xl border p-5 text-left hover:border-[#2563EB] hover:shadow-md transition-all group"
             >
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-[#EBF5FB] rounded-xl group-hover:bg-[#D4E6F1] transition-colors">
-                  <FolderOpen size={28} className="text-[#2E86C1]" />
+                <div className="p-3 bg-[#EFF6FF] rounded-xl group-hover:bg-[#DBEAFE] transition-colors">
+                  <FolderOpen size={28} className="text-[#2563EB]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-gray-900 truncate">{client.name}</p>

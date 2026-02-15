@@ -213,12 +213,12 @@ export function NCMPicker({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por producto o código NCM..."
-            className="w-full pl-9 pr-20 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E86C1] focus:border-transparent"
+            className="w-full pl-9 pr-20 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
           />
           <button
             type="submit"
             disabled={loading || !query.trim()}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 text-xs font-medium bg-[#2E86C1] text-white rounded-md hover:bg-[#2471A3] disabled:opacity-50"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 text-xs font-medium bg-[#2563EB] text-white rounded-md hover:bg-[#1D4ED8] disabled:opacity-50"
           >
             {loading ? (
               <Loader2 size={12} className="animate-spin" />
@@ -367,7 +367,7 @@ export function NCMPicker({
                       className={`w-full mt-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                         isCurrentNCM
                           ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-[#2E86C1] text-white hover:bg-[#2471A3]"
+                          : "bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
                       }`}
                     >
                       {isCurrentNCM ? (
@@ -433,7 +433,7 @@ function ManualNCMInput({
         value={manualCode}
         onChange={(e) => setManualCode(e.target.value)}
         placeholder="0000.00.00"
-        className="flex-1 px-2 py-1 text-sm font-mono border rounded focus:outline-none focus:ring-1 focus:ring-[#2E86C1]"
+        className="flex-1 px-2 py-1 text-sm font-mono border rounded focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
       />
       <button
         type="submit"

@@ -334,7 +334,7 @@ export function ItemsTable({
                                   customs_description: e.target.value,
                                 }))
                               }
-                              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
+                              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] min-h-[60px] resize-y"
                               placeholder="Descripción para aduana"
                             />
                           </div>
@@ -350,7 +350,7 @@ export function ItemsTable({
                                   internal_description: e.target.value,
                                 }))
                               }
-                              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
+                              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] min-h-[60px] resize-y"
                               placeholder="Descripción interna (uso propio)"
                             />
                           </div>
@@ -361,7 +361,7 @@ export function ItemsTable({
                               e.stopPropagation();
                               saveExpanded(item.id);
                             }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
                           >
                             <Check size={14} />
                             Guardar
@@ -389,7 +389,7 @@ export function ItemsTable({
                                     value={countrySearch}
                                     onChange={(e) => setCountrySearch(e.target.value)}
                                     placeholder="Buscar país..."
-                                    className="w-44 px-2 py-1 border rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#2E86C1]"
+                                    className="w-44 px-2 py-1 border rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
                                     autoFocus
                                     onClick={(e) => e.stopPropagation()}
                                     onKeyDown={(e) => {
@@ -426,7 +426,7 @@ export function ItemsTable({
                                           setShowCountryDropdown(false);
                                           setCountrySearch("");
                                         }}
-                                        className={`w-full text-left px-3 py-1.5 text-xs hover:bg-[#EBF5FB] ${
+                                        className={`w-full text-left px-3 py-1.5 text-xs hover:bg-[#EFF6FF] ${
                                           editValues.country_of_origin === c.name ? "bg-blue-50 font-medium" : ""
                                         }`}
                                       >
