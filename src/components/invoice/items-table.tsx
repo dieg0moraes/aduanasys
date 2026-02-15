@@ -22,6 +22,7 @@ interface ItemsTableProps {
   items: InvoiceItem[];
   onItemUpdate?: (itemId: string, updates: Partial<InvoiceItem>) => void;
   editable?: boolean;
+  dispatchStatus?: Record<string, { dispatched_quantity: number; partidas: { id: string; reference: string; status: string; quantity: number }[] }>;
 }
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -64,6 +65,7 @@ export function ItemsTable({
   items,
   onItemUpdate,
   editable = false,
+  dispatchStatus,
 }: ItemsTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState({
@@ -185,6 +187,9 @@ export function ItemsTable({
             <th className="px-3 py-3 text-left font-medium text-gray-600 w-28">
               Origen
             </th>
+            <th className="px-3 py-3 text-right font-medium text-gray-600 w-24">
+              Despachado
+            </th>
             <th className="px-3 py-3 text-center font-medium text-gray-600 w-28">
               Confianza
             </th>
@@ -280,6 +285,19 @@ export function ItemsTable({
                   <td className="px-3 py-2.5 text-xs text-gray-600">
                     {item.country_of_origin || <span className="text-gray-300">—</span>}
                   </td>
+                  <td className="px-3 py-2.5 text-right text-xs">
+                    {dispatchStatus && dispatchStatus[item.id] && dispatchStatus[item.id].dispatched_quantity > 0 ? (
+                      <span className={`font-medium ${
+                        dispatchStatus[item.id].dispatched_quantity >= (item.quantity || 0)
+                          ? "text-green-600"
+                          : "text-amber-600"
+                      }`}>
+                        {dispatchStatus[item.id].dispatched_quantity} / {item.quantity || 0}
+                      </span>
+                    ) : (
+                      <span className="text-gray-300">—</span>
+                    )}
+                  </td>
                   <td className="px-3 py-2.5">
                     <div className="flex items-center justify-between">
                       <ConfidenceBadge
@@ -301,7 +319,7 @@ export function ItemsTable({
                 {/* Expanded edit panel */}
                 {isExpanded && (
                   <tr className="border-b bg-blue-50/30">
-                    <td colSpan={10} className="px-4 py-4">
+                    <td colSpan={11} className="px-4 py-4">
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-4">
                           <div>

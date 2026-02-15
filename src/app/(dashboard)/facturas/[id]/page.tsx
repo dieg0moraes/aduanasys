@@ -34,6 +34,7 @@ export default function InvoiceDetailPage() {
     catalog_synced: number;
     total_items: number;
   } | null>(null);
+  const [dispatchStatus, setDispatchStatus] = useState<Record<string, { dispatched_quantity: number; partidas: { id: string; reference: string; status: string; quantity: number }[] }>>({});
 
   // Country selector
   const [countrySearch, setCountrySearch] = useState("");
@@ -62,6 +63,13 @@ export default function InvoiceDetailPage() {
 
     if (!itemsError) {
       setItems((itemsData as unknown as InvoiceItem[]) || []);
+    }
+
+    // Fetch dispatch status
+    const dispatchRes = await fetch(`/api/invoices/${invoiceId}/dispatch-status`);
+    if (dispatchRes.ok) {
+      const dispatchData = await dispatchRes.json();
+      setDispatchStatus(dispatchData.dispatch_status || {});
     }
 
     setLoading(false);
@@ -537,6 +545,7 @@ export default function InvoiceDetailPage() {
           items={items}
           onItemUpdate={handleItemUpdate}
           editable={isEditable}
+          dispatchStatus={dispatchStatus}
         />
       </div>
     </div>
