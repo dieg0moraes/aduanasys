@@ -403,8 +403,8 @@ export default function InvoiceDetailPage() {
       uploaded: 0,
       processing: 1,
       review: 2,
-      approved: 3,
-      exported: 3,
+      approved: 4,
+      exported: 4,
     };
     const currentIdx = statusIndex[invoice.status] ?? 0;
     return stepDefs.map((s, i) => ({
