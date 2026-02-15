@@ -59,8 +59,6 @@ CREATE TYPE document_type AS ENUM (
   'otro'
 );
 
-CREATE TYPE partida_status AS ENUM ('borrador', 'presentada', 'despachada');
-
 -- ===========================================
 -- 3. Tables
 -- ===========================================
@@ -191,29 +189,6 @@ CREATE TABLE despacho_documents (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Partidas
-CREATE TABLE partidas (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  reference VARCHAR(100) NOT NULL,
-  despacho_id UUID NOT NULL REFERENCES despachos(id) ON DELETE CASCADE,
-  invoice_id UUID NOT NULL REFERENCES invoices(id) ON DELETE RESTRICT,
-  status partida_status NOT NULL DEFAULT 'borrador',
-  date DATE,
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Partida Items
-CREATE TABLE partida_items (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  partida_id UUID NOT NULL REFERENCES partidas(id) ON DELETE CASCADE,
-  invoice_item_id UUID NOT NULL REFERENCES invoice_items(id) ON DELETE RESTRICT,
-  dispatch_quantity NUMERIC NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(partida_id, invoice_item_id)
-);
-
 -- ===========================================
 -- 4. Indexes
 -- ===========================================
@@ -246,13 +221,6 @@ CREATE INDEX idx_despachos_reference ON despachos(reference);
 -- Despacho Documents
 CREATE INDEX idx_despacho_docs_despacho ON despacho_documents(despacho_id);
 CREATE INDEX idx_despacho_docs_type ON despacho_documents(document_type);
-
--- Partidas
-CREATE INDEX idx_partidas_despacho ON partidas(despacho_id);
-CREATE INDEX idx_partidas_invoice ON partidas(invoice_id);
-CREATE INDEX idx_partidas_status ON partidas(status);
-CREATE INDEX idx_partida_items_partida ON partida_items(partida_id);
-CREATE INDEX idx_partida_items_invoice_item ON partida_items(invoice_item_id);
 
 -- HNSW vector indexes for semantic search
 CREATE INDEX idx_ncm_embedding ON ncm_nomenclator
@@ -482,10 +450,6 @@ CREATE TRIGGER trigger_despacho_docs_updated_at
   BEFORE UPDATE ON despacho_documents
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
-CREATE TRIGGER trigger_partidas_updated_at
-  BEFORE UPDATE ON partidas
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-
 -- Auto-update search_vector on ncm_nomenclator
 CREATE OR REPLACE FUNCTION ncm_search_vector_trigger() RETURNS trigger AS $$
 BEGIN
@@ -549,15 +513,6 @@ CREATE POLICY "Authenticated users full access" ON despachos
   FOR ALL USING (auth.role() = 'authenticated');
 
 CREATE POLICY "Authenticated users full access" ON despacho_documents
-  FOR ALL USING (auth.role() = 'authenticated');
-
-ALTER TABLE partidas ENABLE ROW LEVEL SECURITY;
-ALTER TABLE partida_items ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Authenticated users full access" ON partidas
-  FOR ALL USING (auth.role() = 'authenticated');
-
-CREATE POLICY "Authenticated users full access" ON partida_items
   FOR ALL USING (auth.role() = 'authenticated');
 
 -- Storage policies for documents bucket
