@@ -10,15 +10,20 @@ export async function GET(request: NextRequest) {
     }
 
     const despachoId = request.nextUrl.searchParams.get("despacho_id");
-    if (!despachoId) {
-      return NextResponse.json({ error: "despacho_id es obligatorio" }, { status: 400 });
+    const invoiceId = request.nextUrl.searchParams.get("invoice_id");
+    if (!despachoId && !invoiceId) {
+      return NextResponse.json({ error: "despacho_id o invoice_id es obligatorio" }, { status: 400 });
     }
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("partidas")
       .select("*, invoice:invoices(id, file_name, provider:providers(name))")
-      .eq("despacho_id", despachoId)
       .order("created_at", { ascending: false });
+
+    if (despachoId) query = query.eq("despacho_id", despachoId);
+    if (invoiceId) query = query.eq("invoice_id", invoiceId);
+
+    const { data, error } = await query;
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

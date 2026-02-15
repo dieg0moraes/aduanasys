@@ -10,10 +10,12 @@ import {
   RefreshCw,
   Trash2,
   Globe,
+  Package,
+  Plus,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import type { Invoice, InvoiceItem } from "@/lib/types";
-import { STATUS_LABELS, STATUS_COLORS } from "@/lib/types";
+import type { Invoice, InvoiceItem, Partida } from "@/lib/types";
+import { STATUS_LABELS, STATUS_COLORS, PARTIDA_STATUS_LABELS, PARTIDA_STATUS_COLORS } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { ItemsTable } from "@/components/invoice/items-table";
 import { COUNTRIES, getCountryName } from "@/lib/countries";
@@ -35,6 +37,7 @@ export default function InvoiceDetailPage() {
     total_items: number;
   } | null>(null);
   const [dispatchStatus, setDispatchStatus] = useState<Record<string, { dispatched_quantity: number; partidas: { id: string; reference: string; status: string; quantity: number }[] }>>({});
+  const [partidas, setPartidas] = useState<Partida[]>([]);
 
   // Country selector
   const [countrySearch, setCountrySearch] = useState("");
@@ -70,6 +73,13 @@ export default function InvoiceDetailPage() {
     if (dispatchRes.ok) {
       const dispatchData = await dispatchRes.json();
       setDispatchStatus(dispatchData.dispatch_status || {});
+    }
+
+    // Fetch partidas for this invoice
+    const partidasRes = await fetch(`/api/partidas?invoice_id=${invoiceId}`);
+    if (partidasRes.ok) {
+      const partidasData = await partidasRes.json();
+      setPartidas(partidasData || []);
     }
 
     setLoading(false);
@@ -262,7 +272,7 @@ export default function InvoiceDetailPage() {
 
   if (loading) {
     return (
-      <div className="p-8 max-w-7xl mx-auto">
+      <div className="p-6 xl:p-8">
         <div className="flex items-center justify-center py-20">
           <Loader2 size={32} className="animate-spin text-[#2E86C1]" />
         </div>
@@ -272,7 +282,7 @@ export default function InvoiceDetailPage() {
 
   if (!invoice) {
     return (
-      <div className="p-8 max-w-7xl mx-auto">
+      <div className="p-6 xl:p-8">
         <p className="text-gray-500">Factura no encontrada.</p>
       </div>
     );
@@ -282,7 +292,7 @@ export default function InvoiceDetailPage() {
     invoice.status === "review" || invoice.status === "approved";
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-6 xl:p-8">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <button
@@ -427,6 +437,10 @@ export default function InvoiceDetailPage() {
         </div>
       )}
 
+      <div className="flex flex-col xl:flex-row gap-6 items-start">
+      {/* Main content */}
+      <div className="flex-1 min-w-0 w-full">
+
       {/* Country of origin */}
       <div className="bg-white rounded-xl border p-4 mb-6">
         <div className="flex items-center gap-3">
@@ -504,7 +518,7 @@ export default function InvoiceDetailPage() {
 
       {/* Summary */}
       {items.length > 0 && (
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-xl border p-4">
             <p className="text-sm text-gray-500">Total ítems</p>
             <p className="text-2xl font-bold text-gray-900">{items.length}</p>
@@ -531,7 +545,7 @@ export default function InvoiceDetailPage() {
       )}
 
       {/* Items Table */}
-      <div className="bg-white rounded-xl border">
+      <div className="bg-white rounded-xl border overflow-x-auto">
         <div className="p-4 border-b">
           <h2 className="font-semibold text-gray-900">Ítems de la Factura</h2>
           {isEditable && (
@@ -548,6 +562,67 @@ export default function InvoiceDetailPage() {
           dispatchStatus={dispatchStatus}
         />
       </div>
+
+      </div>{/* end main content */}
+
+      {/* Partidas sidebar */}
+      {invoice.despacho_id && (
+        <div className="w-full xl:w-72 shrink-0 xl:sticky xl:top-8">
+          <div className="bg-white rounded-xl border">
+            <div className="p-4 border-b flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900 text-sm">
+                Partidas ({partidas.length})
+              </h3>
+              <button
+                onClick={() => router.push(`/despachos/${invoice.despacho_id}/partidas/nueva?invoice=${invoiceId}`)}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#2E86C1] text-white text-xs font-medium hover:bg-[#2574A9] transition-colors"
+              >
+                <Plus size={12} />
+                Nueva
+              </button>
+            </div>
+            {partidas.length === 0 ? (
+              <div className="p-6 text-center">
+                <Package size={28} className="mx-auto text-gray-300 mb-2" />
+                <p className="text-xs text-gray-500">
+                  No hay partidas para esta factura
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y max-h-[60vh] overflow-y-auto">
+                {partidas.map((partida) => (
+                  <button
+                    key={partida.id}
+                    onClick={() => router.push(`/despachos/${invoice.despacho_id}/partidas/${partida.id}`)}
+                    className="w-full text-left p-3 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium text-sm text-gray-900">
+                        {partida.reference}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                          PARTIDA_STATUS_COLORS[partida.status]
+                        }`}
+                      >
+                        {PARTIDA_STATUS_LABELS[partida.status]}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      {partida.date && <span>{formatDate(partida.date)}</span>}
+                      {partida.item_count != null && (
+                        <span>{partida.item_count} ítems</span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      </div>{/* end flex */}
     </div>
   );
 }
