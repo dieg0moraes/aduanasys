@@ -77,3 +77,55 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+/**
+ * POST /api/providers
+ *
+ * Crea un nuevo proveedor dado un nombre.
+ * Si ya existe uno con el mismo nombre (case-insensitive), retorna el existente.
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const { name } = await request.json();
+
+    if (!name || !name.trim()) {
+      return NextResponse.json({ error: "Nombre es obligatorio" }, { status: 400 });
+    }
+
+    // Check if provider with same name already exists (case-insensitive)
+    const { data: existing, error: dedupError } = await supabase
+      .from("providers")
+      .select("id, name, country, created_at")
+      .ilike("name", name.trim())
+      .limit(1);
+
+    if (dedupError) {
+      return NextResponse.json({ error: dedupError.message }, { status: 500 });
+    }
+
+    if (existing && existing.length > 0) {
+      return NextResponse.json(existing[0]);
+    }
+
+    const { data, error } = await supabase
+      .from("providers")
+      .insert({ name: name.trim() })
+      .select("id, name, country, created_at")
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data, { status: 201 });
+  } catch (error) {
+    console.error("Provider create error:", error);
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+  }
+}

@@ -71,6 +71,13 @@ export default function ProviderCatalogPage() {
   const [loadingInvoices, setLoadingInvoices] = useState(true);
   const [showInvoices, setShowInvoices] = useState(false);
 
+  // Move product
+  const [movingId, setMovingId] = useState<string | null>(null);
+  const [moveProviderSearch, setMoveProviderSearch] = useState("");
+  const [moveProviders, setMoveProviders] = useState<{ id: string; name: string }[]>([]);
+  const [loadingMoveProviders, setLoadingMoveProviders] = useState(false);
+  const [movingInProgress, setMovingInProgress] = useState(false);
+
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -215,6 +222,63 @@ export default function ProviderCatalogPage() {
     } catch (err) {
       console.error("Error deleting:", err);
     }
+  };
+
+  // Fetch providers for move dropdown
+  useEffect(() => {
+    if (!movingId) return;
+
+    const timer = setTimeout(async () => {
+      setLoadingMoveProviders(true);
+      try {
+        const params = new URLSearchParams();
+        if (moveProviderSearch.trim()) params.set("search", moveProviderSearch.trim());
+        const res = await fetch(`/api/providers?${params}`);
+        if (res.ok) {
+          const data = await res.json();
+          setMoveProviders(
+            (data.providers || []).filter((p: { id: string }) => p.id !== providerId)
+          );
+        }
+      } catch {
+        // ignore
+      }
+      setLoadingMoveProviders(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [movingId, moveProviderSearch, providerId]);
+
+  const handleMoveProduct = async (itemId: string, targetProviderId: string, targetProviderName: string) => {
+    if (!confirm(`¿Mover este producto al proveedor "${targetProviderName}"?`)) return;
+
+    setMovingInProgress(true);
+    try {
+      const response = await fetch("/api/catalog", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: itemId, provider_id: targetProviderId }),
+      });
+
+      if (response.ok) {
+        setData((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            items: prev.items.filter((item) => item.id !== itemId),
+            total: prev.total - 1,
+          };
+        });
+        setMovingId(null);
+        setMoveProviderSearch("");
+      } else {
+        const err = await response.json();
+        alert(err.error || "Error al mover producto");
+      }
+    } catch {
+      alert("Error de conexión");
+    }
+    setMovingInProgress(false);
   };
 
   return (
@@ -582,6 +646,69 @@ export default function ProviderCatalogPage() {
                                   <X size={14} />
                                   Cancelar
                                 </button>
+                                <div className="ml-auto relative">
+                                  {movingId === item.id ? (
+                                    <div>
+                                      <div
+                                        className="fixed inset-0 z-[9]"
+                                        onClick={(e) => { e.stopPropagation(); setMovingId(null); setMoveProviderSearch(""); }}
+                                      />
+                                      <div className="absolute bottom-full right-0 mb-1 w-64 bg-white border rounded-lg shadow-lg z-10">
+                                        <div className="p-2 border-b">
+                                          <input
+                                            type="text"
+                                            value={moveProviderSearch}
+                                            onChange={(e) => setMoveProviderSearch(e.target.value)}
+                                            placeholder="Buscar proveedor destino..."
+                                            className="w-full px-2 py-1.5 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#2E86C1]"
+                                            autoFocus
+                                            onClick={(e) => e.stopPropagation()}
+                                            onKeyDown={(e) => {
+                                              if (e.key === "Escape") {
+                                                setMovingId(null);
+                                                setMoveProviderSearch("");
+                                              }
+                                            }}
+                                          />
+                                        </div>
+                                        <div className="max-h-40 overflow-y-auto">
+                                          {loadingMoveProviders ? (
+                                            <div className="flex items-center justify-center py-3">
+                                              <Loader2 size={14} className="animate-spin text-[#2E86C1]" />
+                                            </div>
+                                          ) : moveProviders.length === 0 ? (
+                                            <p className="px-3 py-2 text-sm text-gray-400">Sin proveedores disponibles</p>
+                                          ) : (
+                                            moveProviders.map((p) => (
+                                              <button
+                                                key={p.id}
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleMoveProduct(item.id, p.id, p.name);
+                                                }}
+                                                disabled={movingInProgress}
+                                                className="w-full text-left px-3 py-2 text-sm hover:bg-[#EBF5FB] disabled:opacity-50"
+                                              >
+                                                {p.name}
+                                              </button>
+                                            ))
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setMovingId(item.id);
+                                      }}
+                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm text-gray-600 hover:bg-white transition-colors"
+                                    >
+                                      <ArrowLeft size={14} className="rotate-180" />
+                                      Mover
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </td>
