@@ -52,12 +52,12 @@ const SOURCE_ICONS: Record<string, typeof Database> = {
 };
 
 const SOURCE_COLORS: Record<string, string> = {
-  catalog: "text-purple-600 bg-purple-50",
-  fulltext: "text-emerald-600 bg-emerald-50",
-  trigram: "text-amber-600 bg-amber-50",
-  semantic: "text-blue-600 bg-blue-50",
-  exact: "text-gray-600 bg-gray-50",
-  graph: "text-cyan-600 bg-cyan-50",
+  catalog: "text-[#16A34A] bg-[#F0FDF4]",
+  fulltext: "text-[#2563EB] bg-[#EFF6FF]",
+  trigram: "text-[#F59E0B] bg-[#FFFBEB]",
+  semantic: "text-[#9333EA] bg-[#F5F3FF]",
+  exact: "text-[#71717A] bg-[#F4F4F5]",
+  graph: "text-[#0891B2] bg-[#ECFEFF]",
 };
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -171,10 +171,10 @@ export function NCMPicker({
         usePortal
           ? "w-[620px] max-h-[80vh] flex flex-col"
           : "absolute top-full left-0 mt-1 w-[560px]"
-      } bg-white rounded-xl border border-gray-200 shadow-xl`}
+      } bg-white rounded-xl border border-[#E4E4E7] shadow-xl`}
     >
       {/* Header con NCM actual */}
-      <div className="p-3 border-b bg-gray-50 rounded-t-xl flex-shrink-0">
+      <div className="p-3 border-b bg-[#FAFAFA] rounded-t-xl flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500">NCM actual:</span>
@@ -366,7 +366,7 @@ export function NCMPicker({
                       onClick={() => onSelect(result.ncm_code, result.description)}
                       className={`w-full mt-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                         isCurrentNCM
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
+                          ? "bg-[#F0FDF4] text-[#16A34A] hover:bg-[#DCFCE7]"
                           : "bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
                       }`}
                     >
@@ -386,7 +386,7 @@ export function NCMPicker({
       </div>
 
       {/* Manual input footer */}
-      <div className="p-3 border-t bg-gray-50 rounded-b-xl flex-shrink-0">
+      <div className="p-3 border-t bg-[#FAFAFA] rounded-b-xl flex-shrink-0">
         <ManualNCMInput
           onSelect={(code) => onSelect(code, "")}
         />
