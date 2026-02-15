@@ -13,6 +13,8 @@ import {
   Package,
   Plus,
   Building2,
+  Calendar,
+  FileText,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Invoice, InvoiceItem, Partida } from "@/lib/types";
@@ -54,6 +56,11 @@ export default function InvoiceDetailPage() {
   const [creatingProvider, setCreatingProvider] = useState(false);
   const [newProviderName, setNewProviderName] = useState("");
 
+  // Invoice date/number editing
+  const [editingInvoiceDate, setEditingInvoiceDate] = useState<string>("");
+  const [editingInvoiceNumber, setEditingInvoiceNumber] = useState<string>("");
+  const [savingInvoiceFields, setSavingInvoiceFields] = useState(false);
+
   const fetchInvoice = async () => {
     const { data: invoiceData, error: invoiceError } = await supabase
       .from("invoices")
@@ -66,7 +73,10 @@ export default function InvoiceDetailPage() {
       return;
     }
 
-    setInvoice(invoiceData as unknown as Invoice);
+    const inv = invoiceData as unknown as Invoice;
+    setInvoice(inv);
+    setEditingInvoiceDate(inv.invoice_date || "");
+    setEditingInvoiceNumber(inv.invoice_number || "");
 
     const { data: itemsData, error: itemsError } = await supabase
       .from("invoice_items")
@@ -217,6 +227,19 @@ export default function InvoiceDetailPage() {
   };
 
   const canEditProvider = invoice?.status === "uploaded" || invoice?.status === "review";
+
+  const handleSaveInvoiceField = async (field: "invoice_date" | "invoice_number", value: string) => {
+    setSavingInvoiceFields(true);
+    const res = await fetch(`/api/invoices/${invoiceId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [field]: value || null }),
+    });
+    if (res.ok) {
+      setInvoice((prev) => prev ? { ...prev, [field]: value || null } : null);
+    }
+    setSavingInvoiceFields(false);
+  };
 
   const handleDelete = async () => {
     if (!window.confirm("¿Estás seguro de que querés eliminar esta factura? Esta acción no se puede deshacer.")) {
@@ -597,6 +620,60 @@ export default function InvoiceDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Invoice number & date */}
+      <div className="bg-white rounded-xl border p-4 mb-6">
+        <div className="flex items-center gap-6 flex-wrap">
+          {/* Invoice number */}
+          <div className="flex items-center gap-3">
+            <FileText size={16} className="text-gray-400 shrink-0" />
+            <label className="text-sm font-medium text-gray-700 shrink-0">
+              Nº Factura
+            </label>
+            {canEditProvider ? (
+              <input
+                type="text"
+                value={editingInvoiceNumber}
+                onChange={(e) => setEditingInvoiceNumber(e.target.value)}
+                onBlur={() => handleSaveInvoiceField("invoice_number", editingInvoiceNumber)}
+                placeholder="Sin número"
+                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] w-40"
+              />
+            ) : (
+              <span className="text-sm text-gray-900">
+                {invoice?.invoice_number || "—"}
+              </span>
+            )}
+          </div>
+
+          {/* Invoice date */}
+          <div className="flex items-center gap-3">
+            <Calendar size={16} className="text-gray-400 shrink-0" />
+            <label className="text-sm font-medium text-gray-700 shrink-0">
+              Fecha factura
+            </label>
+            {canEditProvider ? (
+              <input
+                type="date"
+                value={editingInvoiceDate}
+                onChange={(e) => {
+                  setEditingInvoiceDate(e.target.value);
+                  handleSaveInvoiceField("invoice_date", e.target.value);
+                }}
+                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+              />
+            ) : (
+              <span className="text-sm text-gray-900">
+                {invoice?.invoice_date ? formatDate(invoice.invoice_date) : "—"}
+              </span>
+            )}
+          </div>
+
+          {savingInvoiceFields && (
+            <Loader2 size={14} className="animate-spin text-[#2E86C1]" />
+          )}
+        </div>
+      </div>
 
       {/* Error */}
       {invoice.processing_error && (
