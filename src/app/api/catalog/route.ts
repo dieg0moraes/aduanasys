@@ -91,6 +91,70 @@ export async function GET(request: NextRequest) {
 }
 
 /**
+ * POST /api/catalog
+ * Crea un nuevo producto en el catálogo.
+ * Body: { provider_id, sku, provider_description, customs_description?, ncm_code?, ... }
+ */
+export async function POST(request: NextRequest) {
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+
+    if (!body.provider_id) {
+      return NextResponse.json({ error: "Proveedor es obligatorio" }, { status: 400 });
+    }
+    if (!body.sku || !body.sku.trim()) {
+      return NextResponse.json({ error: "SKU es obligatorio" }, { status: 400 });
+    }
+    if (!body.provider_description || !body.provider_description.trim()) {
+      return NextResponse.json({ error: "Descripción del proveedor es obligatoria" }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from("product_catalog")
+      .insert({
+        provider_id: body.provider_id,
+        sku: body.sku.trim(),
+        provider_description: body.provider_description.trim(),
+        customs_description: body.customs_description?.trim() || "",
+        internal_description: body.internal_description?.trim() || null,
+        ncm_code: body.ncm_code?.trim() || "",
+        latu: body.latu ?? null,
+        imesi: body.imesi ?? null,
+        exonera_iva: body.exonera_iva ?? null,
+        apertura: body.apertura ?? null,
+        times_used: 0,
+        last_used_at: new Date().toISOString(),
+      })
+      .select("*, provider:providers(id, name)")
+      .single();
+
+    if (error) {
+      if (error.code === "23505") {
+        return NextResponse.json(
+          { error: "Ya existe un producto con ese SKU para este proveedor" },
+          { status: 409 }
+        );
+      }
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data, { status: 201 });
+  } catch (error) {
+    console.error("Catalog create error:", error);
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * PATCH /api/catalog
  * Actualiza un producto del catálogo.
  * Body: { id, customs_description, ncm_code }
