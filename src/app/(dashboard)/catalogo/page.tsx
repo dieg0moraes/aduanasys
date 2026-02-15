@@ -21,6 +21,27 @@ interface Provider {
   invoice_count: number;
 }
 
+const AVATAR_COLORS = [
+  "bg-[#2563EB] text-white",
+  "bg-[#9333EA] text-white",
+  "bg-[#EA580C] text-white",
+  "bg-[#16A34A] text-white",
+  "bg-[#DC2626] text-white",
+  "bg-[#0891B2] text-white",
+  "bg-[#D97706] text-white",
+  "bg-[#7C3AED] text-white",
+  "bg-[#059669] text-white",
+  "bg-[#E11D48] text-white",
+];
+
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
 export default function CatalogoPage() {
   const [activeTab, setActiveTab] = useState<"proveedores" | "mercaderia">("proveedores");
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -99,7 +120,7 @@ export default function CatalogoPage() {
       {activeTab === "proveedores" && (
         <>
           {/* Search + Stats */}
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4 mb-4">
             <div className="flex-1 relative">
               <Search
                 size={16}
@@ -119,7 +140,7 @@ export default function CatalogoPage() {
           </div>
 
           {/* Provider list */}
-          <div className="space-y-2">
+          <div className="bg-white rounded-xl border border-[#E4E4E7] overflow-hidden">
             {loading ? (
               <div className="flex items-center justify-center py-20">
                 <Loader2 size={24} className="animate-spin text-[#2563EB]" />
@@ -131,43 +152,63 @@ export default function CatalogoPage() {
                   : "No hay proveedores todavía. Procesá y aprobá facturas para que aparezcan acá."}
               </div>
             ) : (
-              providers.map((provider) => (
-                <Link
-                  key={provider.id}
-                  href={`/catalogo/${provider.id}`}
-                  className="flex items-center gap-4 p-4 bg-white rounded-xl border hover:border-[#2563EB]/30 hover:shadow-sm transition-all group"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-[#2563EB]/10 flex items-center justify-center flex-shrink-0">
-                    <Building2 size={20} className="text-[#2563EB]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 group-hover:text-[#2563EB] transition-colors">
-                      {provider.name}
-                    </h3>
-                    {provider.country && (
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {provider.country}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-6 text-sm text-gray-500">
-                    <div className="flex items-center gap-1.5" title="Productos en catálogo">
-                      <Package size={14} className="text-gray-400" />
-                      <span className="font-medium">{provider.product_count}</span>
-                      <span className="text-xs text-gray-400">productos</span>
-                    </div>
-                    <div className="flex items-center gap-1.5" title="Facturas procesadas">
-                      <FileText size={14} className="text-gray-400" />
-                      <span className="font-medium">{provider.invoice_count}</span>
-                      <span className="text-xs text-gray-400">facturas</span>
-                    </div>
-                  </div>
-                  <ChevronRight
-                    size={16}
-                    className="text-gray-300 group-hover:text-[#2563EB] transition-colors"
-                  />
-                </Link>
-              ))
+              <>
+                <div className="divide-y divide-[#E4E4E7]">
+                  {providers.map((provider) => (
+                    <Link
+                      key={provider.id}
+                      href={`/catalogo/${provider.id}`}
+                      className="flex items-center gap-4 px-5 py-4 hover:bg-[#FAFAFA] transition-colors group"
+                    >
+                      {/* Avatar circle */}
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold ${getAvatarColor(provider.name)}`}
+                      >
+                        {provider.name.charAt(0).toUpperCase()}
+                      </div>
+
+                      {/* Name + country */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-gray-900 group-hover:text-[#2563EB] transition-colors">
+                          {provider.name}
+                        </h3>
+                        {provider.country && (
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {provider.country}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Stats */}
+                      <div className="flex items-center gap-6 text-sm text-gray-500">
+                        <div className="flex items-center gap-1.5" title="Productos en catálogo">
+                          <Package size={14} className="text-gray-400" />
+                          <span className="font-medium">{provider.product_count}</span>
+                          <span className="text-xs text-gray-400">productos</span>
+                        </div>
+                        <div className="flex items-center gap-1.5" title="Facturas procesadas">
+                          <FileText size={14} className="text-gray-400" />
+                          <span className="font-medium">{provider.invoice_count}</span>
+                          <span className="text-xs text-gray-400">facturas</span>
+                        </div>
+                      </div>
+
+                      {/* Chevron */}
+                      <ChevronRight
+                        size={16}
+                        className="text-gray-300 group-hover:text-[#2563EB] transition-colors flex-shrink-0"
+                      />
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Pagination info */}
+                <div className="px-5 py-3 border-t border-[#E4E4E7] bg-[#FAFAFA]">
+                  <span className="text-xs text-gray-500">
+                    Mostrando {providers.length} de {providers.length} proveedores
+                  </span>
+                </div>
+              </>
             )}
           </div>
         </>

@@ -14,10 +14,14 @@ import {
   Building2,
   FileText,
   ChevronDown,
+  Package,
+  Pencil,
+  Plus,
 } from "lucide-react";
 import type { Invoice } from "@/lib/types";
 import { STATUS_LABELS, STATUS_COLORS } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 interface CatalogItem {
   id: string;
@@ -43,12 +47,50 @@ interface CatalogResponse {
   totalPages: number;
 }
 
+interface ProviderInfo {
+  id: string;
+  name: string;
+  country: string | null;
+  product_count: number;
+  invoice_count: number;
+}
+
+const AVATAR_COLORS = [
+  "bg-[#2563EB] text-white",
+  "bg-[#9333EA] text-white",
+  "bg-[#EA580C] text-white",
+  "bg-[#16A34A] text-white",
+  "bg-[#DC2626] text-white",
+  "bg-[#0891B2] text-white",
+  "bg-[#D97706] text-white",
+  "bg-[#7C3AED] text-white",
+  "bg-[#059669] text-white",
+  "bg-[#E11D48] text-white",
+];
+
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function getNcmPillClasses(timesUsed: number): string {
+  if (timesUsed >= 3) {
+    return "bg-[#F0FDF4] text-[#16A34A] border border-[#BBF7D0]";
+  } else if (timesUsed >= 1) {
+    return "bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A]";
+  }
+  return "bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]";
+}
+
 export default function ProviderCatalogPage() {
   const params = useParams();
   const router = useRouter();
   const providerId = params.providerId as string;
 
-  const [providerName, setProviderName] = useState<string>("");
+  const [providerInfo, setProviderInfo] = useState<ProviderInfo | null>(null);
   const [data, setData] = useState<CatalogResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState("");
@@ -101,11 +143,6 @@ export default function ProviderCatalogPage() {
       if (response.ok) {
         const result = await response.json();
         setData(result);
-
-        // Obtener nombre del proveedor del primer item
-        if (result.items.length > 0 && result.items[0].provider?.name) {
-          setProviderName(result.items[0].provider.name);
-        }
       }
     } catch (err) {
       console.error("Error fetching catalog:", err);
@@ -117,11 +154,9 @@ export default function ProviderCatalogPage() {
     fetchCatalog();
   }, [fetchCatalog]);
 
-  // Si no tenemos nombre del proveedor (catálogo vacío), buscarlo directo
+  // Fetch provider info
   useEffect(() => {
-    if (providerName) return;
-
-    const fetchProviderName = async () => {
+    const fetchProviderInfo = async () => {
       try {
         const response = await fetch(`/api/providers?search=`);
         if (response.ok) {
@@ -129,15 +164,17 @@ export default function ProviderCatalogPage() {
           const provider = data.providers.find(
             (p: { id: string }) => p.id === providerId
           );
-          if (provider) setProviderName(provider.name);
+          if (provider) {
+            setProviderInfo(provider);
+          }
         }
       } catch {
         // ignore
       }
     };
 
-    fetchProviderName();
-  }, [providerId, providerName]);
+    fetchProviderInfo();
+  }, [providerId]);
 
   // Fetch invoices for this provider
   useEffect(() => {
@@ -281,26 +318,65 @@ export default function ProviderCatalogPage() {
     setMovingInProgress(false);
   };
 
+  const providerName = providerInfo?.name || "Proveedor";
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={() => router.push("/catalogo")}
-          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <div className="w-10 h-10 rounded-lg bg-[#2563EB]/10 flex items-center justify-center flex-shrink-0">
-          <Building2 size={20} className="text-[#2563EB]" />
-        </div>
-        <div className="flex-1">
-          <h1 className="text-xl font-bold text-gray-900">
-            {providerName || "Proveedor"}
-          </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {data ? `${data.total} producto${data.total !== 1 ? "s" : ""} en catálogo` : "Cargando..."}
-          </p>
+      {/* Breadcrumb */}
+      <div className="mb-4">
+        <Breadcrumb
+          items={[
+            { label: "Catálogo", href: "/catalogo" },
+            { label: providerName },
+          ]}
+        />
+      </div>
+
+      {/* Provider info card */}
+      <div className="bg-white rounded-xl border border-[#E4E4E7] p-5 mb-6">
+        <div className="flex items-center gap-4">
+          {/* Avatar */}
+          <div
+            className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 text-lg font-semibold ${getAvatarColor(providerName)}`}
+          >
+            {providerName.charAt(0).toUpperCase()}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold text-gray-900">
+              {providerName}
+            </h1>
+            <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+              {providerInfo?.country && (
+                <span>{providerInfo.country}</span>
+              )}
+              <div className="flex items-center gap-1.5">
+                <Package size={14} className="text-gray-400" />
+                <span>{data?.total ?? 0} productos</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <FileText size={14} className="text-gray-400" />
+                <span>{providerInfo?.invoice_count ?? 0} facturas</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              <Pencil size={14} />
+              Editar
+            </button>
+            <button
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
+            >
+              <Plus size={14} />
+              Agregar Producto
+            </button>
+          </div>
         </div>
       </div>
 
@@ -315,7 +391,7 @@ export default function ProviderCatalogPage() {
           <ChevronDown size={14} className={`transition-transform ${showInvoices ? "rotate-180" : ""}`} />
         </button>
         {showInvoices && (
-          <div className="bg-white rounded-xl border divide-y mb-2">
+          <div className="bg-white rounded-xl border border-[#E4E4E7] divide-y divide-[#E4E4E7] mb-2">
             {loadingInvoices ? (
               <div className="flex items-center justify-center py-6">
                 <Loader2 size={20} className="animate-spin text-[#2563EB]" />
@@ -375,11 +451,11 @@ export default function ProviderCatalogPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border overflow-hidden">
+      <div className="bg-white rounded-xl border border-[#E4E4E7] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 border-b text-left">
+              <tr className="bg-[#FAFAFA] border-b border-[#E4E4E7] text-left">
                 <th className="px-4 py-3 font-medium text-gray-600">SKU</th>
                 <th className="px-4 py-3 font-medium text-gray-600">
                   Descripción Original
@@ -424,8 +500,8 @@ export default function ProviderCatalogPage() {
                   return (
                     <Fragment key={item.id}>
                       <tr
-                        className={`border-b last:border-b-0 cursor-pointer transition-colors ${
-                          isExpanded ? "bg-blue-50/50" : "hover:bg-gray-50/50"
+                        className={`border-b border-[#E4E4E7] last:border-b-0 cursor-pointer transition-colors ${
+                          isExpanded ? "bg-blue-50/50" : "hover:bg-[#FAFAFA]"
                         }`}
                         onClick={() => {
                           if (isExpanded) {
@@ -445,10 +521,12 @@ export default function ProviderCatalogPage() {
                           {item.customs_description}
                         </td>
                         <td className="px-4 py-3 text-gray-600 max-w-xs truncate">
-                          {item.internal_description || <span className="text-gray-400">—</span>}
+                          {item.internal_description || <span className="text-gray-400">--</span>}
                         </td>
-                        <td className="px-4 py-3 font-mono text-xs text-gray-600">
-                          {item.ncm_code}
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-0.5 rounded text-xs font-mono ${getNcmPillClasses(item.times_used)}`}>
+                            {item.ncm_code}
+                          </span>
                         </td>
                         <td className="px-4 py-3 text-center">
                           <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
@@ -479,7 +557,7 @@ export default function ProviderCatalogPage() {
 
                       {/* Expanded edit panel */}
                       {isExpanded && (
-                        <tr className="border-b bg-blue-50/30">
+                        <tr className="border-b border-[#E4E4E7] bg-blue-50/30">
                           <td colSpan={7} className="px-4 py-4">
                             <div className="space-y-4">
                               {/* Row 1: descriptions */}
@@ -554,8 +632,8 @@ export default function ProviderCatalogPage() {
                                     onClick={(e) => e.stopPropagation()}
                                     className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                                   >
-                                    <option value="">—</option>
-                                    <option value="true">Sí</option>
+                                    <option value="">--</option>
+                                    <option value="true">Si</option>
                                     <option value="false">No</option>
                                   </select>
                                 </div>
@@ -574,8 +652,8 @@ export default function ProviderCatalogPage() {
                                     onClick={(e) => e.stopPropagation()}
                                     className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                                   >
-                                    <option value="">—</option>
-                                    <option value="true">Sí</option>
+                                    <option value="">--</option>
+                                    <option value="true">Si</option>
                                     <option value="false">No</option>
                                   </select>
                                 </div>
@@ -594,8 +672,8 @@ export default function ProviderCatalogPage() {
                                     onClick={(e) => e.stopPropagation()}
                                     className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                                   >
-                                    <option value="">—</option>
-                                    <option value="true">Sí</option>
+                                    <option value="">--</option>
+                                    <option value="true">Si</option>
                                     <option value="false">No</option>
                                   </select>
                                 </div>
@@ -614,7 +692,7 @@ export default function ProviderCatalogPage() {
                                     }
                                     onClick={(e) => e.stopPropagation()}
                                     className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                                    placeholder="—"
+                                    placeholder="--"
                                   />
                                 </div>
                               </div>
@@ -724,7 +802,7 @@ export default function ProviderCatalogPage() {
 
         {/* Pagination */}
         {data && data.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-[#E4E4E7] bg-[#FAFAFA]">
             <span className="text-xs text-gray-500">
               Página {data.page} de {data.totalPages}
             </span>

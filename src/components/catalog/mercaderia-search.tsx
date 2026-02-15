@@ -41,7 +41,7 @@ interface CatalogItem {
   imesi: boolean | null;
   exonera_iva: boolean | null;
   apertura: number | null;
-  provider: { id: string; name: string } | null;
+  provider: { id: string; name: string; country?: string | null } | null;
 }
 
 interface ImportRecord {
@@ -58,6 +58,20 @@ interface Importer {
   client_name: string;
   client_cuit: string | null;
   imports: ImportRecord[];
+}
+
+// --- NCM confidence color helper ---
+
+function getNcmPillClasses(timesUsed: number): string {
+  if (timesUsed >= 3) {
+    // High confidence - green
+    return "bg-[#F0FDF4] text-[#16A34A] border border-[#BBF7D0]";
+  } else if (timesUsed >= 1) {
+    // Medium confidence - amber
+    return "bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A]";
+  }
+  // Low confidence - red
+  return "bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]";
 }
 
 // --- ImportersSection sub-component ---
@@ -92,15 +106,11 @@ function ImportersSection({ productId }: { productId: string }) {
   }
 
   if (importers.length === 0) {
-    return (
-      <div className="py-4 text-sm text-gray-400 text-center">
-        No se encontraron importaciones para este producto.
-      </div>
-    );
+    return null;
   }
 
   return (
-    <div className="space-y-3 mt-3">
+    <div className="space-y-3 mt-4">
       <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
         <Users size={12} />
         Importadores
@@ -129,8 +139,8 @@ function ImportersSection({ productId }: { productId: string }) {
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-gray-400 border-b border-gray-200">
+                  <th className="text-left py-1 pr-3 font-medium">Cliente</th>
                   <th className="text-left py-1 pr-3 font-medium">Despacho</th>
-                  <th className="text-left py-1 pr-3 font-medium">Factura</th>
                   <th className="text-left py-1 pr-3 font-medium">Fecha</th>
                   <th className="text-right py-1 pr-3 font-medium">Cantidad</th>
                   <th className="text-right py-1 font-medium">Total</th>
@@ -140,10 +150,10 @@ function ImportersSection({ productId }: { productId: string }) {
                 {imp.imports.map((rec, idx) => (
                   <tr key={idx} className="border-b border-gray-100 last:border-0">
                     <td className="py-1.5 pr-3 text-gray-600">
-                      {rec.despacho_ref || "-"}
+                      {imp.client_name}
                     </td>
-                    <td className="py-1.5 pr-3 text-gray-600 max-w-[150px] truncate">
-                      {rec.invoice_file}
+                    <td className="py-1.5 pr-3 text-gray-600">
+                      {rec.despacho_ref || "-"}
                     </td>
                     <td className="py-1.5 pr-3 text-gray-500">
                       {formatDate(rec.invoice_date)}
@@ -393,7 +403,7 @@ export default function MercaderiaSearch() {
 
   return (
     <div>
-      {/* Search bar */}
+      {/* Search bar + actions */}
       <div className="flex items-center gap-2 mb-4">
         <div className="flex-1 relative">
           <Search
@@ -424,7 +434,7 @@ export default function MercaderiaSearch() {
           className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
         >
           <Plus size={14} />
-          Nueva
+          Nuevo Producto
         </button>
       </div>
 
@@ -485,10 +495,7 @@ export default function MercaderiaSearch() {
         {loading ? (
           "Buscando..."
         ) : (
-          <>
-            {total} producto{total !== 1 ? "s" : ""} encontrado
-            {total !== 1 ? "s" : ""}
-          </>
+          <>{total} productos encontrados</>
         )}
       </div>
 
@@ -511,49 +518,58 @@ export default function MercaderiaSearch() {
             return (
               <div
                 key={item.id}
-                className="bg-white rounded-xl border hover:border-gray-300 transition-colors"
+                className={`bg-white rounded-xl border border-[#E4E4E7] transition-colors ${
+                  isExpanded
+                    ? "border-l-3 border-l-[#2563EB]"
+                    : "hover:border-gray-300"
+                }`}
               >
-                {/* Closed card header */}
+                {/* Collapsed card header */}
                 <button
                   onClick={() => toggleExpand(item.id)}
-                  className="w-full flex items-center gap-3 p-4 text-left"
+                  className="w-full text-left"
                 >
-                  {/* SKU badge */}
-                  {item.sku && (
-                    <span className="px-2 py-0.5 rounded bg-gray-100 text-[11px] font-mono text-gray-600 flex-shrink-0">
-                      {item.sku}
-                    </span>
-                  )}
+                  {/* Line 1: SKU + description + NCM pill + chevron */}
+                  <div className="flex items-center gap-3 px-4 pt-3 pb-1">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      {item.sku && (
+                        <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-mono text-gray-600 flex-shrink-0">
+                          {item.sku}
+                        </span>
+                      )}
+                      <span className="text-sm text-gray-900 truncate min-w-0">
+                        {item.provider_description}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span
+                        className={`px-2 py-0.5 rounded text-xs font-mono flex-shrink-0 ${getNcmPillClasses(item.times_used)}`}
+                      >
+                        {item.ncm_code}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className={`text-gray-400 transition-transform ${
+                          isExpanded ? "rotate-180" : ""
+                        }`}
+                      />
+                    </div>
+                  </div>
 
-                  {/* Provider description */}
-                  <span className="flex-1 text-sm text-gray-900 truncate min-w-0">
-                    {item.provider_description}
-                  </span>
-
-                  {/* NCM code */}
-                  <span className="px-2 py-0.5 rounded bg-blue-50 text-[11px] font-mono text-[#2563EB] flex-shrink-0">
-                    {item.ncm_code}
-                  </span>
-
-                  {/* Provider name */}
-                  {item.provider && (
-                    <span className="text-xs text-gray-400 flex-shrink-0 hidden sm:inline">
-                      {item.provider.name}
-                    </span>
-                  )}
-
-                  {/* Times used */}
-                  <span className="text-xs text-gray-400 flex-shrink-0 whitespace-nowrap">
-                    {item.times_used}x
-                  </span>
-
-                  {/* Chevron */}
-                  <ChevronDown
-                    size={16}
-                    className={`text-gray-400 flex-shrink-0 transition-transform ${
-                      isExpanded ? "rotate-180" : ""
-                    }`}
-                  />
+                  {/* Line 2: provider name, country, times used */}
+                  <div className="flex items-center gap-3 px-4 pb-3 text-xs text-gray-400">
+                    {item.provider && (
+                      <span>{item.provider.name}</span>
+                    )}
+                    {item.provider?.country && (
+                      <>
+                        <span className="text-gray-300">·</span>
+                        <span>{item.provider.country}</span>
+                      </>
+                    )}
+                    <span className="text-gray-300">·</span>
+                    <span>{item.times_used} uso{item.times_used !== 1 ? "s" : ""}</span>
+                  </div>
                 </button>
 
                 {/* Expanded content */}
@@ -583,25 +599,25 @@ export default function MercaderiaSearch() {
                       )}
                     </div>
 
-                    {/* Flags */}
+                    {/* Flag pills */}
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       {item.latu && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-purple-100 text-purple-700">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#F5F3FF] text-[#9333EA]">
                           LATU
                         </span>
                       )}
                       {item.imesi && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-orange-100 text-orange-700">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#FFF7ED] text-[#EA580C]">
                           IMESI
                         </span>
                       )}
                       {item.exonera_iva && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#F0FDF4] text-[#16A34A]">
                           Exonera IVA
                         </span>
                       )}
                       {item.apertura != null && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-700">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#EFF6FF] text-[#2563EB]">
                           Apertura: {item.apertura}
                         </span>
                       )}
@@ -648,7 +664,7 @@ export default function MercaderiaSearch() {
           <div className="fixed inset-0 bg-black/30" onClick={() => setShowCreateModal(false)} />
           <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4">
             <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white rounded-t-xl">
-              <h2 className="font-semibold text-gray-900">Nueva Mercadería</h2>
+              <h2 className="font-semibold text-gray-900">Nuevo Producto</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
@@ -831,8 +847,8 @@ export default function MercaderiaSearch() {
                     onChange={(e) => setNewProduct((p) => ({ ...p, latu: e.target.value === "" ? null : e.target.value === "true" }))}
                     className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   >
-                    <option value="">—</option>
-                    <option value="true">Sí</option>
+                    <option value="">--</option>
+                    <option value="true">Si</option>
                     <option value="false">No</option>
                   </select>
                 </div>
@@ -843,8 +859,8 @@ export default function MercaderiaSearch() {
                     onChange={(e) => setNewProduct((p) => ({ ...p, imesi: e.target.value === "" ? null : e.target.value === "true" }))}
                     className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   >
-                    <option value="">—</option>
-                    <option value="true">Sí</option>
+                    <option value="">--</option>
+                    <option value="true">Si</option>
                     <option value="false">No</option>
                   </select>
                 </div>
@@ -855,8 +871,8 @@ export default function MercaderiaSearch() {
                     onChange={(e) => setNewProduct((p) => ({ ...p, exonera_iva: e.target.value === "" ? null : e.target.value === "true" }))}
                     className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                   >
-                    <option value="">—</option>
-                    <option value="true">Sí</option>
+                    <option value="">--</option>
+                    <option value="true">Si</option>
                     <option value="false">No</option>
                   </select>
                 </div>
@@ -867,7 +883,7 @@ export default function MercaderiaSearch() {
                     value={newProduct.apertura ?? ""}
                     onChange={(e) => setNewProduct((p) => ({ ...p, apertura: e.target.value === "" ? null : Number(e.target.value) }))}
                     className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                    placeholder="—"
+                    placeholder="--"
                   />
                 </div>
               </div>
