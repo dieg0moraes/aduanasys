@@ -15,6 +15,10 @@ import {
   Building2,
   Calendar,
   FileText,
+  ListChecks,
+  BarChart3,
+  TrendingUp,
+  AlertCircle,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Invoice, InvoiceItem, Partida } from "@/lib/types";
@@ -22,6 +26,9 @@ import { STATUS_LABELS, STATUS_COLORS, PARTIDA_STATUS_LABELS, PARTIDA_STATUS_COL
 import { formatDate } from "@/lib/utils";
 import { ItemsTable } from "@/components/invoice/items-table";
 import { COUNTRIES, getCountryName } from "@/lib/countries";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { StatusStepper } from "@/components/ui/status-stepper";
+import { KPICard } from "@/components/ui/kpi-card";
 
 export default function InvoiceDetailPage() {
   const params = useParams();
@@ -384,8 +391,49 @@ export default function InvoiceDetailPage() {
   const isEditable =
     invoice.status === "review" || invoice.status === "approved";
 
+  // Status stepper logic
+  const getStatusSteps = () => {
+    const stepDefs = [
+      { label: "Subida" },
+      { label: "Procesada" },
+      { label: "En Revisión" },
+      { label: "Aprobada" },
+    ];
+    const statusIndex: Record<string, number> = {
+      uploaded: 0,
+      processing: 1,
+      review: 2,
+      approved: 3,
+      exported: 3,
+    };
+    const currentIdx = statusIndex[invoice.status] ?? 0;
+    return stepDefs.map((s, i) => ({
+      label: s.label,
+      status: (i < currentIdx ? "completed" : i === currentIdx ? "current" : "pending") as "completed" | "current" | "pending",
+    }));
+  };
+
+  // KPI calculations
+  const totalItems = items.length;
+  const classifiedCount = items.filter((i) => i.ncm_code).length;
+  const classifiedPct = totalItems > 0 ? Math.round((classifiedCount / totalItems) * 100) : 0;
+  const avgConfidence = totalItems > 0
+    ? Math.round(
+        (items.reduce((sum, i) => {
+          const scores: Record<string, number> = { high: 100, medium: 60, low: 20 };
+          return sum + (scores[i.confidence_level] || 0);
+        }, 0) / totalItems)
+      )
+    : 0;
+  const pendingCount = items.filter((i) => i.confidence_level === "low" || !i.ncm_code).length;
+
   return (
     <div className="p-6 xl:p-8">
+      {/* Breadcrumb */}
+      <div className="mb-4">
+        <Breadcrumb items={[{label: "Facturas", href: "/facturas"}, {label: invoice.file_name || "Factura"}]} />
+      </div>
+
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <button
@@ -503,6 +551,21 @@ export default function InvoiceDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Status Stepper */}
+      <div className="bg-white rounded-xl border border-[#E4E4E7] p-5 mb-6">
+        <StatusStepper steps={getStatusSteps()} />
+      </div>
+
+      {/* KPI Summary */}
+      {items.length > 0 && (
+        <div className="flex gap-4 mb-6">
+          <KPICard label="Total Items" value={totalItems} icon={ListChecks} />
+          <KPICard label="Clasificados" value={`${classifiedPct}%`} icon={BarChart3} />
+          <KPICard label="Confianza Prom." value={`${avgConfidence}%`} icon={TrendingUp} />
+          <KPICard label="Pendientes" value={pendingCount} icon={AlertCircle} />
+        </div>
+      )}
 
       {/* Provider selector */}
       {canEditProvider && (
@@ -780,36 +843,9 @@ export default function InvoiceDetailPage() {
         </div>
       </div>
 
-      {/* Summary */}
-      {items.length > 0 && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl border p-4">
-            <p className="text-sm text-gray-500">Total ítems</p>
-            <p className="text-2xl font-bold text-gray-900">{items.length}</p>
-          </div>
-          <div className="bg-white rounded-xl border p-4">
-            <p className="text-sm text-gray-500">Confianza Alta</p>
-            <p className="text-2xl font-bold text-green-600">
-              {items.filter((i) => i.confidence_level === "high").length}
-            </p>
-          </div>
-          <div className="bg-white rounded-xl border p-4">
-            <p className="text-sm text-gray-500">Confianza Media</p>
-            <p className="text-2xl font-bold text-yellow-600">
-              {items.filter((i) => i.confidence_level === "medium").length}
-            </p>
-          </div>
-          <div className="bg-white rounded-xl border p-4">
-            <p className="text-sm text-gray-500">Requiere Revisión</p>
-            <p className="text-2xl font-bold text-red-600">
-              {items.filter((i) => i.confidence_level === "low").length}
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Items Table */}
-      <div className="bg-white rounded-xl border overflow-x-auto">
+      <div className="bg-white rounded-xl border border-[#E4E4E7] overflow-x-auto">
         <div className="p-4 border-b">
           <h2 className="font-semibold text-gray-900">Ítems de la Factura</h2>
           {isEditable && (

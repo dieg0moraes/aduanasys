@@ -254,15 +254,23 @@ export function ItemsTable({
                         }
                       }}
                     >
-                      <span
-                        className={`font-mono text-xs ${
-                          item.ncm_code
-                            ? "text-gray-800 font-medium"
-                            : "text-red-400 italic"
-                        }`}
-                      >
-                        {item.ncm_code || "Pendiente"}
-                      </span>
+                      {item.ncm_code ? (
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-xs font-mono font-medium ${
+                            item.confidence_level === "high"
+                              ? "bg-[#F0FDF4] text-[#16A34A]"
+                              : item.confidence_level === "medium"
+                                ? "bg-[#FFFBEB] text-[#F59E0B]"
+                                : "bg-[#FEF2F2] text-[#DC2626]"
+                          }`}
+                        >
+                          {item.ncm_code}
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-[#FEF2F2] text-[#DC2626] italic">
+                          Pendiente
+                        </span>
+                      )}
                       {editable && (
                         <SearchIcon
                           size={12}
@@ -319,7 +327,7 @@ export function ItemsTable({
                 {/* Expanded edit panel */}
                 {isExpanded && (
                   <tr className="border-b bg-blue-50/30">
-                    <td colSpan={11} className="px-4 py-4">
+                    <td colSpan={11} className="px-4 py-4 border-l-3 border-l-[#2563EB]">
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
