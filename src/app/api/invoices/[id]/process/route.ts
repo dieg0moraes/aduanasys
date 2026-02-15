@@ -10,6 +10,40 @@ import type { InvoiceItemInput } from "@/lib/ncm-search";
 export const maxDuration = 300;
 
 /**
+ * Parsea fecha extraída por Claude a formato ISO (YYYY-MM-DD).
+ * Soporta: DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD, MM/DD/YYYY.
+ */
+function parseInvoiceDate(raw: string | null | undefined): string | null {
+  if (!raw || !raw.trim()) return null;
+  const s = raw.trim();
+
+  // Ya es ISO (YYYY-MM-DD)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+  // DD/MM/YYYY o DD-MM-YYYY
+  const ddmmyyyy = s.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/);
+  if (ddmmyyyy) {
+    const [, d, m, y] = ddmmyyyy;
+    const day = d.padStart(2, "0");
+    const month = m.padStart(2, "0");
+    // Si el primer número es > 12, es seguro que es día (DD/MM/YYYY)
+    if (parseInt(d) > 12) return `${y}-${month}-${day}`;
+    // Si el segundo número es > 12, es MM/DD/YYYY
+    if (parseInt(m) > 12) return `${y}-${day}-${month}`;
+    // Ambiguo: asumir DD/MM/YYYY (formato latinoamericano)
+    return `${y}-${month}-${day}`;
+  }
+
+  // Intentar parsear como Date nativo
+  const parsed = new Date(s);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toISOString().split("T")[0];
+  }
+
+  return null;
+}
+
+/**
  * Procesamiento en background.
  * La función no se await-ea: se lanza y el endpoint responde inmediatamente.
  * Usa createServiceClient() porque cookies() no está disponible fuera del request.
@@ -155,7 +189,7 @@ async function processInvoiceInBackground(id: string) {
       (i) => i.classification_source === "semantic"
     ).length;
 
-    await supabase
+    const { error: statusError } = await supabase
       .from("invoices")
       .update({
         status: "review",
@@ -164,10 +198,14 @@ async function processInvoiceInBackground(id: string) {
         items_auto_classified: exactMatches + semanticMatches,
         raw_extraction: extraction as unknown as Record<string, unknown>,
         processing_error: null,
-        invoice_date: extraction.invoice_date || null,
+        invoice_date: parseInvoiceDate(extraction.invoice_date) || null,
         invoice_number: extraction.invoice_number || null,
       })
       .eq("id", id);
+
+    if (statusError) {
+      console.error(`❌ Error actualizando factura ${id} a review:`, statusError);
+    }
 
     console.log(
       `✅ Factura ${id} procesada: ${itemsToInsert.length} ítems (${exactMatches} catálogo, ${semanticMatches} semántica, ${itemsToInsert.length - exactMatches - semanticMatches} LLM)`
