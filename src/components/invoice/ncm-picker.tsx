@@ -177,23 +177,23 @@ export function NCMPicker({
       <div className="p-3 border-b bg-[#FAFAFA] rounded-t-xl flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500">NCM actual:</span>
+            <span className="text-xs text-[#71717A]">NCM actual:</span>
             {value ? (
-              <span className="font-mono text-sm font-medium text-gray-800">
+              <span className="font-mono text-sm font-medium text-[#18181B]">
                 {formatNCM(value)}
               </span>
             ) : (
-              <span className="text-sm text-gray-400 italic">Sin asignar</span>
+              <span className="text-sm text-[#A1A1AA] italic">Sin asignar</span>
             )}
             {classificationSource && (
-              <span className="text-xs text-gray-400 px-1.5 py-0.5 bg-gray-100 rounded">
+              <span className="text-xs text-[#A1A1AA] px-1.5 py-0.5 bg-[#F4F4F5] rounded">
                 {SOURCE_LABELS[classificationSource] || classificationSource}
               </span>
             )}
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-200 rounded text-gray-400"
+            className="p-1 hover:bg-[#E4E4E7] rounded text-[#A1A1AA]"
           >
             <X size={14} />
           </button>
@@ -205,7 +205,7 @@ export function NCMPicker({
         <div className="relative">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A1A1AA]"
           />
           <input
             ref={inputRef}
@@ -228,7 +228,7 @@ export function NCMPicker({
           </button>
         </div>
         {expandedQuery && expandedQuery !== query && (
-          <p className="text-xs text-gray-400 mt-1.5 pl-1">
+          <p className="text-xs text-[#A1A1AA] mt-1.5 pl-1">
             Interpretado como:{" "}
             <span className="text-blue-500 italic">&ldquo;{expandedQuery}&rdquo;</span>
           </p>
@@ -238,14 +238,14 @@ export function NCMPicker({
       {/* Results */}
       <div className={`${usePortal ? "flex-1 min-h-0" : "max-h-[380px]"} overflow-y-auto`}>
         {loading && (
-          <div className="flex items-center justify-center py-8 text-gray-400">
+          <div className="flex items-center justify-center py-8 text-[#A1A1AA]">
             <Loader2 size={20} className="animate-spin mr-2" />
             <span className="text-sm">Buscando...</span>
           </div>
         )}
 
         {!loading && hasSearched && results.length === 0 && (
-          <div className="text-center py-8 text-gray-400">
+          <div className="text-center py-8 text-[#A1A1AA]">
             <p className="text-sm">No se encontraron resultados.</p>
             <p className="text-xs mt-1">
               Intentá con otros términos o ingresá el código directamente.
@@ -257,7 +257,7 @@ export function NCMPicker({
           results.map((result, idx) => {
             const Icon = SOURCE_ICONS[result.match_type] || Tag;
             const colorClass =
-              SOURCE_COLORS[result.match_type] || "text-gray-600 bg-gray-50";
+              SOURCE_COLORS[result.match_type] || "text-[#71717A] bg-[#FAFAFA]";
             const isCurrentNCM =
               value && result.ncm_code.replace(/\./g, "") === value.replace(/\./g, "");
             const isExpanded = expandedIdx === idx;
@@ -273,13 +273,13 @@ export function NCMPicker({
                   className="w-full text-left px-3 py-2.5 hover:bg-blue-50/50 transition-colors flex items-start gap-3 group"
                 >
                   {/* Chevron */}
-                  <div className="flex-shrink-0 mt-0.5 text-gray-300 group-hover:text-gray-500">
+                  <div className="flex-shrink-0 mt-0.5 text-[#A1A1AA] group-hover:text-[#71717A]">
                     {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                   </div>
 
                   {/* NCM code + source badge */}
                   <div className="flex-shrink-0 w-24">
-                    <span className="font-mono text-sm font-medium text-gray-800">
+                    <span className="font-mono text-sm font-medium text-[#18181B]">
                       {formatNCM(result.ncm_code)}
                     </span>
                     <div className="flex items-center gap-1 mt-0.5">
@@ -294,10 +294,10 @@ export function NCMPicker({
 
                   {/* Description (truncated) + similarity */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-700 leading-snug">
+                    <p className="text-sm text-[#18181B] leading-snug">
                       {truncateDesc(result.description, isExpanded ? 300 : 80)}
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-xs text-[#A1A1AA] mt-0.5">
                       Similitud: {(result.similarity * 100).toFixed(0)}%
                       {result.exclusions && result.exclusions.length > 0 && (
                         <span className="ml-2 text-amber-500">
@@ -319,7 +319,7 @@ export function NCMPicker({
                 {isExpanded && (
                   <div className="px-3 pb-3 pt-0 ml-[38px] space-y-2">
                     {/* Descripción completa */}
-                    <p className="text-sm text-gray-700 leading-relaxed">
+                    <p className="text-sm text-[#18181B] leading-relaxed">
                       {result.description}
                     </p>
 
@@ -356,7 +356,7 @@ export function NCMPicker({
 
                     {/* Info catálogo */}
                     {result.match_type === "catalog" && (result as NCMResult & { sku?: string; provider_description?: string }).sku && (
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-[#A1A1AA]">
                         SKU: {(result as NCMResult & { sku?: string }).sku}
                       </p>
                     )}
@@ -427,7 +427,7 @@ function ManualNCMInput({
 
   return (
     <form onSubmit={handleSubmit} className="flex items-center gap-2">
-      <span className="text-xs text-gray-500">Ingresar código:</span>
+      <span className="text-xs text-[#71717A]">Ingresar código:</span>
       <input
         type="text"
         value={manualCode}
@@ -438,7 +438,7 @@ function ManualNCMInput({
       <button
         type="submit"
         disabled={!manualCode.trim()}
-        className="px-2 py-1 text-xs font-medium bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50"
+        className="px-2 py-1 text-xs font-medium bg-[#E4E4E7] text-[#18181B] rounded hover:bg-[#D4D4D8] disabled:opacity-50"
       >
         Asignar
       </button>

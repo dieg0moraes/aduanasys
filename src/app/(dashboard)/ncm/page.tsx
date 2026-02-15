@@ -41,7 +41,7 @@ const LAYER_CONFIG: Record<string, { dotColor: string; label: string }> = {
   fulltext: { dotColor: "bg-[#2563EB]", label: "Full-text" },
   trigram: { dotColor: "bg-[#F59E0B]", label: "Soft match" },
   semantic: { dotColor: "bg-[#9333EA]", label: "Semantica" },
-  exact: { dotColor: "bg-gray-500", label: "Exacto" },
+  exact: { dotColor: "bg-[#FAFAFA]0", label: "Exacto" },
   graph: { dotColor: "bg-cyan-500", label: "Grafo" },
 };
 
@@ -162,7 +162,7 @@ export default function NCMPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 disabled={loading}
-                className="w-full pl-12 pr-4 py-3.5 rounded-lg border border-[#E4E4E7] text-base text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400 transition-shadow"
+                className="w-full pl-12 pr-4 py-3.5 rounded-lg border border-[#E4E4E7] text-base text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent disabled:bg-[#FAFAFA] disabled:text-[#A1A1AA] transition-shadow"
                 autoFocus
               />
             </div>
@@ -199,7 +199,7 @@ export default function NCMPage() {
       {/* Initial State */}
       {!loading && !hasSearched && (
         <div className="text-center py-20">
-          <BookOpen size={48} className="mx-auto text-gray-300 mb-4" />
+          <BookOpen size={48} className="mx-auto text-[#A1A1AA] mb-4" />
           <p className="text-[#71717A]">
             Escribi una descripcion de producto y presiona{" "}
             <strong>Buscar</strong> o <strong>Enter</strong>
@@ -220,7 +220,7 @@ export default function NCMPage() {
       {/* No Results */}
       {!loading && hasSearched && results.length === 0 && (
         <div className="text-center py-20">
-          <Search size={48} className="mx-auto text-gray-300 mb-4" />
+          <Search size={48} className="mx-auto text-[#A1A1AA] mb-4" />
           <p className="text-[#71717A]">No se encontraron resultados</p>
           <p className="text-xs text-[#A1A1AA] mt-2">
             Proba con otros terminos o un codigo NCM directo
@@ -277,7 +277,7 @@ export default function NCMPage() {
                     {getLayerDot(result.match_type)}
 
                     {/* NCM Code Pill */}
-                    <span className="font-mono text-sm font-medium bg-gray-100 px-2 py-0.5 rounded flex-shrink-0">
+                    <span className="font-mono text-sm font-medium bg-[#F4F4F5] px-2 py-0.5 rounded flex-shrink-0">
                       {result.ncm_code}
                     </span>
 

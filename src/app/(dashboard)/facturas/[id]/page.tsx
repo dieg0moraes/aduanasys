@@ -383,7 +383,7 @@ export default function InvoiceDetailPage() {
   if (!invoice) {
     return (
       <div className="p-6 xl:p-8">
-        <p className="text-gray-500">Factura no encontrada.</p>
+        <p className="text-[#71717A]">Factura no encontrada.</p>
       </div>
     );
   }
@@ -444,15 +444,15 @@ export default function InvoiceDetailPage() {
                 : "/facturas"
             )
           }
-          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
+          className="p-2 rounded-lg hover:bg-[#F4F4F5] text-[#71717A]"
         >
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1">
-          <h1 className="text-xl font-bold text-gray-900">
+          <h1 className="text-xl font-bold text-[#18181B]">
             {invoice.file_name}
           </h1>
-          <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+          <div className="flex items-center gap-3 mt-1 text-sm text-[#71717A]">
             <span
               className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
                 STATUS_COLORS[invoice.status]
@@ -474,7 +474,7 @@ export default function InvoiceDetailPage() {
             href={`/api/invoices/${invoiceId}/download`}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 rounded-lg border text-sm font-medium hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+            className="px-4 py-2 rounded-lg border text-sm font-medium hover:bg-[#FAFAFA] flex items-center gap-2 text-[#18181B]"
           >
             <Download size={16} />
             Descargar
@@ -543,7 +543,7 @@ export default function InvoiceDetailPage() {
           {isEditable && (
             <a
               href={`/api/invoices/${invoiceId}/export-dua`}
-              className="px-4 py-2 rounded-lg border text-sm font-medium hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+              className="px-4 py-2 rounded-lg border text-sm font-medium hover:bg-[#FAFAFA] flex items-center gap-2 text-[#18181B]"
             >
               <Download size={16} />
               Exportar DUA
@@ -569,10 +569,10 @@ export default function InvoiceDetailPage() {
 
       {/* Provider selector */}
       {canEditProvider && (
-        <div className="bg-white rounded-xl border p-4 mb-6">
+        <div className="bg-white rounded-xl border border-[#E4E4E7] p-4 mb-6">
           <div className="flex items-center gap-3">
-            <Building2 size={16} className="text-gray-400 shrink-0" />
-            <label className="text-sm font-medium text-gray-700 shrink-0">
+            <Building2 size={16} className="text-[#A1A1AA] shrink-0" />
+            <label className="text-sm font-medium text-[#18181B] shrink-0">
               Proveedor
             </label>
             <div className="relative flex-1 max-w-sm">
@@ -623,13 +623,13 @@ export default function InvoiceDetailPage() {
                           </button>
                         ))}
                         {providers.length === 0 && providerSearch.trim() && (
-                          <p className="px-3 py-2 text-sm text-gray-400">Sin resultados</p>
+                          <p className="px-3 py-2 text-sm text-[#A1A1AA]">Sin resultados</p>
                         )}
                       </>
                     )}
                     {/* Create new */}
                     <div className="border-t px-3 py-2">
-                      <p className="text-xs text-gray-400 mb-1.5">Crear nuevo proveedor</p>
+                      <p className="text-xs text-[#A1A1AA] mb-1.5">Crear nuevo proveedor</p>
                       <div className="flex gap-2">
                         <input
                           type="text"
@@ -655,14 +655,14 @@ export default function InvoiceDetailPage() {
               ) : (
                 <button
                   onClick={() => setShowProviderDropdown(true)}
-                  className="flex items-center gap-2 px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50 transition-colors w-full text-left"
+                  className="flex items-center gap-2 px-3 py-1.5 border rounded-lg text-sm hover:bg-[#FAFAFA] transition-colors w-full text-left"
                 >
                   {savingProvider ? (
                     <Loader2 size={14} className="animate-spin text-[#2563EB]" />
                   ) : invoice?.provider?.name ? (
-                    <span className="text-gray-900">{invoice.provider.name}</span>
+                    <span className="text-[#18181B]">{invoice.provider.name}</span>
                   ) : (
-                    <span className="text-gray-400">Sin proveedor asignado</span>
+                    <span className="text-[#A1A1AA]">Sin proveedor asignado</span>
                   )}
                 </button>
               )}
@@ -673,24 +673,24 @@ export default function InvoiceDetailPage() {
 
       {/* Provider display (when not editable) */}
       {!canEditProvider && invoice?.provider?.name && (
-        <div className="bg-white rounded-xl border p-4 mb-6">
+        <div className="bg-white rounded-xl border border-[#E4E4E7] p-4 mb-6">
           <div className="flex items-center gap-3">
-            <Building2 size={16} className="text-gray-400 shrink-0" />
-            <label className="text-sm font-medium text-gray-700 shrink-0">
+            <Building2 size={16} className="text-[#A1A1AA] shrink-0" />
+            <label className="text-sm font-medium text-[#18181B] shrink-0">
               Proveedor
             </label>
-            <span className="text-sm text-gray-900">{invoice.provider.name}</span>
+            <span className="text-sm text-[#18181B]">{invoice.provider.name}</span>
           </div>
         </div>
       )}
 
       {/* Invoice number & date */}
-      <div className="bg-white rounded-xl border p-4 mb-6">
+      <div className="bg-white rounded-xl border border-[#E4E4E7] p-4 mb-6">
         <div className="flex items-center gap-6 flex-wrap">
           {/* Invoice number */}
           <div className="flex items-center gap-3">
-            <FileText size={16} className="text-gray-400 shrink-0" />
-            <label className="text-sm font-medium text-gray-700 shrink-0">
+            <FileText size={16} className="text-[#A1A1AA] shrink-0" />
+            <label className="text-sm font-medium text-[#18181B] shrink-0">
               Nº Factura
             </label>
             {canEditProvider ? (
@@ -703,7 +703,7 @@ export default function InvoiceDetailPage() {
                 className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] w-40"
               />
             ) : (
-              <span className="text-sm text-gray-900">
+              <span className="text-sm text-[#18181B]">
                 {invoice?.invoice_number || "—"}
               </span>
             )}
@@ -711,8 +711,8 @@ export default function InvoiceDetailPage() {
 
           {/* Invoice date */}
           <div className="flex items-center gap-3">
-            <Calendar size={16} className="text-gray-400 shrink-0" />
-            <label className="text-sm font-medium text-gray-700 shrink-0">
+            <Calendar size={16} className="text-[#A1A1AA] shrink-0" />
+            <label className="text-sm font-medium text-[#18181B] shrink-0">
               Fecha factura
             </label>
             {canEditProvider ? (
@@ -726,7 +726,7 @@ export default function InvoiceDetailPage() {
                 className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               />
             ) : (
-              <span className="text-sm text-gray-900">
+              <span className="text-sm text-[#18181B]">
                 {invoice?.invoice_date ? formatDate(invoice.invoice_date) : "—"}
               </span>
             )}
@@ -769,10 +769,10 @@ export default function InvoiceDetailPage() {
       <div className="flex-1 min-w-0 w-full">
 
       {/* Country of origin */}
-      <div className="bg-white rounded-xl border p-4 mb-6">
+      <div className="bg-white rounded-xl border border-[#E4E4E7] p-4 mb-6">
         <div className="flex items-center gap-3">
-          <Globe size={16} className="text-gray-400 shrink-0" />
-          <label className="text-sm font-medium text-gray-700 shrink-0">
+          <Globe size={16} className="text-[#A1A1AA] shrink-0" />
+          <label className="text-sm font-medium text-[#18181B] shrink-0">
             País de origen
           </label>
           <div className="relative flex-1 max-w-xs">
@@ -813,29 +813,29 @@ export default function InvoiceDetailPage() {
                         invoice?.country_code === c.code ? "bg-blue-50 font-medium" : ""
                       }`}
                     >
-                      <span className="text-gray-400 font-mono mr-2">{c.code}</span>
+                      <span className="text-[#A1A1AA] font-mono mr-2">{c.code}</span>
                       {c.name}
                     </button>
                   ))}
                   {filteredCountries.length === 0 && (
-                    <p className="px-3 py-2 text-sm text-gray-400">Sin resultados</p>
+                    <p className="px-3 py-2 text-sm text-[#A1A1AA]">Sin resultados</p>
                   )}
                 </div>
               </div>
             ) : (
               <button
                 onClick={() => setShowCountryDropdown(true)}
-                className="flex items-center gap-2 px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50 transition-colors w-full text-left"
+                className="flex items-center gap-2 px-3 py-1.5 border rounded-lg text-sm hover:bg-[#FAFAFA] transition-colors w-full text-left"
               >
                 {savingCountry ? (
                   <Loader2 size={14} className="animate-spin text-[#2563EB]" />
                 ) : invoice?.country_code ? (
                   <>
-                    <span className="text-gray-400 font-mono">{invoice.country_code}</span>
-                    <span className="text-gray-900">{getCountryName(invoice.country_code)}</span>
+                    <span className="text-[#A1A1AA] font-mono">{invoice.country_code}</span>
+                    <span className="text-[#18181B]">{getCountryName(invoice.country_code)}</span>
                   </>
                 ) : (
-                  <span className="text-gray-400">Seleccionar país</span>
+                  <span className="text-[#A1A1AA]">Seleccionar país</span>
                 )}
               </button>
             )}
@@ -847,9 +847,9 @@ export default function InvoiceDetailPage() {
       {/* Items Table */}
       <div className="bg-white rounded-xl border border-[#E4E4E7] overflow-x-auto">
         <div className="p-4 border-b">
-          <h2 className="font-semibold text-gray-900">Ítems de la Factura</h2>
+          <h2 className="font-semibold text-[#18181B]">Ítems de la Factura</h2>
           {isEditable && (
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[#71717A] mt-1">
               Hacé click en Descripción Aduanera o NCM para editar. Los cambios
               se guardan automáticamente.
             </p>
@@ -868,9 +868,9 @@ export default function InvoiceDetailPage() {
       {/* Partidas sidebar */}
       {invoice.despacho_id && (
         <div className="w-full xl:w-72 shrink-0 xl:sticky xl:top-8">
-          <div className="bg-white rounded-xl border">
+          <div className="bg-white rounded-xl border border-[#E4E4E7]">
             <div className="p-4 border-b flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900 text-sm">
+              <h3 className="font-semibold text-[#18181B] text-sm">
                 Partidas ({partidas.length})
               </h3>
               <button
@@ -883,8 +883,8 @@ export default function InvoiceDetailPage() {
             </div>
             {partidas.length === 0 ? (
               <div className="p-6 text-center">
-                <Package size={28} className="mx-auto text-gray-300 mb-2" />
-                <p className="text-xs text-gray-500">
+                <Package size={28} className="mx-auto text-[#A1A1AA] mb-2" />
+                <p className="text-xs text-[#71717A]">
                   No hay partidas para esta factura
                 </p>
               </div>
@@ -894,10 +894,10 @@ export default function InvoiceDetailPage() {
                   <button
                     key={partida.id}
                     onClick={() => router.push(`/despachos/${invoice.despacho_id}/partidas/${partida.id}`)}
-                    className="w-full text-left p-3 hover:bg-gray-50 transition-colors"
+                    className="w-full text-left p-3 hover:bg-[#FAFAFA] transition-colors"
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-sm text-gray-900">
+                      <span className="font-medium text-sm text-[#18181B]">
                         {partida.reference}
                       </span>
                       <span
@@ -908,7 +908,7 @@ export default function InvoiceDetailPage() {
                         {PARTIDA_STATUS_LABELS[partida.status]}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="flex items-center gap-2 text-xs text-[#71717A]">
                       {partida.date && <span>{formatDate(partida.date)}</span>}
                       {partida.item_count != null && (
                         <span>{partida.item_count} ítems</span>

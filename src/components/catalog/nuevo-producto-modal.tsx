@@ -67,7 +67,7 @@ export function NuevoProductoModal({ providerId, providerName, onClose, onSaved 
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-[#E4E4E7]">
           <h2 className="text-lg font-semibold text-[#18181B]">Nuevo Producto</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded text-[#A1A1AA]">
+          <button onClick={onClose} className="p-1 hover:bg-[#F4F4F5] rounded text-[#A1A1AA]">
             <X size={18} />
           </button>
         </div>

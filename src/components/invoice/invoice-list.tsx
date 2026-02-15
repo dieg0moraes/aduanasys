@@ -16,7 +16,7 @@ function ConfidenceBar({ totalItems, autoClassified }: { totalItems: number; aut
 
   return (
     <div className="flex items-center gap-2">
-      <div className="bg-gray-100 rounded-full h-1.5 w-16 overflow-hidden">
+      <div className="bg-[#F4F4F5] rounded-full h-1.5 w-16 overflow-hidden">
         <div
           className={`h-full rounded-full ${barColor}`}
           style={{ width: `${pct}%` }}
@@ -90,7 +90,7 @@ export function InvoiceList() {
         </div>
         <button
           onClick={fetchInvoices}
-          className="ml-auto p-2 rounded-lg hover:bg-gray-100 text-[#71717A]"
+          className="ml-auto p-2 rounded-lg hover:bg-[#F4F4F5] text-[#71717A]"
           title="Actualizar"
         >
           <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
@@ -106,14 +106,14 @@ export function InvoiceList() {
                 key={i}
                 className="p-4 animate-pulse"
               >
-                <div className="h-5 bg-gray-200 rounded w-1/3 mb-2" />
-                <div className="h-4 bg-gray-100 rounded w-1/2" />
+                <div className="h-5 bg-[#E4E4E7] rounded w-1/3 mb-2" />
+                <div className="h-4 bg-[#F4F4F5] rounded w-1/2" />
               </div>
             ))}
           </div>
         ) : invoices.length === 0 ? (
           <div className="text-center py-12 text-[#71717A]">
-            <FileText className="mx-auto mb-3 text-gray-300" size={48} />
+            <FileText className="mx-auto mb-3 text-[#A1A1AA]" size={48} />
             <p className="text-lg font-medium">No hay facturas</p>
             <p className="text-sm mt-1">
               Subí tu primera factura para comenzar
@@ -205,7 +205,7 @@ export function InvoiceList() {
                     <td className="py-3 pr-2">
                       <Link
                         href={`/facturas/${invoice.id}`}
-                        className="text-gray-400 group-hover:text-[#2563EB] transition-colors"
+                        className="text-[#A1A1AA] group-hover:text-[#2563EB] transition-colors"
                       >
                         <ChevronRight size={16} />
                       </Link>

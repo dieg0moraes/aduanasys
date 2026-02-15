@@ -335,7 +335,7 @@ export default function DespachoDetailPage() {
   if (!despacho) {
     return (
       <div className="p-8 text-center">
-        <p className="text-gray-500">Despacho no encontrado</p>
+        <p className="text-[#71717A]">Despacho no encontrado</p>
       </div>
     );
   }
@@ -404,7 +404,7 @@ export default function DespachoDetailPage() {
             </button>
             <button
               onClick={() => setShowDeleteConfirm(false)}
-              className="px-3 py-1.5 rounded-lg border text-sm text-gray-600 hover:bg-white"
+              className="px-3 py-1.5 rounded-lg border text-sm text-[#71717A] hover:bg-white"
             >
               Cancelar
             </button>

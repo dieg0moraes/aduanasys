@@ -103,7 +103,7 @@ function UploadModal({
           <button
             onClick={onClose}
             disabled={isUploading}
-            className="p-1 rounded-lg hover:bg-gray-100 text-[#71717A] disabled:opacity-50"
+            className="p-1 rounded-lg hover:bg-[#F4F4F5] text-[#71717A] disabled:opacity-50"
           >
             <X size={20} />
           </button>
@@ -128,7 +128,7 @@ function UploadModal({
           <button
             onClick={onClose}
             disabled={isUploading}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-[#52525B] hover:bg-gray-100 transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-lg text-sm font-medium text-[#52525B] hover:bg-[#F4F4F5] transition-colors disabled:opacity-50"
           >
             Cancelar
           </button>
@@ -203,8 +203,8 @@ export default function FacturasPage() {
       fallback={
         <div className="p-8 max-w-6xl mx-auto">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-48 mb-4" />
-            <div className="h-4 bg-gray-100 rounded w-72" />
+            <div className="h-8 bg-[#E4E4E7] rounded w-48 mb-4" />
+            <div className="h-4 bg-[#F4F4F5] rounded w-72" />
           </div>
         </div>
       }

@@ -147,7 +147,7 @@ export default function ClientDetailPage() {
   if (!client) {
     return (
       <div className="p-8 text-center">
-        <p className="text-gray-500">Cliente no encontrado</p>
+        <p className="text-[#71717A]">Cliente no encontrado</p>
       </div>
     );
   }
@@ -158,7 +158,7 @@ export default function ClientDetailPage() {
       <div className="mb-6">
         <button
           onClick={() => router.push("/")}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
+          className="flex items-center gap-1 text-sm text-[#71717A] hover:text-[#18181B] mb-4"
         >
           <ArrowLeft size={16} />
           Volver a Clientes
@@ -197,16 +197,16 @@ export default function ClientDetailPage() {
                     setEditName(client.name);
                     setEditCuit(client.cuit || "");
                   }}
-                  className="px-3 py-1.5 rounded-lg border text-sm text-gray-600 hover:bg-gray-50"
+                  className="px-3 py-1.5 rounded-lg border text-sm text-[#71717A] hover:bg-[#FAFAFA]"
                 >
                   Cancelar
                 </button>
               </div>
             ) : (
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{client.name}</h1>
+                <h1 className="text-2xl font-bold text-[#18181B]">{client.name}</h1>
                 {client.cuit && (
-                  <p className="text-sm text-gray-500 mt-1">CUIT: {client.cuit}</p>
+                  <p className="text-sm text-[#71717A] mt-1">CUIT: {client.cuit}</p>
                 )}
               </div>
             )}
@@ -215,7 +215,7 @@ export default function ClientDetailPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setEditing(true)}
-                className="p-2 rounded-lg border text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+                className="p-2 rounded-lg border text-[#71717A] hover:bg-[#FAFAFA] hover:text-[#18181B] transition-colors"
                 title="Editar cliente"
               >
                 <Pencil size={16} />
@@ -248,7 +248,7 @@ export default function ClientDetailPage() {
             </button>
             <button
               onClick={() => setShowDeleteConfirm(false)}
-              className="px-3 py-1.5 rounded-lg border text-sm text-gray-600 hover:bg-white"
+              className="px-3 py-1.5 rounded-lg border text-sm text-[#71717A] hover:bg-white"
             >
               Cancelar
             </button>
@@ -258,7 +258,7 @@ export default function ClientDetailPage() {
 
       {/* Actions bar */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Despachos</h2>
+        <h2 className="text-lg font-semibold text-[#18181B]">Despachos</h2>
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1B2A4A] text-white text-sm font-medium hover:bg-[#162240] transition-colors"
@@ -270,7 +270,7 @@ export default function ClientDetailPage() {
 
       {/* New despacho form */}
       {showForm && (
-        <form onSubmit={handleCreateDespacho} className="bg-white rounded-xl border p-4 mb-6 space-y-3">
+        <form onSubmit={handleCreateDespacho} className="bg-white rounded-xl border border-[#E4E4E7] p-4 mb-6 space-y-3">
           <input
             type="text"
             placeholder="Referencia del despacho"
@@ -297,7 +297,7 @@ export default function ClientDetailPage() {
             <button
               type="button"
               onClick={() => { setShowForm(false); setNewReference(""); setNewNotes(""); }}
-              className="px-4 py-2 rounded-lg border text-sm text-gray-600 hover:bg-gray-50"
+              className="px-4 py-2 rounded-lg border text-sm text-[#71717A] hover:bg-[#FAFAFA]"
             >
               Cancelar
             </button>
@@ -308,7 +308,7 @@ export default function ClientDetailPage() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="relative flex-1 min-w-[200px]">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A1A1AA]" />
           <input
             type="text"
             placeholder="Buscar por referencia o DUA..."
@@ -318,7 +318,7 @@ export default function ClientDetailPage() {
           />
         </div>
         <div className="flex items-center gap-2">
-          <Calendar size={16} className="text-gray-400" />
+          <Calendar size={16} className="text-[#A1A1AA]" />
           <input
             type="date"
             value={dateFrom}
@@ -326,7 +326,7 @@ export default function ClientDetailPage() {
             className="px-3 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             placeholder="Desde"
           />
-          <span className="text-gray-400 text-sm">—</span>
+          <span className="text-[#A1A1AA] text-sm">—</span>
           <input
             type="date"
             value={dateTo}
@@ -337,7 +337,7 @@ export default function ClientDetailPage() {
           {(dateFrom || dateTo) && (
             <button
               onClick={() => { setDateFrom(""); setDateTo(""); }}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              className="p-1.5 rounded-lg text-[#A1A1AA] hover:text-[#71717A] hover:bg-[#F4F4F5]"
               title="Limpiar fechas"
             >
               <X size={16} />
@@ -352,9 +352,9 @@ export default function ClientDetailPage() {
           <Loader2 size={32} className="animate-spin text-[#2563EB]" />
         </div>
       ) : despachos.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border">
-          <FileText size={48} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">
+        <div className="text-center py-16 bg-white rounded-xl border border-[#E4E4E7]">
+          <FileText size={48} className="mx-auto text-[#A1A1AA] mb-4" />
+          <p className="text-[#71717A]">
             {debouncedSearch || dateFrom || dateTo
               ? "No se encontraron despachos con esos filtros"
               : "Este cliente no tiene despachos todavía"}
@@ -366,17 +366,17 @@ export default function ClientDetailPage() {
             <button
               key={despacho.id}
               onClick={() => router.push(`/despachos/${despacho.id}`)}
-              className="w-full bg-white rounded-xl border p-5 text-left hover:border-[#2563EB] hover:shadow-md transition-all"
+              className="w-full bg-white rounded-xl border border-[#E4E4E7] p-5 text-left hover:border-[#2563EB] hover:shadow-md transition-all"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-semibold text-gray-900">{despacho.reference}</p>
+                  <p className="font-semibold text-[#18181B]">{despacho.reference}</p>
                   {despacho.customs_code && (
-                    <p className="text-sm text-gray-500 mt-0.5">
+                    <p className="text-sm text-[#71717A] mt-0.5">
                       DUA: {despacho.customs_code}
                     </p>
                   )}
-                  <div className="flex items-center gap-3 mt-2 text-sm text-gray-400">
+                  <div className="flex items-center gap-3 mt-2 text-sm text-[#A1A1AA]">
                     <span className="flex items-center gap-1">
                       <FileText size={14} />
                       {despacho.invoice_count === 1
@@ -387,7 +387,7 @@ export default function ClientDetailPage() {
                   </div>
                 </div>
                 {despacho.notes && (
-                  <p className="text-xs text-gray-400 max-w-[200px] truncate">{despacho.notes}</p>
+                  <p className="text-xs text-[#A1A1AA] max-w-[200px] truncate">{despacho.notes}</p>
                 )}
               </div>
             </button>

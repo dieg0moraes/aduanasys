@@ -346,19 +346,19 @@ export default function ProviderCatalogPage() {
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-gray-900">
+            <h1 className="text-xl font-bold text-[#18181B]">
               {providerName}
             </h1>
-            <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+            <div className="flex items-center gap-4 mt-1 text-sm text-[#71717A]">
               {providerInfo?.country && (
                 <span>{providerInfo.country}</span>
               )}
               <div className="flex items-center gap-1.5">
-                <Package size={14} className="text-gray-400" />
+                <Package size={14} className="text-[#A1A1AA]" />
                 <span>{data?.total ?? 0} productos</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <FileText size={14} className="text-gray-400" />
+                <FileText size={14} className="text-[#A1A1AA]" />
                 <span>{providerInfo?.invoice_count ?? 0} facturas</span>
               </div>
             </div>
@@ -367,7 +367,7 @@ export default function ProviderCatalogPage() {
           {/* Action buttons */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#E4E4E7] text-sm font-medium text-[#71717A] hover:bg-[#FAFAFA] transition-colors"
             >
               <Pencil size={14} />
               Editar
@@ -387,9 +387,9 @@ export default function ProviderCatalogPage() {
       <div className="mb-6">
         <button
           onClick={() => setShowInvoices(!showInvoices)}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 mb-2"
+          className="flex items-center gap-2 text-sm font-medium text-[#18181B] hover:text-[#18181B] mb-2"
         >
-          <FileText size={16} className="text-gray-400" />
+          <FileText size={16} className="text-[#A1A1AA]" />
           Facturas ({loadingInvoices ? "..." : invoices.length})
           <ChevronDown size={14} className={`transition-transform ${showInvoices ? "rotate-180" : ""}`} />
         </button>
@@ -400,7 +400,7 @@ export default function ProviderCatalogPage() {
                 <Loader2 size={20} className="animate-spin text-[#2563EB]" />
               </div>
             ) : invoices.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-6">
+              <p className="text-[#A1A1AA] text-sm text-center py-6">
                 No hay facturas asociadas a este proveedor
               </p>
             ) : (
@@ -408,15 +408,15 @@ export default function ProviderCatalogPage() {
                 <button
                   key={inv.id}
                   onClick={() => router.push(`/facturas/${inv.id}`)}
-                  className="flex items-center justify-between w-full p-3 hover:bg-gray-50 text-left"
+                  className="flex items-center justify-between w-full p-3 hover:bg-[#FAFAFA] text-left"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <FileText size={16} className="text-gray-400 shrink-0" />
+                    <FileText size={16} className="text-[#A1A1AA] shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-[#18181B] truncate">
                         {inv.file_name}
                       </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-[#A1A1AA] mt-0.5">
                         {formatDate(inv.created_at)}
                         {inv.total_items > 0 && ` · ${inv.total_items} items`}
                       </p>
@@ -441,14 +441,14 @@ export default function ProviderCatalogPage() {
         <div className="relative max-w-md">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A1A1AA]"
           />
           <input
             type="text"
             placeholder="Buscar por SKU, descripción o NCM..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]"
+            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-[#E4E4E7] text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]"
           />
         </div>
       </div>
@@ -459,21 +459,21 @@ export default function ProviderCatalogPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-[#FAFAFA] border-b border-[#E4E4E7] text-left">
-                <th className="px-4 py-3 font-medium text-gray-600">SKU</th>
-                <th className="px-4 py-3 font-medium text-gray-600">
+                <th className="px-4 py-3 font-medium text-[#71717A]">SKU</th>
+                <th className="px-4 py-3 font-medium text-[#71717A]">
                   Descripción Original
                 </th>
-                <th className="px-4 py-3 font-medium text-gray-600">
+                <th className="px-4 py-3 font-medium text-[#71717A]">
                   Desc. Aduanera
                 </th>
-                <th className="px-4 py-3 font-medium text-gray-600">
+                <th className="px-4 py-3 font-medium text-[#71717A]">
                   Desc. Interna
                 </th>
-                <th className="px-4 py-3 font-medium text-gray-600">NCM</th>
-                <th className="px-4 py-3 font-medium text-gray-600 text-center">
+                <th className="px-4 py-3 font-medium text-[#71717A]">NCM</th>
+                <th className="px-4 py-3 font-medium text-[#71717A] text-center">
                   Usos
                 </th>
-                <th className="px-4 py-3 font-medium text-gray-600 w-16"></th>
+                <th className="px-4 py-3 font-medium text-[#71717A] w-16"></th>
               </tr>
             </thead>
             <tbody>
@@ -490,7 +490,7 @@ export default function ProviderCatalogPage() {
                 <tr>
                   <td
                     colSpan={7}
-                    className="px-4 py-12 text-center text-gray-400"
+                    className="px-4 py-12 text-center text-[#A1A1AA]"
                   >
                     {search
                       ? "No se encontraron productos con esa búsqueda."
@@ -514,17 +514,17 @@ export default function ProviderCatalogPage() {
                           }
                         }}
                       >
-                        <td className="px-4 py-3 font-mono text-xs text-gray-600">
+                        <td className="px-4 py-3 font-mono text-xs text-[#71717A]">
                           {item.sku}
                         </td>
-                        <td className="px-4 py-3 text-gray-600 max-w-xs truncate">
+                        <td className="px-4 py-3 text-[#71717A] max-w-xs truncate">
                           {item.provider_description}
                         </td>
-                        <td className="px-4 py-3 text-gray-700 max-w-xs truncate">
+                        <td className="px-4 py-3 text-[#18181B] max-w-xs truncate">
                           {item.customs_description}
                         </td>
-                        <td className="px-4 py-3 text-gray-600 max-w-xs truncate">
-                          {item.internal_description || <span className="text-gray-400">--</span>}
+                        <td className="px-4 py-3 text-[#71717A] max-w-xs truncate">
+                          {item.internal_description || <span className="text-[#A1A1AA]">--</span>}
                         </td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-0.5 rounded text-xs font-mono ${getNcmPillClasses(item.times_used)}`}>
@@ -540,7 +540,7 @@ export default function ProviderCatalogPage() {
                           <div className="flex items-center gap-1">
                             <ChevronDown
                               size={14}
-                              className={`text-gray-400 transition-transform ${
+                              className={`text-[#A1A1AA] transition-transform ${
                                 isExpanded ? "rotate-180" : ""
                               }`}
                             />
@@ -549,7 +549,7 @@ export default function ProviderCatalogPage() {
                                 e.stopPropagation();
                                 deleteItem(item.id);
                               }}
-                              className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-500"
+                              className="p-1.5 rounded hover:bg-red-50 text-[#A1A1AA] hover:text-red-500"
                               title="Eliminar"
                             >
                               <Trash2 size={14} />
@@ -566,7 +566,7 @@ export default function ProviderCatalogPage() {
                               {/* Row 1: descriptions */}
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
                                     Descripción Aduanera
                                   </label>
                                   <textarea
@@ -583,7 +583,7 @@ export default function ProviderCatalogPage() {
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
                                     Descripción Interna
                                   </label>
                                   <textarea
@@ -604,7 +604,7 @@ export default function ProviderCatalogPage() {
                               {/* Row 2: NCM + flags */}
                               <div className="grid grid-cols-5 gap-4">
                                 <div>
-                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
                                     NCM
                                   </label>
                                   <input
@@ -621,7 +621,7 @@ export default function ProviderCatalogPage() {
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
                                     LATU
                                   </label>
                                   <select
@@ -641,7 +641,7 @@ export default function ProviderCatalogPage() {
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
                                     IMESI
                                   </label>
                                   <select
@@ -661,7 +661,7 @@ export default function ProviderCatalogPage() {
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
                                     Exonera IVA
                                   </label>
                                   <select
@@ -681,7 +681,7 @@ export default function ProviderCatalogPage() {
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
                                     Apertura
                                   </label>
                                   <input
@@ -722,7 +722,7 @@ export default function ProviderCatalogPage() {
                                     e.stopPropagation();
                                     cancelEdit();
                                   }}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm text-gray-600 hover:bg-white transition-colors"
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm text-[#71717A] hover:bg-white transition-colors"
                                 >
                                   <X size={14} />
                                   Cancelar
@@ -758,7 +758,7 @@ export default function ProviderCatalogPage() {
                                               <Loader2 size={14} className="animate-spin text-[#2563EB]" />
                                             </div>
                                           ) : moveProviders.length === 0 ? (
-                                            <p className="px-3 py-2 text-sm text-gray-400">Sin proveedores disponibles</p>
+                                            <p className="px-3 py-2 text-sm text-[#A1A1AA]">Sin proveedores disponibles</p>
                                           ) : (
                                             moveProviders.map((p) => (
                                               <button
@@ -783,7 +783,7 @@ export default function ProviderCatalogPage() {
                                         e.stopPropagation();
                                         setMovingId(item.id);
                                       }}
-                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm text-gray-600 hover:bg-white transition-colors"
+                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm text-[#71717A] hover:bg-white transition-colors"
                                     >
                                       <ArrowLeft size={14} className="rotate-180" />
                                       Mover
@@ -806,14 +806,14 @@ export default function ProviderCatalogPage() {
         {/* Pagination */}
         {data && data.totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-[#E4E4E7] bg-[#FAFAFA]">
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-[#71717A]">
               Página {data.page} de {data.totalPages}
             </span>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="p-1.5 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-1.5 rounded hover:bg-[#E4E4E7] disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -822,7 +822,7 @@ export default function ProviderCatalogPage() {
                   setPage((p) => Math.min(data.totalPages, p + 1))
                 }
                 disabled={page >= data.totalPages}
-                className="p-1.5 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-1.5 rounded hover:bg-[#E4E4E7] disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronRight size={16} />
               </button>

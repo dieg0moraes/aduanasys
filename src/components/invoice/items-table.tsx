@@ -36,7 +36,7 @@ const SOURCE_STYLES: Record<string, string> = {
   exact_match: "bg-purple-50 text-purple-700 border-purple-200",
   semantic: "bg-blue-50 text-blue-700 border-blue-200",
   llm_rag: "bg-amber-50 text-amber-700 border-amber-200",
-  manual: "bg-gray-50 text-gray-700 border-gray-200",
+  manual: "bg-[#FAFAFA] text-[#71717A] border-[#E4E4E7]",
 };
 
 function ConfidenceBadge({ level, source }: { level: ConfidenceLevel; source: ClassificationSource }) {
@@ -49,7 +49,7 @@ function ConfidenceBadge({ level, source }: { level: ConfidenceLevel; source: Cl
   return (
     <div className="flex items-center gap-1.5">
       {icons[level]}
-      <span className="text-xs text-gray-600 font-medium">
+      <span className="text-xs text-[#71717A] font-medium">
         {CONFIDENCE_LABELS[level]}
       </span>
       <span
@@ -129,7 +129,7 @@ export function ItemsTable({
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="text-center py-8 text-[#71717A]">
         <p>No se encontraron ítems en esta factura.</p>
       </div>
     );
@@ -159,38 +159,38 @@ export function ItemsTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="bg-gray-50 border-b">
-            <th className="px-3 py-3 text-left font-medium text-gray-600 w-10">
+          <tr className="bg-[#FAFAFA] border-b">
+            <th className="px-3 py-3 text-left font-medium text-[#71717A] w-10">
               #
             </th>
-            <th className="px-3 py-3 text-left font-medium text-gray-600 w-24">
+            <th className="px-3 py-3 text-left font-medium text-[#71717A] w-24">
               SKU
             </th>
-            <th className="px-3 py-3 text-left font-medium text-gray-600">
+            <th className="px-3 py-3 text-left font-medium text-[#71717A]">
               Descripción Original
             </th>
-            <th className="px-3 py-3 text-left font-medium text-gray-600">
+            <th className="px-3 py-3 text-left font-medium text-[#71717A]">
               Desc. Aduanera
             </th>
-            <th className="px-3 py-3 text-left font-medium text-gray-600">
+            <th className="px-3 py-3 text-left font-medium text-[#71717A]">
               Desc. Interna
             </th>
-            <th className="px-3 py-3 text-left font-medium text-gray-600 w-36">
+            <th className="px-3 py-3 text-left font-medium text-[#71717A] w-36">
               NCM
             </th>
-            <th className="px-3 py-3 text-right font-medium text-gray-600 w-16">
+            <th className="px-3 py-3 text-right font-medium text-[#71717A] w-16">
               Cant.
             </th>
-            <th className="px-3 py-3 text-right font-medium text-gray-600 w-24">
+            <th className="px-3 py-3 text-right font-medium text-[#71717A] w-24">
               Total
             </th>
-            <th className="px-3 py-3 text-left font-medium text-gray-600 w-28">
+            <th className="px-3 py-3 text-left font-medium text-[#71717A] w-28">
               Origen
             </th>
-            <th className="px-3 py-3 text-right font-medium text-gray-600 w-24">
+            <th className="px-3 py-3 text-right font-medium text-[#71717A] w-24">
               Despachado
             </th>
-            <th className="px-3 py-3 text-center font-medium text-gray-600 w-28">
+            <th className="px-3 py-3 text-center font-medium text-[#71717A] w-28">
               Confianza
             </th>
           </tr>
@@ -208,32 +208,32 @@ export function ItemsTable({
                         ? "bg-blue-50/30 hover:bg-blue-50/50"
                         : item.confidence_level === "low"
                           ? "bg-red-50/20 hover:bg-red-50/40"
-                          : "hover:bg-gray-50/50"
+                          : "hover:bg-[#FAFAFA]/50"
                   } ${editable ? "cursor-pointer" : ""}`}
                   onClick={() => expandRow(item)}
                 >
-                  <td className="px-3 py-2.5 text-gray-400">
+                  <td className="px-3 py-2.5 text-[#A1A1AA]">
                     {item.line_number}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-xs text-gray-600">
+                  <td className="px-3 py-2.5 font-mono text-xs text-[#71717A]">
                     {item.sku || "-"}
                   </td>
-                  <td className="px-3 py-2.5 text-gray-700 max-w-xs">
+                  <td className="px-3 py-2.5 text-[#18181B] max-w-xs">
                     <span className="line-clamp-2">
                       {item.original_description}
                     </span>
                   </td>
-                  <td className="px-3 py-2.5 text-gray-700 max-w-xs">
+                  <td className="px-3 py-2.5 text-[#18181B] max-w-xs">
                     <span className="line-clamp-2">
                       {item.customs_description || (
-                        <span className="text-gray-400 italic">Sin descripción</span>
+                        <span className="text-[#A1A1AA] italic">Sin descripción</span>
                       )}
                     </span>
                   </td>
-                  <td className="px-3 py-2.5 text-gray-600 max-w-xs">
+                  <td className="px-3 py-2.5 text-[#71717A] max-w-xs">
                     <span className="line-clamp-2">
                       {item.internal_description || (
-                        <span className="text-gray-400">—</span>
+                        <span className="text-[#A1A1AA]">—</span>
                       )}
                     </span>
                   </td>
@@ -274,24 +274,24 @@ export function ItemsTable({
                       {editable && (
                         <SearchIcon
                           size={12}
-                          className="text-gray-300 opacity-0 group-hover:opacity-100 flex-shrink-0"
+                          className="text-[#A1A1AA] opacity-0 group-hover:opacity-100 flex-shrink-0"
                         />
                       )}
                     </div>
                   </td>
-                  <td className="px-3 py-2.5 text-right text-gray-700">
+                  <td className="px-3 py-2.5 text-right text-[#18181B]">
                     {item.quantity ?? "-"}
                     {item.unit_of_measure && (
-                      <span className="text-xs text-gray-400 ml-1">
+                      <span className="text-xs text-[#A1A1AA] ml-1">
                         {item.unit_of_measure}
                       </span>
                     )}
                   </td>
-                  <td className="px-3 py-2.5 text-right font-medium text-gray-900">
+                  <td className="px-3 py-2.5 text-right font-medium text-[#18181B]">
                     {formatCurrency(item.total_price, item.currency)}
                   </td>
-                  <td className="px-3 py-2.5 text-xs text-gray-600">
-                    {item.country_of_origin || <span className="text-gray-300">—</span>}
+                  <td className="px-3 py-2.5 text-xs text-[#71717A]">
+                    {item.country_of_origin || <span className="text-[#A1A1AA]">—</span>}
                   </td>
                   <td className="px-3 py-2.5 text-right text-xs">
                     {dispatchStatus && dispatchStatus[item.id] && dispatchStatus[item.id].dispatched_quantity > 0 ? (
@@ -303,7 +303,7 @@ export function ItemsTable({
                         {dispatchStatus[item.id].dispatched_quantity} / {item.quantity || 0}
                       </span>
                     ) : (
-                      <span className="text-gray-300">—</span>
+                      <span className="text-[#A1A1AA]">—</span>
                     )}
                   </td>
                   <td className="px-3 py-2.5">
@@ -315,7 +315,7 @@ export function ItemsTable({
                       {editable && (
                         <ChevronDown
                           size={14}
-                          className={`text-gray-400 transition-transform ml-1 ${
+                          className={`text-[#A1A1AA] transition-transform ml-1 ${
                             isExpanded ? "rotate-180" : ""
                           }`}
                         />
@@ -331,7 +331,7 @@ export function ItemsTable({
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">
+                            <label className="block text-xs font-medium text-[#71717A] mb-1">
                               Descripción Aduanera
                             </label>
                             <textarea
@@ -347,7 +347,7 @@ export function ItemsTable({
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">
+                            <label className="block text-xs font-medium text-[#71717A] mb-1">
                               Descripción Interna
                             </label>
                             <textarea
@@ -379,17 +379,17 @@ export function ItemsTable({
                               e.stopPropagation();
                               setExpandedId(null);
                             }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm text-gray-600 hover:bg-white transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm text-[#71717A] hover:bg-white transition-colors"
                           >
                             <X size={14} />
                             Cancelar
                           </button>
-                          <div className="ml-auto flex items-center gap-3 text-xs text-gray-500">
+                          <div className="ml-auto flex items-center gap-3 text-xs text-[#71717A]">
                             <span>
                               P. Unit: {formatCurrency(item.unit_price, item.currency)}
                             </span>
                             <div className="relative">
-                              <label className="text-xs text-gray-500 mr-1">Origen:</label>
+                              <label className="text-xs text-[#71717A] mr-1">Origen:</label>
                               {showCountryDropdown ? (
                                 <span className="inline-block relative">
                                   <input
@@ -438,22 +438,22 @@ export function ItemsTable({
                                           editValues.country_of_origin === c.name ? "bg-blue-50 font-medium" : ""
                                         }`}
                                       >
-                                        <span className="text-gray-400 font-mono mr-1.5">{c.code}</span>
+                                        <span className="text-[#A1A1AA] font-mono mr-1.5">{c.code}</span>
                                         {c.name}
                                       </button>
                                     ))}
                                     {filteredCountries.length === 0 && (
-                                      <p className="px-3 py-1.5 text-xs text-gray-400">Sin resultados</p>
+                                      <p className="px-3 py-1.5 text-xs text-[#A1A1AA]">Sin resultados</p>
                                     )}
                                   </div>
                                 </span>
                               ) : (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setShowCountryDropdown(true); }}
-                                  className="inline-flex items-center gap-1 px-2 py-1 border rounded text-xs hover:bg-gray-50 transition-colors"
+                                  className="inline-flex items-center gap-1 px-2 py-1 border rounded text-xs hover:bg-[#FAFAFA] transition-colors"
                                 >
-                                  <Globe size={11} className="text-gray-400" />
-                                  {editValues.country_of_origin || <span className="text-gray-400">Seleccionar</span>}
+                                  <Globe size={11} className="text-[#A1A1AA]" />
+                                  {editValues.country_of_origin || <span className="text-[#A1A1AA]">Seleccionar</span>}
                                 </button>
                               )}
                             </div>

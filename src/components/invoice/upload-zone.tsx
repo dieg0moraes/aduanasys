@@ -103,7 +103,7 @@ export const UploadZone = forwardRef<UploadZoneHandle, UploadZoneProps>(
               ? "border-[#2563EB] bg-[#EFF6FF]"
               : selectedFile
               ? "border-green-300 bg-green-50"
-              : "border-gray-300 hover:border-[#2563EB] hover:bg-[#EFF6FF]/50"
+              : "border-[#E4E4E7] hover:border-[#2563EB] hover:bg-[#EFF6FF]/50"
           }`}
         >
           <input
@@ -119,10 +119,10 @@ export const UploadZone = forwardRef<UploadZoneHandle, UploadZoneProps>(
               <div className="flex items-center justify-center gap-3">
                 <FileText className="text-green-600" size={32} />
                 <div className="text-left">
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-[#18181B]">
                     {selectedFile.name}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-[#71717A]">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                 </div>
@@ -131,24 +131,24 @@ export const UploadZone = forwardRef<UploadZoneHandle, UploadZoneProps>(
                     e.stopPropagation();
                     clearFile();
                   }}
-                  className="ml-4 p-1 rounded-full hover:bg-gray-200"
+                  className="ml-4 p-1 rounded-full hover:bg-[#E4E4E7]"
                 >
-                  <X size={18} className="text-gray-500" />
+                  <X size={18} className="text-[#71717A]" />
                 </button>
               </div>
             </div>
           ) : (
             <div className="space-y-3">
-              <Upload className="mx-auto text-gray-400" size={40} />
+              <Upload className="mx-auto text-[#A1A1AA]" size={40} />
               <div>
-                <p className="text-lg font-medium text-gray-700">
+                <p className="text-lg font-medium text-[#18181B]">
                   Arrastrá la factura acá
                 </p>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-[#71717A] mt-1">
                   o hacé click para seleccionar un archivo
                 </p>
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-[#A1A1AA]">
                 PDF, JPG, PNG, XLSX, CSV — Máximo 50MB
               </p>
             </div>

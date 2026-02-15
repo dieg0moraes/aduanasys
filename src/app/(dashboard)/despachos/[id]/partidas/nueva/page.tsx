@@ -216,7 +216,7 @@ export default function NuevaPartidaPage() {
   if (!invoiceId) {
     return (
       <div className="p-8 text-center">
-        <p className="text-gray-500">
+        <p className="text-[#71717A]">
           No se especificó la factura para crear la partida.
         </p>
       </div>
@@ -253,10 +253,10 @@ export default function NuevaPartidaPage() {
       )}
 
       {/* Form fields */}
-      <div className="bg-white rounded-xl border p-5 mb-6">
+      <div className="bg-white rounded-xl border border-[#E4E4E7] p-5 mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <label className="text-xs font-medium text-[#71717A] uppercase tracking-wide">
               Referencia
             </label>
             <input
@@ -269,7 +269,7 @@ export default function NuevaPartidaPage() {
           </div>
 
           <div>
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <label className="text-xs font-medium text-[#71717A] uppercase tracking-wide">
               Fecha
             </label>
             <input
@@ -281,7 +281,7 @@ export default function NuevaPartidaPage() {
           </div>
 
           <div>
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <label className="text-xs font-medium text-[#71717A] uppercase tracking-wide">
               Notas
             </label>
             <textarea
@@ -297,44 +297,44 @@ export default function NuevaPartidaPage() {
 
       {/* Items table */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">
+        <h2 className="text-lg font-semibold text-[#18181B] mb-3">
           Items de la factura ({itemRows.length})
         </h2>
 
         {itemRows.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border">
-            <Package size={40} className="mx-auto text-gray-300 mb-3" />
-            <p className="text-gray-500 text-sm">
+          <div className="text-center py-12 bg-white rounded-xl border border-[#E4E4E7]">
+            <Package size={40} className="mx-auto text-[#A1A1AA] mb-3" />
+            <p className="text-[#71717A] text-sm">
               La factura no tiene items
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-xl border overflow-x-auto">
+          <div className="bg-white rounded-xl border border-[#E4E4E7] overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-gray-50">
+                <tr className="border-b bg-[#FAFAFA]">
                   <th className="px-3 py-2.5 text-left w-10">
                     <span className="sr-only">Seleccionar</span>
                   </th>
-                  <th className="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5 text-left text-xs font-medium text-[#71717A] uppercase tracking-wide">
                     #
                   </th>
-                  <th className="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5 text-left text-xs font-medium text-[#71717A] uppercase tracking-wide">
                     SKU
                   </th>
-                  <th className="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5 text-left text-xs font-medium text-[#71717A] uppercase tracking-wide">
                     Descripcion
                   </th>
-                  <th className="px-3 py-2.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5 text-right text-xs font-medium text-[#71717A] uppercase tracking-wide">
                     Cantidad
                   </th>
-                  <th className="px-3 py-2.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5 text-right text-xs font-medium text-[#71717A] uppercase tracking-wide">
                     Despachado
                   </th>
-                  <th className="px-3 py-2.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5 text-right text-xs font-medium text-[#71717A] uppercase tracking-wide">
                     Disponible
                   </th>
-                  <th className="px-3 py-2.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5 text-right text-xs font-medium text-[#71717A] uppercase tracking-wide">
                     Cant. Partida
                   </th>
                 </tr>
@@ -348,10 +348,10 @@ export default function NuevaPartidaPage() {
                       key={row.item.id}
                       className={`${
                         isDisabled
-                          ? "bg-gray-50 opacity-60"
+                          ? "bg-[#FAFAFA] opacity-60"
                           : row.checked
                           ? "bg-[#EFF6FF]/50"
-                          : "hover:bg-gray-50"
+                          : "hover:bg-[#FAFAFA]"
                       }`}
                     >
                       {/* Checkbox */}
@@ -361,22 +361,22 @@ export default function NuevaPartidaPage() {
                           checked={row.checked}
                           disabled={isDisabled}
                           onChange={() => handleToggleItem(index)}
-                          className="rounded border-gray-300 text-[#2563EB] focus:ring-[#2563EB] disabled:opacity-50"
+                          className="rounded border-[#E4E4E7] text-[#2563EB] focus:ring-[#2563EB] disabled:opacity-50"
                         />
                       </td>
 
                       {/* Line number */}
-                      <td className="px-3 py-2.5 text-gray-500">
+                      <td className="px-3 py-2.5 text-[#71717A]">
                         {row.item.line_number}
                       </td>
 
                       {/* SKU */}
-                      <td className="px-3 py-2.5 text-gray-900 font-mono text-xs">
+                      <td className="px-3 py-2.5 text-[#18181B] font-mono text-xs">
                         {row.item.sku || "—"}
                       </td>
 
                       {/* Description */}
-                      <td className="px-3 py-2.5 text-gray-700 max-w-[300px]">
+                      <td className="px-3 py-2.5 text-[#18181B] max-w-[300px]">
                         <span
                           className="block truncate"
                           title={row.item.original_description}
@@ -386,14 +386,14 @@ export default function NuevaPartidaPage() {
                             : row.item.original_description}
                         </span>
                         {row.item.ncm_code && (
-                          <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 inline-block mt-1">
+                          <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-[#F4F4F5] text-[#71717A] inline-block mt-1">
                             {row.item.ncm_code}
                           </span>
                         )}
                       </td>
 
                       {/* Total quantity */}
-                      <td className="px-3 py-2.5 text-right text-gray-900 tabular-nums">
+                      <td className="px-3 py-2.5 text-right text-[#18181B] tabular-nums">
                         {row.item.quantity ?? 0}
                       </td>
 
@@ -404,7 +404,7 @@ export default function NuevaPartidaPage() {
                             {row.dispatched}
                           </span>
                         ) : (
-                          <span className="text-gray-400">0</span>
+                          <span className="text-[#A1A1AA]">0</span>
                         )}
                       </td>
 
@@ -415,7 +415,7 @@ export default function NuevaPartidaPage() {
                             {row.available}
                           </span>
                         ) : (
-                          <span className="text-gray-400">0</span>
+                          <span className="text-[#A1A1AA]">0</span>
                         )}
                       </td>
 
@@ -433,7 +433,7 @@ export default function NuevaPartidaPage() {
                               parseFloat(e.target.value) || 0
                             )
                           }
-                          className="w-20 px-2 py-1 border rounded-lg text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#2563EB] disabled:bg-gray-100 disabled:text-gray-400 tabular-nums"
+                          className="w-20 px-2 py-1 border rounded-lg text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#2563EB] disabled:bg-[#F4F4F5] disabled:text-[#A1A1AA] tabular-nums"
                         />
                       </td>
                     </tr>
@@ -461,7 +461,7 @@ export default function NuevaPartidaPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push(`/despachos/${despachoId}`)}
-            className="px-4 py-2 rounded-lg border text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 rounded-lg border text-sm text-[#71717A] hover:bg-[#FAFAFA] transition-colors"
           >
             Cancelar
           </button>

@@ -35,11 +35,11 @@ export default function LoginPage() {
     <div className="w-full max-w-sm">
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold text-[#1B2A4A]">AduanaSys</h1>
-        <p className="text-sm text-gray-500 mt-1">Despachos de Aduana</p>
+        <p className="text-sm text-[#71717A] mt-1">Despachos de Aduana</p>
       </div>
 
-      <div className="bg-white rounded-xl border p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">
+      <div className="bg-white rounded-xl border border-[#E4E4E7] p-6">
+        <h2 className="text-lg font-semibold text-[#18181B] mb-6">
           Iniciar Sesión
         </h2>
 
@@ -47,7 +47,7 @@ export default function LoginPage() {
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-[#18181B] mb-1"
             >
               Email
             </label>
@@ -65,7 +65,7 @@ export default function LoginPage() {
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-[#18181B] mb-1"
             >
               Contraseña
             </label>
