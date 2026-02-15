@@ -527,51 +527,52 @@ ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE despachos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE despacho_documents ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users full access" ON providers
-  FOR ALL USING (auth.role() = 'authenticated');
+-- Local dev: allow both authenticated and anon roles
+CREATE POLICY "Full access" ON providers
+  FOR ALL USING (true);
 
-CREATE POLICY "Authenticated users full access" ON invoices
-  FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Full access" ON invoices
+  FOR ALL USING (true);
 
-CREATE POLICY "Authenticated users full access" ON invoice_items
-  FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Full access" ON invoice_items
+  FOR ALL USING (true);
 
-CREATE POLICY "Authenticated users full access" ON product_catalog
-  FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Full access" ON product_catalog
+  FOR ALL USING (true);
 
-CREATE POLICY "Authenticated users full access" ON ncm_nomenclator
-  FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Full access" ON ncm_nomenclator
+  FOR ALL USING (true);
 
-CREATE POLICY "Authenticated users full access" ON clients
-  FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Full access" ON clients
+  FOR ALL USING (true);
 
-CREATE POLICY "Authenticated users full access" ON despachos
-  FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Full access" ON despachos
+  FOR ALL USING (true);
 
-CREATE POLICY "Authenticated users full access" ON despacho_documents
-  FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Full access" ON despacho_documents
+  FOR ALL USING (true);
 
 ALTER TABLE partidas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partida_items ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users full access" ON partidas
-  FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Full access" ON partidas
+  FOR ALL USING (true);
 
-CREATE POLICY "Authenticated users full access" ON partida_items
-  FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Full access" ON partida_items
+  FOR ALL USING (true);
 
--- Storage policies for documents bucket
-CREATE POLICY "Authenticated users can upload documents"
+-- Storage policies: allow all access for local dev
+CREATE POLICY "Allow all uploads"
   ON storage.objects FOR INSERT
-  TO authenticated
-  WITH CHECK (bucket_id = 'documents');
+  TO anon, authenticated
+  WITH CHECK (true);
 
-CREATE POLICY "Authenticated users can read documents"
+CREATE POLICY "Allow all reads"
   ON storage.objects FOR SELECT
-  TO authenticated
-  USING (bucket_id = 'documents');
+  TO anon, authenticated
+  USING (true);
 
-CREATE POLICY "Authenticated users can delete documents"
+CREATE POLICY "Allow all deletes"
   ON storage.objects FOR DELETE
-  TO authenticated
-  USING (bucket_id = 'documents');
+  TO anon, authenticated
+  USING (true);
