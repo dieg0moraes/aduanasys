@@ -15,13 +15,16 @@ import {
   Pencil,
   Download,
   Paperclip,
+  Package,
 } from "lucide-react";
-import type { Despacho, Invoice, DespachoDocument, DocumentType } from "@/lib/types";
+import type { Despacho, Invoice, DespachoDocument, DocumentType, Partida } from "@/lib/types";
 import {
   STATUS_LABELS,
   STATUS_COLORS,
   DOCUMENT_TYPE_LABELS,
   DOCUMENT_TYPE_COLORS,
+  PARTIDA_STATUS_LABELS,
+  PARTIDA_STATUS_COLORS,
 } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
@@ -53,6 +56,10 @@ export default function DespachoDetailPage() {
   // Delete
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Partidas
+  const [partidas, setPartidas] = useState<Partida[]>([]);
+  const [loadingPartidas, setLoadingPartidas] = useState(true);
 
   // Documents
   const [documents, setDocuments] = useState<DespachoDocument[]>([]);
@@ -87,10 +94,20 @@ export default function DespachoDetailPage() {
     setLoadingDocs(false);
   }, [id]);
 
+  const fetchPartidas = useCallback(async () => {
+    const res = await fetch(`/api/partidas?despacho_id=${id}`);
+    if (res.ok) {
+      const data = await res.json();
+      setPartidas(data);
+    }
+    setLoadingPartidas(false);
+  }, [id]);
+
   useEffect(() => {
     fetchDespacho();
     fetchDocuments();
-  }, [fetchDespacho, fetchDocuments]);
+    fetchPartidas();
+  }, [fetchDespacho, fetchDocuments, fetchPartidas]);
 
   const fetchAvailableInvoices = async () => {
     setLoadingAvailable(true);
@@ -446,6 +463,17 @@ export default function DespachoDetailPage() {
                   {STATUS_LABELS[invoice.status]}
                 </span>
                 <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/despachos/${id}/partidas/nueva?invoice=${invoice.id}`);
+                  }}
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-[#2E86C1] hover:bg-[#EBF5FB] transition-colors"
+                  title="Crear partida desde esta factura"
+                >
+                  <Plus size={14} />
+                  Partida
+                </button>
+                <button
                   onClick={() => handleUnlinkInvoice(invoice.id)}
                   className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                   title="Desvincular factura"
@@ -453,6 +481,69 @@ export default function DespachoDetailPage() {
                   <Unlink size={16} />
                 </button>
               </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Partidas section */}
+      <div className="flex items-center justify-between mb-4 mt-8">
+        <h2 className="text-lg font-semibold text-gray-900">
+          Partidas ({partidas.length})
+        </h2>
+      </div>
+
+      {loadingPartidas ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 size={24} className="animate-spin text-[#2E86C1]" />
+        </div>
+      ) : partidas.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-xl border">
+          <Package size={40} className="mx-auto text-gray-300 mb-3" />
+          <p className="text-gray-500 text-sm">
+            No hay partidas creadas para este despacho
+          </p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border divide-y">
+          {partidas.map((partida) => (
+            <div
+              key={partida.id}
+              onClick={() => router.push(`/despachos/${id}/partidas/${partida.id}`)}
+              className="flex items-center justify-between p-4 hover:bg-gray-50 cursor-pointer"
+            >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <Package size={18} className="text-gray-400 shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium text-gray-900 truncate">
+                    {partida.reference}
+                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {partida.invoice?.file_name && (
+                      <span className="text-xs text-gray-500 truncate">
+                        {partida.invoice.file_name}
+                      </span>
+                    )}
+                    {partida.date && (
+                      <span className="text-xs text-gray-400">
+                        {formatDate(partida.date)}
+                      </span>
+                    )}
+                    {typeof partida.item_count === "number" && (
+                      <span className="text-xs text-gray-400">
+                        {partida.item_count} {partida.item_count === 1 ? "item" : "items"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <span
+                className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  PARTIDA_STATUS_COLORS[partida.status]
+                }`}
+              >
+                {PARTIDA_STATUS_LABELS[partida.status]}
+              </span>
             </div>
           ))}
         </div>
