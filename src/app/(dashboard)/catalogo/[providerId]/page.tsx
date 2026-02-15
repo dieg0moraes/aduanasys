@@ -22,6 +22,7 @@ import type { Invoice } from "@/lib/types";
 import { STATUS_LABELS, STATUS_COLORS } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { NuevoProductoModal } from "@/components/catalog/nuevo-producto-modal";
 
 interface CatalogItem {
   id: string;
@@ -107,6 +108,7 @@ export default function ProviderCatalogPage() {
     internal_description: "",
   });
   const [saving, setSaving] = useState(false);
+  const [showNuevoProducto, setShowNuevoProducto] = useState(false);
 
   // Provider invoices
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -371,6 +373,7 @@ export default function ProviderCatalogPage() {
               Editar
             </button>
             <button
+              onClick={() => setShowNuevoProducto(true)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
             >
               <Plus size={14} />
@@ -827,6 +830,15 @@ export default function ProviderCatalogPage() {
           </div>
         )}
       </div>
+
+      {showNuevoProducto && (
+        <NuevoProductoModal
+          providerId={providerId}
+          providerName={providerName}
+          onClose={() => setShowNuevoProducto(false)}
+          onSaved={() => { setShowNuevoProducto(false); fetchCatalog(); }}
+        />
+      )}
     </div>
   );
 }
