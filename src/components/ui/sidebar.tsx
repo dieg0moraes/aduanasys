@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Package, FileText, BookOpen, Search, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, FileText, Users, BookOpen, Search, LogOut } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/despachos", label: "Despachos", icon: Package },
   { href: "/facturas", label: "Facturas", icon: FileText },
+  { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/catalogo", label: "Catálogo", icon: BookOpen },
   { href: "/ncm", label: "NCM", icon: Search },
 ];
