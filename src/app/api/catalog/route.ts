@@ -112,6 +112,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "SKU es obligatorio" }, { status: 400 });
     }
 
+    // Validar NCM contra nomenclator si se proporcionó
+    if (body.ncm_code?.trim()) {
+      const { data: ncmMatch } = await supabase
+        .from("ncm_nomenclator")
+        .select("id")
+        .eq("ncm_code", body.ncm_code.trim())
+        .limit(1);
+
+      if (!ncmMatch || ncmMatch.length === 0) {
+        return NextResponse.json(
+          { error: `El código NCM "${body.ncm_code.trim()}" no existe en el nomenclador` },
+          { status: 400 }
+        );
+      }
+    }
+
     const { data, error } = await supabase
       .from("product_catalog")
       .insert({
