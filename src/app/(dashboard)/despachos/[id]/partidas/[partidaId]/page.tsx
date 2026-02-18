@@ -47,9 +47,10 @@ const PARTIDA_STEPPER_STATUSES: PartidaStatus[] = [
 
 function getStepperSteps(currentStatus: PartidaStatus) {
   const currentIndex = PARTIDA_STEPPER_STATUSES.indexOf(currentStatus);
+  const isLast = currentIndex === PARTIDA_STEPPER_STATUSES.length - 1;
   return PARTIDA_STEPPER_STATUSES.map((s, i) => ({
     label: PARTIDA_STATUS_LABELS[s],
-    status: i < currentIndex ? "completed" as const : i === currentIndex ? "current" as const : "pending" as const,
+    status: i < currentIndex || (isLast && i === currentIndex) ? "completed" as const : i === currentIndex ? "current" as const : "pending" as const,
   }));
 }
 

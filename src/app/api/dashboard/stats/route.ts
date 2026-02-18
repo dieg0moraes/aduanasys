@@ -10,11 +10,11 @@ export async function GET() {
     .select("*", { count: "exact", head: true })
     .in("status", ["processing", "review"]);
 
-  // Despachos activos
+  // Despachos activos (abierto o en_proceso)
   const { count: despachosCount } = await supabase
     .from("despachos")
     .select("*", { count: "exact", head: true })
-    .neq("status", "completed");
+    .in("status", ["abierto", "en_proceso"]);
 
   // Items pendientes (low confidence)
   const { count: pendingItems } = await supabase

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import {
   Loader2,
   Trash2,
@@ -15,9 +15,10 @@ import {
   Download,
   Paperclip,
   Package,
-  FileDown,
+
   MessageSquare,
   Send,
+  ChevronDown,
 } from "lucide-react";
 import type { Despacho, Invoice, DespachoDocument, DocumentType, Partida, DespachoStatus } from "@/lib/types";
 import {
@@ -44,13 +45,28 @@ const DESPACHO_STATUS_TO_BADGE_COLOR: Record<DespachoStatus, "success" | "warnin
   cerrado: "gray",
 };
 
+const DESPACHO_STATUS_ORDER: DespachoStatus[] = ["abierto", "en_proceso", "despachado", "cerrado"];
+
+const DESPACHO_STATUS_DOT: Record<DespachoStatus, string> = {
+  abierto: "bg-[#2563EB]",
+  en_proceso: "bg-[#F59E0B]",
+  despachado: "bg-[#16A34A]",
+  cerrado: "bg-[#A1A1AA]",
+};
+
 export default function DespachoDetailPage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const fromCliente = searchParams.get("from") === "cliente";
 
   const [despacho, setDespacho] = useState<Despacho | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey>("facturas");
+
+  // Status dropdown
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [savingStatus, setSavingStatus] = useState(false);
 
   // Edit customs code
   const [editingCode, setEditingCode] = useState(false);
@@ -99,6 +115,25 @@ export default function DespachoDetailPage() {
   const [newNoteText, setNewNoteText] = useState("");
   const [addingNote, setAddingNote] = useState(false);
 
+  const handleStatusChange = async (newStatus: DespachoStatus) => {
+    if (!despacho || newStatus === despacho.status) {
+      setShowStatusDropdown(false);
+      return;
+    }
+    setSavingStatus(true);
+    const res = await fetch(`/api/despachos/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setDespacho({ ...despacho, ...data });
+    }
+    setSavingStatus(false);
+    setShowStatusDropdown(false);
+  };
+
   const fetchDespacho = useCallback(async () => {
     const res = await fetch(`/api/despachos/${id}`);
     if (res.ok) {
@@ -143,6 +178,7 @@ export default function DespachoDetailPage() {
     fetchPartidas();
     fetchJournalNotes();
   }, [fetchDespacho, fetchDocuments, fetchPartidas, fetchJournalNotes]);
+
 
   const fetchAvailableInvoices = async () => {
     setLoadingAvailable(true);
@@ -353,10 +389,18 @@ export default function DespachoDetailPage() {
     <div className="p-8 max-w-6xl mx-auto space-y-6">
       {/* Breadcrumb */}
       <Breadcrumb
-        items={[
-          { label: despacho.client?.name || "Cliente", href: `/clientes/${despacho.client_id}` },
-          { label: despacho.reference || `DES-${id.slice(0, 8)}` },
-        ]}
+        items={
+          fromCliente
+            ? [
+                { label: "Clientes", href: "/clientes" },
+                { label: despacho.client?.name || "Cliente", href: `/clientes/${despacho.client_id}` },
+                { label: despacho.reference || `DES-${id.slice(0, 8)}` },
+              ]
+            : [
+                { label: "Despachos", href: "/despachos" },
+                { label: despacho.reference || `DES-${id.slice(0, 8)}` },
+              ]
+        }
       />
 
       {/* Header */}
@@ -365,19 +409,38 @@ export default function DespachoDetailPage() {
           <h1 className="text-2xl font-bold text-[#18181B]">
             {despacho.reference || `DES-${id.slice(0, 8)}`}
           </h1>
-          <StatusBadge
-            label={DESPACHO_STATUS_LABELS[despacho.status]}
-            color={DESPACHO_STATUS_TO_BADGE_COLOR[despacho.status]}
-          />
+          <div className="relative">
+            <button
+              onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+              disabled={savingStatus}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#E4E4E7] text-xs font-medium hover:bg-[#FAFAFA] transition-colors disabled:opacity-50"
+            >
+              <span className={`w-2 h-2 rounded-full ${DESPACHO_STATUS_DOT[despacho.status]}`} />
+              <span>{DESPACHO_STATUS_LABELS[despacho.status]}</span>
+              <ChevronDown size={12} className="text-[#A1A1AA]" />
+            </button>
+            {showStatusDropdown && (
+              <>
+                <div className="fixed inset-0 z-[9]" onClick={() => setShowStatusDropdown(false)} />
+                <div className="absolute left-0 top-full mt-1 z-10 bg-white border border-[#E4E4E7] rounded-lg shadow-lg py-1 min-w-[160px]">
+                  {DESPACHO_STATUS_ORDER.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => handleStatusChange(s)}
+                      className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-[#FAFAFA] ${
+                        s === despacho.status ? "bg-[#EFF6FF] font-medium" : ""
+                      }`}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${DESPACHO_STATUS_DOT[s]}`} />
+                      {DESPACHO_STATUS_LABELS[s]}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => {/* TODO: export */}}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E4E4E7] text-sm text-[#18181B] hover:bg-[#F4F4F5] transition-colors"
-          >
-            <FileDown size={16} />
-            Exportar
-          </button>
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E4E4E7] text-sm text-[#DC2626] hover:bg-red-50 hover:border-red-200 transition-colors"

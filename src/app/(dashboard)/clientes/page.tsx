@@ -2,8 +2,10 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Search, Users, ChevronRight, Plus } from "lucide-react";
+import { Loader2, Search, Users, Plus, ChevronRight } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { KPICard } from "@/components/ui/kpi-card";
+import { StatusBadge } from "@/components/ui/status-badge";
 import type { Client } from "@/lib/types";
 
 const AVATAR_COLORS = [
@@ -66,6 +68,9 @@ export default function ClientesPage() {
     setCreating(false);
   };
 
+  const totalClients = clients.length;
+  const withDespachos = clients.filter((c) => (c.despacho_count ?? 0) > 0).length;
+
   return (
     <div className="p-6 xl:p-8">
       {/* Header */}
@@ -73,12 +78,12 @@ export default function ClientesPage() {
         <div>
           <h1 className="text-2xl font-bold text-[#18181B]">Clientes</h1>
           <p className="text-sm text-[#71717A] mt-1">
-            {clients.length} cliente{clients.length !== 1 ? "s" : ""}
+            Gestiona tus clientes y sus despachos
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#2563EB] text-white text-sm font-semibold hover:bg-[#1D4ED8] transition-colors"
         >
           <Plus size={16} />
           Nuevo Cliente
@@ -130,6 +135,18 @@ export default function ClientesPage() {
         </form>
       )}
 
+      {/* KPI Cards */}
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        <KPICard label="Total Clientes" value={totalClients} trend={{ value: `+${totalClients}`, positive: true }} />
+        <KPICard label="Con Despachos" value={withDespachos} trend={{ value: `${withDespachos}`, positive: true }} />
+        <KPICard label="Sin Despachos" value={totalClients - withDespachos} />
+        <KPICard label="Nuevos este Mes" value={clients.filter((c) => {
+          const d = new Date(c.created_at);
+          const now = new Date();
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        }).length} />
+      </div>
+
       {/* Search */}
       <div className="mb-6">
         <div className="relative max-w-md">
@@ -138,13 +155,13 @@ export default function ClientesPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nombre..."
+            placeholder="Buscar por nombre o CUIT..."
             className="w-full pl-9 pr-4 py-2.5 border border-[#E4E4E7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
           />
         </div>
       </div>
 
-      {/* List */}
+      {/* Table */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 size={24} className="animate-spin text-[#2563EB]" />
@@ -155,31 +172,59 @@ export default function ClientesPage() {
           <p className="text-[#71717A]">No se encontraron clientes</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-[#E4E4E7] divide-y divide-[#E4E4E7]">
-          {clients.map((client) => (
-            <button
-              key={client.id}
-              onClick={() => router.push(`/clientes/${client.id}`)}
-              className="w-full flex items-center gap-4 px-5 py-4 hover:bg-[#FAFAFA] transition-colors text-left"
-            >
-              <div className={`w-10 h-10 rounded-full ${getAvatarColor(client.name)} flex items-center justify-center text-white font-semibold text-sm`}>
-                {client.name.charAt(0).toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-[#18181B]">{client.name}</p>
-                {client.cuit && (
-                  <p className="text-xs text-[#A1A1AA] font-mono">{client.cuit}</p>
-                )}
-              </div>
-              <div className="text-right mr-4">
-                <p className="text-sm font-medium text-[#18181B]">
-                  {client.despacho_count ?? 0}
-                </p>
-                <p className="text-xs text-[#A1A1AA]">despachos</p>
-              </div>
-              <ChevronRight size={16} className="text-[#A1A1AA]" />
-            </button>
-          ))}
+        <div className="bg-white rounded-xl border border-[#E4E4E7] overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#E4E4E7] bg-[#FAFAFA]">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#71717A] w-10">#</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#71717A]">Cliente</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#71717A] w-[140px]">CUIT</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#71717A] w-[100px]">Despachos</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#71717A] w-[120px]">Estado</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#71717A] w-[120px]">Creado</th>
+                <th className="px-4 py-3 w-10" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E4E4E7]">
+              {clients.map((client, idx) => (
+                <tr
+                  key={client.id}
+                  onClick={() => router.push(`/clientes/${client.id}`)}
+                  className="hover:bg-[#FAFAFA] cursor-pointer transition-colors"
+                >
+                  <td className="px-4 py-3 text-[#A1A1AA]">{idx + 1}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-full ${getAvatarColor(client.name)} flex items-center justify-center text-white font-semibold text-sm shrink-0`}>
+                        {client.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-[#18181B] truncate">{client.name}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-[#71717A] font-mono text-xs">
+                    {client.cuit || "—"}
+                  </td>
+                  <td className="px-4 py-3 text-[#71717A]">
+                    {client.despacho_count ?? 0}
+                  </td>
+                  <td className="px-4 py-3">
+                    <StatusBadge
+                      label={(client.despacho_count ?? 0) > 0 ? "Activo" : "Sin despachos"}
+                      color={(client.despacho_count ?? 0) > 0 ? "success" : "gray"}
+                    />
+                  </td>
+                  <td className="px-4 py-3 text-[#71717A]">
+                    {formatDate(client.created_at)}
+                  </td>
+                  <td className="px-4 py-3 text-[#A1A1AA]">
+                    <ChevronRight size={16} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

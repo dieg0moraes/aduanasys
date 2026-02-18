@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Copy,
   Check,
+  GitBranch,
 } from "lucide-react";
 
 interface NCMResult {
@@ -303,20 +304,46 @@ export default function NCMPage() {
                         <p className="text-sm text-[#18181B]">{result.description}</p>
                       </div>
 
-                      {/* Hierarchy Breadcrumb */}
+                      {/* Section & Chapter */}
+                      {(result.section || result.chapter) && (
+                        <div className="flex flex-wrap gap-4">
+                          {result.section && (
+                            <div>
+                              <p className="text-xs font-medium text-[#71717A] mb-0.5">Sección</p>
+                              <p className="text-sm text-[#18181B]">{result.section}</p>
+                            </div>
+                          )}
+                          {result.chapter && (
+                            <div>
+                              <p className="text-xs font-medium text-[#71717A] mb-0.5">Capítulo</p>
+                              <p className="text-sm text-[#18181B]">{result.chapter}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Hierarchy Tree */}
                       {result.hierarchy_path && result.hierarchy_path.length > 0 && (
                         <div>
-                          <p className="text-xs font-medium text-[#71717A] mb-1">Jerarquia</p>
-                          <div className="flex flex-wrap items-center gap-1 text-xs text-[#52525B]">
+                          <p className="text-xs font-medium text-[#71717A] mb-2">Árbol de clasificación</p>
+                          <div className="bg-[#F0FDFA] border border-[#CCFBF1] rounded-lg px-3 py-2.5 space-y-1.5">
                             {result.hierarchy_path.map((seg, i) => {
-                              const label = seg
-                                .replace(/^(Section|Chapter|Heading|Item|Sección|Capítulo|Partida|Subpartida):\s*/, "")
-                                .split(" - ")[0];
+                              const cleaned = seg.replace(/^(Section|Chapter|Heading|Item|Sección|Capítulo|Partida|Subpartida):\s*/, "");
+                              const parts = cleaned.split(" - ");
+                              const code = parts[0];
+                              const desc = parts.slice(1).join(" - ");
                               return (
-                                <span key={i} className="flex items-center gap-1">
-                                  {i > 0 && <span className="text-[#D4D4D8]">&rsaquo;</span>}
-                                  <span>{label}</span>
-                                </span>
+                                <div key={i} className="flex items-start gap-1.5" style={{ paddingLeft: `${i * 16}px` }}>
+                                  {i === 0 ? (
+                                    <GitBranch size={12} className="text-teal-400 flex-shrink-0 mt-0.5" />
+                                  ) : (
+                                    <span className="text-teal-300 flex-shrink-0 mt-px text-xs">└</span>
+                                  )}
+                                  <span className="text-xs text-teal-800">
+                                    <span className="font-semibold font-mono">{code}</span>
+                                    {desc && <span className="text-teal-600"> — {desc}</span>}
+                                  </span>
+                                </div>
                               );
                             })}
                           </div>

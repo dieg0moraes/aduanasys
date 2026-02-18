@@ -15,7 +15,7 @@ import {
   FileText,
   ChevronDown,
   Package,
-  Pencil,
+
   Plus,
 } from "lucide-react";
 import type { Invoice } from "@/lib/types";
@@ -366,12 +366,6 @@ export default function ProviderCatalogPage() {
 
           {/* Action buttons */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#E4E4E7] text-sm font-medium text-[#71717A] hover:bg-[#FAFAFA] transition-colors"
-            >
-              <Pencil size={14} />
-              Editar
-            </button>
             <button
               onClick={() => setShowNuevoProducto(true)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] transition-colors"

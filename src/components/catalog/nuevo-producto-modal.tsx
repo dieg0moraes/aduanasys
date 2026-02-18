@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { X, Loader2, Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Loader2, ChevronDown } from "lucide-react";
 
 interface NuevoProductoModalProps {
   providerId?: string;
@@ -12,6 +12,7 @@ interface NuevoProductoModalProps {
 
 export function NuevoProductoModal({ providerId, providerName, onClose, onSaved }: NuevoProductoModalProps) {
   // Form state
+  const [selectedProviderId, setSelectedProviderId] = useState(providerId || "");
   const [sku, setSku] = useState("");
   const [providerDescription, setProviderDescription] = useState("");
   const [internalDescription, setInternalDescription] = useState("");
@@ -21,8 +22,26 @@ export function NuevoProductoModal({ providerId, providerName, onClose, onSaved 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Provider list (only fetched when no providerId is given)
+  const [providers, setProviders] = useState<{ id: string; name: string }[]>([]);
+  const [loadingProviders, setLoadingProviders] = useState(false);
+
+  useEffect(() => {
+    if (!providerId) {
+      setLoadingProviders(true);
+      fetch("/api/providers")
+        .then((res) => (res.ok ? res.json() : { providers: [] }))
+        .then((data) => setProviders(data.providers || []))
+        .finally(() => setLoadingProviders(false));
+    }
+  }, [providerId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedProviderId) {
+      setError("Seleccioná un proveedor.");
+      return;
+    }
     if (!sku.trim() || !providerDescription.trim()) {
       setError("SKU y descripción comercial son obligatorios.");
       return;
@@ -34,7 +53,7 @@ export function NuevoProductoModal({ providerId, providerName, onClose, onSaved 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          provider_id: providerId,
+          provider_id: selectedProviderId,
           sku: sku.trim(),
           provider_description: providerDescription.trim(),
           internal_description: internalDescription.trim() || undefined,
@@ -57,7 +76,6 @@ export function NuevoProductoModal({ providerId, providerName, onClose, onSaved 
     }
   };
 
-  // Render a modal overlay
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px]"
@@ -74,11 +92,29 @@ export function NuevoProductoModal({ providerId, providerName, onClose, onSaved 
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* Provider (read-only if pre-selected) */}
-          {providerName && (
+          {/* Provider */}
+          {providerName ? (
             <div>
               <label className="text-xs font-medium text-[#71717A] uppercase tracking-wide">Proveedor</label>
               <p className="mt-1 text-sm text-[#18181B] font-medium">{providerName}</p>
+            </div>
+          ) : (
+            <div>
+              <label className="text-xs font-medium text-[#71717A] uppercase tracking-wide">Proveedor *</label>
+              <div className="relative mt-1">
+                <select
+                  value={selectedProviderId}
+                  onChange={(e) => setSelectedProviderId(e.target.value)}
+                  className="w-full px-3 py-2 border border-[#E4E4E7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] appearance-none bg-white"
+                  disabled={loadingProviders}
+                >
+                  <option value="">{loadingProviders ? "Cargando..." : "Seleccionar proveedor"}</option>
+                  {providers.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A1A1AA] pointer-events-none" />
+              </div>
             </div>
           )}
 
