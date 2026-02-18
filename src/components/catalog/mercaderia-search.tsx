@@ -15,6 +15,7 @@ import {
   Building2,
 } from "lucide-react";
 import { formatDate, formatCurrency } from "@/lib/utils";
+import { COUNTRIES, searchCountries } from "@/lib/countries";
 
 // --- Types ---
 
@@ -214,7 +215,10 @@ export default function MercaderiaSearch() {
   const [showModalProviderDropdown, setShowModalProviderDropdown] = useState(false);
   const [selectedProviderName, setSelectedProviderName] = useState("");
   const [creatingProvider, setCreatingProvider] = useState(false);
-  const [newProviderName, setNewProviderName] = useState("");
+  // Country selector for new provider
+  const [newProviderCountry, setNewProviderCountry] = useState("");
+  const [countrySearch, setCountrySearch] = useState("");
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
 
   // Debounce search input
   useEffect(() => {
@@ -329,21 +333,24 @@ export default function MercaderiaSearch() {
   }, [showModalProviderDropdown, modalProviderSearch]);
 
   const handleCreateProviderInModal = async () => {
-    if (!newProviderName.trim()) return;
+    if (!modalProviderSearch.trim()) return;
     setCreatingProvider(true);
     try {
+      const body: { name: string; country?: string } = { name: modalProviderSearch.trim() };
+      if (newProviderCountry) body.country = newProviderCountry;
       const res = await fetch("/api/providers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newProviderName.trim() }),
+        body: JSON.stringify(body),
       });
       if (res.ok) {
         const provider = await res.json();
         setNewProduct((p) => ({ ...p, provider_id: provider.id }));
         setSelectedProviderName(provider.name);
         setShowModalProviderDropdown(false);
-        setNewProviderName("");
         setModalProviderSearch("");
+        setNewProviderCountry("");
+        setCountrySearch("");
       }
     } catch {
       // ignore
@@ -365,6 +372,8 @@ export default function MercaderiaSearch() {
       apertura: null,
     });
     setSelectedProviderName("");
+    setNewProviderCountry("");
+    setCountrySearch("");
     setCreateError("");
   };
 
@@ -676,7 +685,7 @@ export default function MercaderiaSearch() {
                         type="text"
                         value={modalProviderSearch}
                         onChange={(e) => setModalProviderSearch(e.target.value)}
-                        placeholder="Buscar proveedor..."
+                        placeholder="Buscar o escribir nombre de proveedor..."
                         className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
                         autoFocus
                         onKeyDown={(e) => {
@@ -686,7 +695,7 @@ export default function MercaderiaSearch() {
                           }
                         }}
                       />
-                      <div className="absolute z-10 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      <div className="absolute z-10 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
                         {loadingModalProviders ? (
                           <div className="flex items-center justify-center py-3">
                             <Loader2 size={14} className="animate-spin text-[#2E86C1]" />
@@ -709,34 +718,23 @@ export default function MercaderiaSearch() {
                                 {p.name}
                               </button>
                             ))}
-                            {modalProviders.length === 0 && modalProviderSearch.trim() && (
-                              <p className="px-3 py-2 text-sm text-gray-400">Sin resultados</p>
+                            {/* Create new provider option */}
+                            {modalProviderSearch.trim() && (
+                              <button
+                                onClick={handleCreateProviderInModal}
+                                disabled={creatingProvider}
+                                className="w-full text-left px-3 py-2 text-sm border-t hover:bg-[#EBF5FB] flex items-center gap-2 text-[#2E86C1] font-medium"
+                              >
+                                {creatingProvider ? (
+                                  <Loader2 size={14} className="animate-spin" />
+                                ) : (
+                                  <Plus size={14} />
+                                )}
+                                Crear &ldquo;{modalProviderSearch.trim()}&rdquo;
+                              </button>
                             )}
                           </>
                         )}
-                        {/* Create new provider */}
-                        <div className="border-t px-3 py-2">
-                          <p className="text-xs text-gray-400 mb-1.5">Crear nuevo proveedor</p>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={newProviderName}
-                              onChange={(e) => setNewProviderName(e.target.value)}
-                              placeholder="Nombre"
-                              className="flex-1 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#2E86C1]"
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") handleCreateProviderInModal();
-                              }}
-                            />
-                            <button
-                              onClick={handleCreateProviderInModal}
-                              disabled={creatingProvider || !newProviderName.trim()}
-                              className="px-2 py-1 rounded bg-[#2E86C1] text-white text-xs font-medium hover:bg-[#2574A9] disabled:opacity-50"
-                            >
-                              {creatingProvider ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
-                            </button>
-                          </div>
-                        </div>
                       </div>
                     </div>
                   ) : (
@@ -753,6 +751,45 @@ export default function MercaderiaSearch() {
                     </button>
                   )}
                 </div>
+                {/* Country selector - shown when typing a name to create a new provider */}
+                {showModalProviderDropdown && modalProviderSearch.trim() && (
+                  <div className="mt-2">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      País del proveedor
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={countrySearch}
+                        onChange={(e) => {
+                          setCountrySearch(e.target.value);
+                          setShowCountryDropdown(true);
+                          setNewProviderCountry("");
+                        }}
+                        onFocus={() => setShowCountryDropdown(true)}
+                        placeholder={newProviderCountry || "Buscar país..."}
+                        className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                      />
+                      {showCountryDropdown && (
+                        <div className="absolute z-20 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                          {searchCountries(countrySearch).slice(0, 20).map((c) => (
+                            <button
+                              key={c.code}
+                              onClick={() => {
+                                setNewProviderCountry(c.name);
+                                setCountrySearch(c.name);
+                                setShowCountryDropdown(false);
+                              }}
+                              className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#EBF5FB]"
+                            >
+                              {c.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* SKU */}

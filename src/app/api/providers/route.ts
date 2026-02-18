@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const { name } = await request.json();
+    const { name, country } = await request.json();
 
     if (!name || !name.trim()) {
       return NextResponse.json({ error: "Nombre es obligatorio" }, { status: 400 });
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabase
       .from("providers")
-      .insert({ name: name.trim() })
+      .insert({ name: name.trim(), ...(country ? { country: country } : {}) })
       .select("id, name, country, created_at")
       .single();
 
