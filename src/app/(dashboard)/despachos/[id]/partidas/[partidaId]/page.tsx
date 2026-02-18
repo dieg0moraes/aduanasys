@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import {
-  ArrowLeft,
   Loader2,
   Trash2,
   Check,
@@ -15,9 +14,11 @@ import {
 import type { Partida, PartidaItem, PartidaStatus } from "@/lib/types";
 import {
   PARTIDA_STATUS_LABELS,
-  PARTIDA_STATUS_COLORS,
 } from "@/lib/types";
 import { formatDate, formatCurrency } from "@/lib/utils";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { StatusStepper } from "@/components/ui/status-stepper";
 
 // Status transition map: which status comes next
 const NEXT_STATUS: Partial<Record<PartidaStatus, PartidaStatus>> = {
@@ -29,6 +30,29 @@ const NEXT_STATUS_LABELS: Partial<Record<PartidaStatus, string>> = {
   borrador: "Marcar como Presentada",
   presentada: "Marcar como Despachada",
 };
+
+// Map partida status to StatusBadge color
+const STATUS_BADGE_COLOR: Record<PartidaStatus, "gray" | "blue" | "success"> = {
+  borrador: "gray",
+  presentada: "blue",
+  despachada: "success",
+};
+
+// Ordered statuses for stepper
+const PARTIDA_STEPPER_STATUSES: PartidaStatus[] = [
+  "borrador",
+  "presentada",
+  "despachada",
+];
+
+function getStepperSteps(currentStatus: PartidaStatus) {
+  const currentIndex = PARTIDA_STEPPER_STATUSES.indexOf(currentStatus);
+  const isLast = currentIndex === PARTIDA_STEPPER_STATUSES.length - 1;
+  return PARTIDA_STEPPER_STATUSES.map((s, i) => ({
+    label: PARTIDA_STATUS_LABELS[s],
+    status: i < currentIndex || (isLast && i === currentIndex) ? "completed" as const : i === currentIndex ? "current" as const : "pending" as const,
+  }));
+}
 
 export default function PartidaDetailPage() {
   const router = useRouter();
@@ -222,7 +246,7 @@ export default function PartidaDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 size={32} className="animate-spin text-[#2E86C1]" />
+        <Loader2 size={32} className="animate-spin text-[#2563EB]" />
       </div>
     );
   }
@@ -230,7 +254,7 @@ export default function PartidaDetailPage() {
   if (!partida) {
     return (
       <div className="p-8 text-center">
-        <p className="text-gray-500">Partida no encontrada</p>
+        <p className="text-[#71717A]">Partida no encontrada</p>
       </div>
     );
   }
@@ -239,35 +263,34 @@ export default function PartidaDetailPage() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      {/* Back */}
-      <button
-        onClick={() => router.push(`/despachos/${despachoId}`)}
-        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
-      >
-        <ArrowLeft size={16} />
-        Volver al despacho
-      </button>
+      {/* Breadcrumb */}
+      <div className="mb-4">
+        <Breadcrumb
+          items={[
+            { label: "Despachos", href: "/despachos" },
+            { label: `DES-${despachoId.slice(0, 8)}`, href: `/despachos/${despachoId}` },
+            { label: partida.reference || "Partida" },
+          ]}
+        />
+      </div>
 
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">
-            {partida.reference}
+          <h1 className="text-2xl font-bold text-[#18181B]">
+            Partida {partida.reference}
           </h1>
-          <span
-            className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              PARTIDA_STATUS_COLORS[partida.status]
-            }`}
-          >
-            {PARTIDA_STATUS_LABELS[partida.status]}
-          </span>
+          <StatusBadge
+            label={PARTIDA_STATUS_LABELS[partida.status]}
+            color={STATUS_BADGE_COLOR[partida.status]}
+          />
         </div>
         <div className="flex items-center gap-2">
           {/* Export DUA */}
           <button
             onClick={handleExportDUA}
             disabled={exporting}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E4E4E7] text-sm font-medium text-[#18181B] hover:bg-[#FAFAFA] disabled:opacity-50 transition-colors"
           >
             {exporting ? (
               <Loader2 size={16} className="animate-spin" />
@@ -277,12 +300,12 @@ export default function PartidaDetailPage() {
             {exporting ? "Exportando..." : "Exportar DUA"}
           </button>
 
-          {/* Status transition */}
+          {/* Editar (status transition) */}
           {NEXT_STATUS[partida.status] && (
             <button
               onClick={handleStatusTransition}
               disabled={changingStatus}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#E4E4E7] text-sm font-medium text-[#18181B] hover:bg-[#FAFAFA] disabled:opacity-50 transition-colors"
             >
               {changingStatus && (
                 <Loader2 size={16} className="animate-spin" />
@@ -295,7 +318,7 @@ export default function PartidaDetailPage() {
           {isBorrador && (
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="p-2 rounded-lg border text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors"
+              className="p-2 rounded-lg border border-[#E4E4E7] text-[#DC2626] hover:bg-red-50 hover:border-red-200 transition-colors"
               title="Eliminar partida"
             >
               <Trash2 size={16} />
@@ -314,13 +337,13 @@ export default function PartidaDetailPage() {
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700 disabled:opacity-50"
+              className="px-3 py-1.5 rounded-lg bg-[#DC2626] text-white text-sm hover:bg-red-700 disabled:opacity-50"
             >
               {deleting ? "Eliminando..." : "Eliminar"}
             </button>
             <button
               onClick={() => setShowDeleteConfirm(false)}
-              className="px-3 py-1.5 rounded-lg border text-sm text-gray-600 hover:bg-white"
+              className="px-3 py-1.5 rounded-lg border border-[#E4E4E7] text-sm text-[#71717A] hover:bg-white"
             >
               Cancelar
             </button>
@@ -329,44 +352,156 @@ export default function PartidaDetailPage() {
       )}
 
       {/* Info card */}
-      <div className="bg-white rounded-xl border p-5 mb-6 space-y-4">
-        {/* Invoice info (read-only) */}
-        {partida.invoice && (
+      <div className="bg-white rounded-xl border border-[#E4E4E7] p-5 mb-6">
+        <div className="grid grid-cols-3 gap-6">
+          {/* Factura */}
           <div>
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <label className="text-xs font-medium text-[#71717A] uppercase tracking-wide">
               Factura
             </label>
-            <p className="text-sm text-gray-900 mt-1">
-              {partida.invoice.file_name}
-              {partida.invoice.provider && (
-                <span className="text-gray-500">
-                  {" "}
-                  - {(partida.invoice.provider as { name: string }).name}
-                </span>
-              )}
-            </p>
+            {partida.invoice ? (
+              <p className="text-sm text-[#18181B] mt-1">
+                {partida.invoice.file_name}
+                {partida.invoice.provider && (
+                  <span className="text-[#71717A]">
+                    {" "}
+                    - {(partida.invoice.provider as { name: string }).name}
+                  </span>
+                )}
+              </p>
+            ) : (
+              <p className="text-sm text-[#A1A1AA] italic mt-1">Sin factura</p>
+            )}
           </div>
-        )}
 
-        {/* Reference (inline edit when borrador) */}
-        <div>
-          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-            Referencia
-          </label>
-          {isBorrador && editingReference ? (
+          {/* Fecha */}
+          <div>
+            <label className="text-xs font-medium text-[#71717A] uppercase tracking-wide">
+              Fecha
+            </label>
+            {isBorrador && editingDate ? (
+              <div className="flex items-center gap-2 mt-1">
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="px-3 py-1.5 border border-[#E4E4E7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] flex-1"
+                  autoFocus
+                />
+                <button
+                  onClick={handleSaveDate}
+                  disabled={savingDate}
+                  className="p-1.5 rounded-lg bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:opacity-50"
+                >
+                  <Check size={16} />
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingDate(false);
+                    setDate(partida.date || "");
+                  }}
+                  className="p-1.5 rounded-lg border border-[#E4E4E7] text-[#71717A] hover:bg-[#FAFAFA]"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-sm text-[#18181B]">
+                  {partida.date ? (
+                    new Date(partida.date + "T12:00:00").toLocaleDateString("es-AR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })
+                  ) : (
+                    <span className="text-[#A1A1AA] italic">Sin fecha</span>
+                  )}
+                </p>
+                {isBorrador && (
+                  <button
+                    onClick={() => setEditingDate(true)}
+                    className="p-1 rounded text-[#A1A1AA] hover:text-[#71717A]"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Notas */}
+          <div>
+            <label className="text-xs font-medium text-[#71717A] uppercase tracking-wide">
+              Notas
+            </label>
+            {isBorrador && editingNotes ? (
+              <div className="flex items-start gap-2 mt-1">
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="px-3 py-1.5 border border-[#E4E4E7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] flex-1 min-h-[60px]"
+                  placeholder="Notas de la partida"
+                  autoFocus
+                />
+                <div className="flex flex-col gap-1">
+                  <button
+                    onClick={handleSaveNotes}
+                    disabled={savingNotes}
+                    className="p-1.5 rounded-lg bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:opacity-50"
+                  >
+                    <Check size={16} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingNotes(false);
+                      setNotes(partida.notes || "");
+                    }}
+                    className="p-1.5 rounded-lg border border-[#E4E4E7] text-[#71717A] hover:bg-[#FAFAFA]"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-start gap-2 mt-1">
+                <p className="text-sm text-[#18181B] whitespace-pre-wrap">
+                  {partida.notes || (
+                    <span className="text-[#A1A1AA] italic">Sin notas</span>
+                  )}
+                </p>
+                {isBorrador && (
+                  <button
+                    onClick={() => setEditingNotes(true)}
+                    className="p-1 rounded text-[#A1A1AA] hover:text-[#71717A] shrink-0"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Reference inline edit (shown below grid when borrador) */}
+        {isBorrador && editingReference && (
+          <div className="mt-4 pt-4 border-t border-[#E4E4E7]">
+            <label className="text-xs font-medium text-[#71717A] uppercase tracking-wide">
+              Referencia
+            </label>
             <div className="flex items-center gap-2 mt-1">
               <input
                 type="text"
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
-                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] flex-1"
+                className="px-3 py-1.5 border border-[#E4E4E7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] flex-1"
                 placeholder="P-001"
                 autoFocus
               />
               <button
                 onClick={handleSaveReference}
                 disabled={savingReference}
-                className="p-1.5 rounded-lg bg-[#2E86C1] text-white hover:bg-[#2574A9] disabled:opacity-50"
+                className="p-1.5 rounded-lg bg-[#2563EB] text-white hover:bg-[#1D4ED8] disabled:opacity-50"
               >
                 <Check size={16} />
               </button>
@@ -375,199 +510,80 @@ export default function PartidaDetailPage() {
                   setEditingReference(false);
                   setReference(partida.reference || "");
                 }}
-                className="p-1.5 rounded-lg border text-gray-500 hover:bg-gray-50"
+                className="p-1.5 rounded-lg border border-[#E4E4E7] text-[#71717A] hover:bg-[#FAFAFA]"
               >
                 <X size={16} />
               </button>
             </div>
-          ) : (
-            <div className="flex items-center gap-2 mt-1">
-              <p className="text-sm text-gray-900">
-                {partida.reference || (
-                  <span className="text-gray-400 italic">Sin referencia</span>
-                )}
-              </p>
-              {isBorrador && (
-                <button
-                  onClick={() => setEditingReference(true)}
-                  className="p-1 rounded text-gray-400 hover:text-gray-600"
-                >
-                  <Pencil size={14} />
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+          </div>
+        )}
+      </div>
 
-        {/* Date (inline edit when borrador) */}
-        <div>
-          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-            Fecha
-          </label>
-          {isBorrador && editingDate ? (
-            <div className="flex items-center gap-2 mt-1">
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] flex-1"
-                autoFocus
-              />
-              <button
-                onClick={handleSaveDate}
-                disabled={savingDate}
-                className="p-1.5 rounded-lg bg-[#2E86C1] text-white hover:bg-[#2574A9] disabled:opacity-50"
-              >
-                <Check size={16} />
-              </button>
-              <button
-                onClick={() => {
-                  setEditingDate(false);
-                  setDate(partida.date || "");
-                }}
-                className="p-1.5 rounded-lg border text-gray-500 hover:bg-gray-50"
-              >
-                <X size={16} />
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 mt-1">
-              <p className="text-sm text-gray-900">
-                {partida.date ? (
-                  new Date(partida.date + "T12:00:00").toLocaleDateString("es-AR", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })
-                ) : (
-                  <span className="text-gray-400 italic">Sin fecha</span>
-                )}
-              </p>
-              {isBorrador && (
-                <button
-                  onClick={() => setEditingDate(true)}
-                  className="p-1 rounded text-gray-400 hover:text-gray-600"
-                >
-                  <Pencil size={14} />
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Notes (inline edit when borrador) */}
-        <div>
-          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-            Notas
-          </label>
-          {isBorrador && editingNotes ? (
-            <div className="flex items-start gap-2 mt-1">
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] flex-1 min-h-[60px]"
-                placeholder="Notas de la partida"
-                autoFocus
-              />
-              <div className="flex flex-col gap-1">
-                <button
-                  onClick={handleSaveNotes}
-                  disabled={savingNotes}
-                  className="p-1.5 rounded-lg bg-[#2E86C1] text-white hover:bg-[#2574A9] disabled:opacity-50"
-                >
-                  <Check size={16} />
-                </button>
-                <button
-                  onClick={() => {
-                    setEditingNotes(false);
-                    setNotes(partida.notes || "");
-                  }}
-                  className="p-1.5 rounded-lg border text-gray-500 hover:bg-gray-50"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-start gap-2 mt-1">
-              <p className="text-sm text-gray-900 whitespace-pre-wrap">
-                {partida.notes || (
-                  <span className="text-gray-400 italic">Sin notas</span>
-                )}
-              </p>
-              {isBorrador && (
-                <button
-                  onClick={() => setEditingNotes(true)}
-                  className="p-1 rounded text-gray-400 hover:text-gray-600 shrink-0"
-                >
-                  <Pencil size={14} />
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+      {/* Status Stepper */}
+      <div className="bg-white rounded-xl border border-[#E4E4E7] p-5 mb-6">
+        <StatusStepper steps={getStepperSteps(partida.status)} />
       </div>
 
       {/* Items table */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">
+        <h2 className="text-lg font-semibold text-[#18181B] mb-3">
           Items ({items.length})
         </h2>
 
         {items.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border">
-            <Package size={40} className="mx-auto text-gray-300 mb-3" />
-            <p className="text-gray-500 text-sm">
+          <div className="text-center py-12 bg-white rounded-xl border border-[#E4E4E7]">
+            <Package size={40} className="mx-auto text-[#D4D4D8] mb-3" />
+            <p className="text-[#71717A] text-sm">
               Esta partida no tiene items
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-xl border overflow-x-auto">
+          <div className="bg-white rounded-xl border border-[#E4E4E7] overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-gray-50">
-                  <th className="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                <tr className="border-b border-[#E4E4E7] bg-[#FAFAFA]">
+                  <th className="px-3 py-2.5 text-left text-xs font-medium text-[#71717A] uppercase tracking-wide">
                     #
                   </th>
-                  <th className="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5 text-left text-xs font-medium text-[#71717A] uppercase tracking-wide">
                     SKU
                   </th>
-                  <th className="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5 text-left text-xs font-medium text-[#71717A] uppercase tracking-wide">
                     Descripcion
                   </th>
-                  <th className="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5 text-left text-xs font-medium text-[#71717A] uppercase tracking-wide">
                     NCM
                   </th>
-                  <th className="px-3 py-2.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5 text-right text-xs font-medium text-[#71717A] uppercase tracking-wide">
                     Cant. Despacho
                   </th>
-                  <th className="px-3 py-2.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5 text-right text-xs font-medium text-[#71717A] uppercase tracking-wide">
                     Precio Unit.
                   </th>
-                  <th className="px-3 py-2.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5 text-right text-xs font-medium text-[#71717A] uppercase tracking-wide">
                     Valor
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-[#E4E4E7]">
                 {items.map((pItem: PartidaItem) => {
                   const item = pItem.invoice_item;
                   const value = calculateValue(pItem);
 
                   return (
-                    <tr key={pItem.id} className="hover:bg-gray-50">
+                    <tr key={pItem.id} className="hover:bg-[#FAFAFA]">
                       {/* Line number */}
-                      <td className="px-3 py-2.5 text-gray-500">
-                        {item?.line_number ?? "—"}
+                      <td className="px-3 py-2.5 text-[#71717A]">
+                        {item?.line_number ?? "\u2014"}
                       </td>
 
                       {/* SKU */}
-                      <td className="px-3 py-2.5 text-gray-900 font-mono text-xs">
-                        {item?.sku || "—"}
+                      <td className="px-3 py-2.5 text-[#18181B] font-mono text-xs">
+                        {item?.sku || "\u2014"}
                       </td>
 
                       {/* Description */}
-                      <td className="px-3 py-2.5 text-gray-700 max-w-[300px]">
+                      <td className="px-3 py-2.5 text-[#52525B] max-w-[300px]">
                         <span
                           className="block truncate"
                           title={item?.original_description}
@@ -576,32 +592,38 @@ export default function PartidaDetailPage() {
                             ? item.original_description.length > 60
                               ? `${item.original_description.slice(0, 60)}...`
                               : item.original_description
-                            : "—"}
+                            : "\u2014"}
                         </span>
                       </td>
 
                       {/* NCM code */}
-                      <td className="px-3 py-2.5 text-gray-900 font-mono text-xs">
-                        {item?.ncm_code || "—"}
+                      <td className="px-3 py-2.5">
+                        {item?.ncm_code ? (
+                          <span className="font-mono text-xs px-2 py-0.5 rounded-full bg-[#EFF6FF] text-[#2563EB]">
+                            {item.ncm_code}
+                          </span>
+                        ) : (
+                          <span className="text-[#A1A1AA]">{"\u2014"}</span>
+                        )}
                       </td>
 
                       {/* Dispatch quantity */}
-                      <td className="px-3 py-2.5 text-right text-gray-900 tabular-nums">
+                      <td className="px-3 py-2.5 text-right text-[#18181B] tabular-nums">
                         {pItem.dispatch_quantity}
                       </td>
 
                       {/* Unit price */}
-                      <td className="px-3 py-2.5 text-right text-gray-900 tabular-nums">
+                      <td className="px-3 py-2.5 text-right text-[#18181B] tabular-nums">
                         {item?.unit_price != null
                           ? formatCurrency(item.unit_price, item.currency)
-                          : "—"}
+                          : "\u2014"}
                       </td>
 
                       {/* Calculated value */}
-                      <td className="px-3 py-2.5 text-right text-gray-900 font-medium tabular-nums">
+                      <td className="px-3 py-2.5 text-right text-[#18181B] font-semibold tabular-nums">
                         {value != null
                           ? formatCurrency(value, item?.currency || currency)
-                          : "—"}
+                          : "\u2014"}
                       </td>
                     </tr>
                   );
@@ -609,14 +631,14 @@ export default function PartidaDetailPage() {
               </tbody>
               {/* Footer totals */}
               <tfoot>
-                <tr className="border-t bg-gray-50 font-medium">
+                <tr className="border-t border-[#E4E4E7] bg-[#FAFAFA] font-bold text-[#18181B]">
                   <td
                     colSpan={4}
-                    className="px-3 py-2.5 text-right text-xs text-gray-500 uppercase tracking-wide"
+                    className="px-3 py-2.5 text-right text-xs uppercase tracking-wide"
                   >
                     Total
                   </td>
-                  <td className="px-3 py-2.5 text-right text-gray-900 tabular-nums">
+                  <td className="px-3 py-2.5 text-right tabular-nums">
                     {items.reduce(
                       (sum: number, pi: PartidaItem) =>
                         sum + pi.dispatch_quantity,
@@ -624,7 +646,7 @@ export default function PartidaDetailPage() {
                     )}
                   </td>
                   <td className="px-3 py-2.5" />
-                  <td className="px-3 py-2.5 text-right text-gray-900 tabular-nums">
+                  <td className="px-3 py-2.5 text-right tabular-nums">
                     {formatCurrency(
                       items.reduce((sum: number, pi: PartidaItem) => {
                         const v = calculateValue(pi);
@@ -641,9 +663,9 @@ export default function PartidaDetailPage() {
       </div>
 
       {/* Metadata */}
-      <div className="text-xs text-gray-400 mt-4">
+      <div className="text-xs text-[#A1A1AA] mt-4">
         Creada: {formatDate(partida.created_at)}
-        {partida.updated_at && ` · Actualizada: ${formatDate(partida.updated_at)}`}
+        {partida.updated_at && ` \u00B7 Actualizada: ${formatDate(partida.updated_at)}`}
       </div>
     </div>
   );

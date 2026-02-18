@@ -1,155 +1,232 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { FolderOpen, Plus, Search, Loader2 } from "lucide-react";
-import type { Client } from "@/lib/types";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import {
+  FileText,
+  Package,
+  AlertCircle,
+  TrendingUp,
+  Loader2,
+} from "lucide-react";
+import { KPICard } from "@/components/ui/kpi-card";
+import { StatusBadge } from "@/components/ui/status-badge";
+import type { InvoiceStatus } from "@/lib/types";
 
-export default function ClientesPage() {
-  const router = useRouter();
-  const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [creating, setCreating] = useState(false);
-
-  // Debounce search
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 400);
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  const fetchClients = useCallback(async () => {
-    setLoading(true);
-    const params = new URLSearchParams();
-    if (debouncedSearch) params.set("search", debouncedSearch);
-    const res = await fetch(`/api/clients?${params}`);
-    if (res.ok) {
-      setClients(await res.json());
-    }
-    setLoading(false);
-  }, [debouncedSearch]);
-
-  useEffect(() => {
-    fetchClients();
-  }, [fetchClients]);
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newName.trim()) return;
-    setCreating(true);
-    const res = await fetch("/api/clients", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName.trim() }),
-    });
-    if (res.ok) {
-      setNewName("");
-      setShowForm(false);
-      fetchClients();
-    }
-    setCreating(false);
+interface DashboardStats {
+  kpis: {
+    facturas_en_proceso: number;
+    despachos_activos: number;
+    items_pendientes: number;
+    tasa_precision: number;
   };
+  recent_invoices: Array<{
+    id: string;
+    file_name: string;
+    status: InvoiceStatus;
+    created_at: string;
+    provider?: { name: string } | null;
+  }>;
+  alerts: Array<{
+    id: string;
+    description: string;
+    confidence_level: string;
+    invoice_id: string;
+    invoice?: { file_name: string; status: string } | null;
+  }>;
+}
+
+const STATUS_BADGE_MAP: Record<
+  InvoiceStatus,
+  { label: string; color: "success" | "warning" | "error" | "blue" | "gray" }
+> = {
+  uploaded: { label: "Subida", color: "gray" },
+  processing: { label: "Procesando", color: "blue" },
+  review: { label: "En revisión", color: "warning" },
+  approved: { label: "Aprobada", color: "success" },
+  exported: { label: "Exportada", color: "success" },
+};
+
+const CONFIDENCE_BADGE_MAP: Record<
+  string,
+  { label: string; color: "success" | "warning" | "error" | "blue" | "gray" }
+> = {
+  high: { label: "Alta", color: "success" },
+  medium: { label: "Media", color: "warning" },
+  low: { label: "Baja", color: "error" },
+};
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/dashboard/stats");
+        if (res.ok) {
+          setStats(await res.json());
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 size={32} className="animate-spin text-[#2563EB]" />
+      </div>
+    );
+  }
+
+  const kpis = stats?.kpis;
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
-          <p className="text-gray-500 mt-1">
-            Seleccioná un cliente para ver sus despachos
-          </p>
-        </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1B4F72] text-white text-sm font-medium hover:bg-[#154360] transition-colors"
-        >
-          <Plus size={16} />
-          Nuevo Cliente
-        </button>
-      </div>
+    <div className="p-8 max-w-7xl mx-auto space-y-6">
+      {/* Header */}
+      <h1 className="text-2xl font-bold text-[#18181B]">Dashboard</h1>
 
-      {showForm && (
-        <form onSubmit={handleCreate} className="bg-white rounded-xl border p-4 mb-6 flex items-center gap-3">
-          <input
-            type="text"
-            placeholder="Nombre del cliente"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] focus:border-transparent"
-            autoFocus
-          />
-          <button
-            type="submit"
-            disabled={creating || !newName.trim()}
-            className="px-4 py-2 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] transition-colors disabled:opacity-50"
-          >
-            {creating ? <Loader2 size={16} className="animate-spin" /> : "Crear"}
-          </button>
-          <button
-            type="button"
-            onClick={() => { setShowForm(false); setNewName(""); }}
-            className="px-4 py-2 rounded-lg border text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-          >
-            Cancelar
-          </button>
-        </form>
-      )}
-
-      <div className="relative mb-6">
-        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Buscar cliente por nombre..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] focus:border-transparent"
+      {/* KPI Row */}
+      <div className="flex gap-4">
+        <KPICard
+          label="Facturas en Proceso"
+          value={kpis?.facturas_en_proceso ?? 0}
+          icon={FileText}
+        />
+        <KPICard
+          label="Despachos Activos"
+          value={kpis?.despachos_activos ?? 0}
+          icon={Package}
+        />
+        <KPICard
+          label="Items Pendientes"
+          value={kpis?.items_pendientes ?? 0}
+          icon={AlertCircle}
+        />
+        <KPICard
+          label="Tasa de Precisión"
+          value={`${kpis?.tasa_precision ?? 0}%`}
+          icon={TrendingUp}
         />
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 size={32} className="animate-spin text-[#2E86C1]" />
-        </div>
-      ) : clients.length === 0 ? (
-        <div className="text-center py-20">
-          <FolderOpen size={48} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">
-            {debouncedSearch
-              ? "No se encontraron clientes con ese nombre"
-              : "No hay clientes todavía. Creá el primero."}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {clients.map((client) => (
-            <button
-              key={client.id}
-              onClick={() => router.push(`/clientes/${client.id}`)}
-              className="bg-white rounded-xl border p-5 text-left hover:border-[#2E86C1] hover:shadow-md transition-all group"
-            >
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-[#EBF5FB] rounded-xl group-hover:bg-[#D4E6F1] transition-colors">
-                  <FolderOpen size={28} className="text-[#2E86C1]" />
+      {/* Two-column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left: Alertas */}
+        <div className="bg-white rounded-xl border border-[#E4E4E7] p-5">
+          <h2 className="text-sm font-semibold text-[#18181B] mb-4">
+            Alertas
+          </h2>
+          {!stats?.alerts?.length ? (
+            <p className="text-sm text-[#71717A] py-4">
+              Sin alertas pendientes
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {stats.alerts.map((alert) => (
+                <div
+                  key={alert.id}
+                  className="flex items-center justify-between gap-3 py-2 border-b border-[#F4F4F5] last:border-0"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-[#18181B] truncate">
+                      {alert.invoice?.file_name ?? "Factura"}
+                    </p>
+                    <p className="text-xs text-[#71717A] truncate">
+                      {alert.description}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <StatusBadge
+                      label={
+                        CONFIDENCE_BADGE_MAP[alert.confidence_level]?.label ??
+                        alert.confidence_level
+                      }
+                      color={
+                        CONFIDENCE_BADGE_MAP[alert.confidence_level]?.color ??
+                        "gray"
+                      }
+                    />
+                    <Link
+                      href={`/facturas/${alert.invoice_id}`}
+                      className="text-xs text-[#2563EB] hover:underline whitespace-nowrap"
+                    >
+                      Ver factura
+                    </Link>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 truncate">{client.name}</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {client.despacho_count === 1
-                      ? "1 despacho"
-                      : `${client.despacho_count || 0} despachos`}
-                  </p>
-                  {client.cuit && (
-                    <p className="text-xs text-gray-400 mt-1">CUIT: {client.cuit}</p>
-                  )}
-                </div>
-              </div>
-            </button>
-          ))}
+              ))}
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Right: Facturas Recientes */}
+        <div className="bg-white rounded-xl border border-[#E4E4E7] p-5">
+          <h2 className="text-sm font-semibold text-[#18181B] mb-4">
+            Facturas Recientes
+          </h2>
+          {!stats?.recent_invoices?.length ? (
+            <p className="text-sm text-[#71717A] py-4">
+              No hay facturas recientes
+            </p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-xs text-[#71717A] border-b border-[#F4F4F5]">
+                  <th className="text-left pb-2 font-medium">Factura</th>
+                  <th className="text-left pb-2 font-medium">Proveedor</th>
+                  <th className="text-left pb-2 font-medium">Fecha</th>
+                  <th className="text-left pb-2 font-medium">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.recent_invoices.map((inv) => {
+                  const badge = STATUS_BADGE_MAP[inv.status] ?? {
+                    label: inv.status,
+                    color: "gray" as const,
+                  };
+                  return (
+                    <tr
+                      key={inv.id}
+                      className="border-b border-[#F4F4F5] last:border-0"
+                    >
+                      <td className="py-2.5">
+                        <Link
+                          href={`/facturas/${inv.id}`}
+                          className="text-[#2563EB] hover:underline truncate block max-w-[160px]"
+                        >
+                          {inv.file_name}
+                        </Link>
+                      </td>
+                      <td className="py-2.5 text-[#71717A]">
+                        {inv.provider?.name ?? "-"}
+                      </td>
+                      <td className="py-2.5 text-[#71717A]">
+                        {formatDate(inv.created_at)}
+                      </td>
+                      <td className="py-2.5">
+                        <StatusBadge label={badge.label} color={badge.color} />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,12 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #1e293b;
-  --primary: #1B4F72;
-  --primary-light: #2E86C1;
-  --accent: #2E86C1;
-  --bg-light: #EBF5FB;
+  /* Legacy aliases (for .drop-zone-active etc.) */
+  --background: #FAFAFA;
+  --foreground: #18181B;
+  --primary: #1B2A4A;
+  --primary-light: #2563EB;
+  --accent: #2563EB;
+  --bg-light: #EFF6FF;
+
+  /* Backgrounds */
+  --color-bg-primary: #FFFFFF;
+  --color-bg-surface: #FAFAFA;
+  --color-bg-highlight: #EFF6FF;
+  --color-bg-sidebar: #1B2A4A;
+
+  /* Text */
+  --color-text-primary: #18181B;
+  --color-text-secondary: #71717A;
+  --color-text-tertiary: #A1A1AA;
+  --color-text-on-accent: #FFFFFF;
+  --color-text-on-sidebar: #FFFFFF;
+  --color-text-sidebar-muted: rgba(255,255,255,0.5);
+
+  /* Accent */
+  --color-accent-primary: #2563EB;
+  --color-accent-light: #DBEAFE;
+
+  /* Status */
+  --color-status-success: #16A34A;
+  --color-status-success-light: #F0FDF4;
+  --color-status-warning: #F59E0B;
+  --color-status-warning-light: #FFFBEB;
+  --color-status-error: #DC2626;
+  --color-status-error-light: #FEF2F2;
+
+  /* Borders */
+  --color-border-default: #E4E4E7;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Font */
+  --font-sans: 'Inter', system-ui, sans-serif;
 }
 
 @theme inline {

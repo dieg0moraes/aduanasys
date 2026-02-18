@@ -15,7 +15,7 @@ export async function GET(
 
     const { data, error } = await supabase
       .from("invoices")
-      .select("*, provider:providers(*)")
+      .select("*, provider:providers(*), despacho:despachos(*)")
       .eq("id", id)
       .single();
 

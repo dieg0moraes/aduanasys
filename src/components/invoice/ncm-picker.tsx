@@ -52,12 +52,12 @@ const SOURCE_ICONS: Record<string, typeof Database> = {
 };
 
 const SOURCE_COLORS: Record<string, string> = {
-  catalog: "text-purple-600 bg-purple-50",
-  fulltext: "text-emerald-600 bg-emerald-50",
-  trigram: "text-amber-600 bg-amber-50",
-  semantic: "text-blue-600 bg-blue-50",
-  exact: "text-gray-600 bg-gray-50",
-  graph: "text-cyan-600 bg-cyan-50",
+  catalog: "text-[#16A34A] bg-[#F0FDF4]",
+  fulltext: "text-[#2563EB] bg-[#EFF6FF]",
+  trigram: "text-[#F59E0B] bg-[#FFFBEB]",
+  semantic: "text-[#9333EA] bg-[#F5F3FF]",
+  exact: "text-[#71717A] bg-[#F4F4F5]",
+  graph: "text-[#0891B2] bg-[#ECFEFF]",
 };
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -171,29 +171,29 @@ export function NCMPicker({
         usePortal
           ? "w-[620px] max-h-[80vh] flex flex-col"
           : "absolute top-full left-0 mt-1 w-[560px]"
-      } bg-white rounded-xl border border-gray-200 shadow-xl`}
+      } bg-white rounded-xl border border-[#E4E4E7] shadow-xl`}
     >
       {/* Header con NCM actual */}
-      <div className="p-3 border-b bg-gray-50 rounded-t-xl flex-shrink-0">
+      <div className="p-3 border-b bg-[#FAFAFA] rounded-t-xl flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500">NCM actual:</span>
+            <span className="text-xs text-[#71717A]">NCM actual:</span>
             {value ? (
-              <span className="font-mono text-sm font-medium text-gray-800">
+              <span className="font-mono text-sm font-medium text-[#18181B]">
                 {formatNCM(value)}
               </span>
             ) : (
-              <span className="text-sm text-gray-400 italic">Sin asignar</span>
+              <span className="text-sm text-[#A1A1AA] italic">Sin asignar</span>
             )}
             {classificationSource && (
-              <span className="text-xs text-gray-400 px-1.5 py-0.5 bg-gray-100 rounded">
+              <span className="text-xs text-[#A1A1AA] px-1.5 py-0.5 bg-[#F4F4F5] rounded">
                 {SOURCE_LABELS[classificationSource] || classificationSource}
               </span>
             )}
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-200 rounded text-gray-400"
+            className="p-1 hover:bg-[#E4E4E7] rounded text-[#A1A1AA]"
           >
             <X size={14} />
           </button>
@@ -205,7 +205,7 @@ export function NCMPicker({
         <div className="relative">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A1A1AA]"
           />
           <input
             ref={inputRef}
@@ -213,12 +213,12 @@ export function NCMPicker({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por producto o código NCM..."
-            className="w-full pl-9 pr-20 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2E86C1] focus:border-transparent"
+            className="w-full pl-9 pr-20 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
           />
           <button
             type="submit"
             disabled={loading || !query.trim()}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 text-xs font-medium bg-[#2E86C1] text-white rounded-md hover:bg-[#2471A3] disabled:opacity-50"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 text-xs font-medium bg-[#2563EB] text-white rounded-md hover:bg-[#1D4ED8] disabled:opacity-50"
           >
             {loading ? (
               <Loader2 size={12} className="animate-spin" />
@@ -228,7 +228,7 @@ export function NCMPicker({
           </button>
         </div>
         {expandedQuery && expandedQuery !== query && (
-          <p className="text-xs text-gray-400 mt-1.5 pl-1">
+          <p className="text-xs text-[#A1A1AA] mt-1.5 pl-1">
             Interpretado como:{" "}
             <span className="text-blue-500 italic">&ldquo;{expandedQuery}&rdquo;</span>
           </p>
@@ -238,14 +238,14 @@ export function NCMPicker({
       {/* Results */}
       <div className={`${usePortal ? "flex-1 min-h-0" : "max-h-[380px]"} overflow-y-auto`}>
         {loading && (
-          <div className="flex items-center justify-center py-8 text-gray-400">
+          <div className="flex items-center justify-center py-8 text-[#A1A1AA]">
             <Loader2 size={20} className="animate-spin mr-2" />
             <span className="text-sm">Buscando...</span>
           </div>
         )}
 
         {!loading && hasSearched && results.length === 0 && (
-          <div className="text-center py-8 text-gray-400">
+          <div className="text-center py-8 text-[#A1A1AA]">
             <p className="text-sm">No se encontraron resultados.</p>
             <p className="text-xs mt-1">
               Intentá con otros términos o ingresá el código directamente.
@@ -257,7 +257,7 @@ export function NCMPicker({
           results.map((result, idx) => {
             const Icon = SOURCE_ICONS[result.match_type] || Tag;
             const colorClass =
-              SOURCE_COLORS[result.match_type] || "text-gray-600 bg-gray-50";
+              SOURCE_COLORS[result.match_type] || "text-[#71717A] bg-[#FAFAFA]";
             const isCurrentNCM =
               value && result.ncm_code.replace(/\./g, "") === value.replace(/\./g, "");
             const isExpanded = expandedIdx === idx;
@@ -273,13 +273,13 @@ export function NCMPicker({
                   className="w-full text-left px-3 py-2.5 hover:bg-blue-50/50 transition-colors flex items-start gap-3 group"
                 >
                   {/* Chevron */}
-                  <div className="flex-shrink-0 mt-0.5 text-gray-300 group-hover:text-gray-500">
+                  <div className="flex-shrink-0 mt-0.5 text-[#A1A1AA] group-hover:text-[#71717A]">
                     {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                   </div>
 
                   {/* NCM code + source badge */}
                   <div className="flex-shrink-0 w-24">
-                    <span className="font-mono text-sm font-medium text-gray-800">
+                    <span className="font-mono text-sm font-medium text-[#18181B]">
                       {formatNCM(result.ncm_code)}
                     </span>
                     <div className="flex items-center gap-1 mt-0.5">
@@ -294,10 +294,10 @@ export function NCMPicker({
 
                   {/* Description (truncated) + similarity */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-700 leading-snug">
+                    <p className="text-sm text-[#18181B] leading-snug">
                       {truncateDesc(result.description, isExpanded ? 300 : 80)}
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-xs text-[#A1A1AA] mt-0.5">
                       Similitud: {(result.similarity * 100).toFixed(0)}%
                       {result.exclusions && result.exclusions.length > 0 && (
                         <span className="ml-2 text-amber-500">
@@ -319,7 +319,7 @@ export function NCMPicker({
                 {isExpanded && (
                   <div className="px-3 pb-3 pt-0 ml-[38px] space-y-2">
                     {/* Descripción completa */}
-                    <p className="text-sm text-gray-700 leading-relaxed">
+                    <p className="text-sm text-[#18181B] leading-relaxed">
                       {result.description}
                     </p>
 
@@ -356,7 +356,7 @@ export function NCMPicker({
 
                     {/* Info catálogo */}
                     {result.match_type === "catalog" && (result as NCMResult & { sku?: string; provider_description?: string }).sku && (
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-[#A1A1AA]">
                         SKU: {(result as NCMResult & { sku?: string }).sku}
                       </p>
                     )}
@@ -366,8 +366,8 @@ export function NCMPicker({
                       onClick={() => onSelect(result.ncm_code, result.description)}
                       className={`w-full mt-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                         isCurrentNCM
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-[#2E86C1] text-white hover:bg-[#2471A3]"
+                          ? "bg-[#F0FDF4] text-[#16A34A] hover:bg-[#DCFCE7]"
+                          : "bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
                       }`}
                     >
                       {isCurrentNCM ? (
@@ -386,7 +386,7 @@ export function NCMPicker({
       </div>
 
       {/* Manual input footer */}
-      <div className="p-3 border-t bg-gray-50 rounded-b-xl flex-shrink-0">
+      <div className="p-3 border-t bg-[#FAFAFA] rounded-b-xl flex-shrink-0">
         <ManualNCMInput
           onSelect={(code) => onSelect(code, "")}
         />
@@ -427,18 +427,18 @@ function ManualNCMInput({
 
   return (
     <form onSubmit={handleSubmit} className="flex items-center gap-2">
-      <span className="text-xs text-gray-500">Ingresar código:</span>
+      <span className="text-xs text-[#71717A]">Ingresar código:</span>
       <input
         type="text"
         value={manualCode}
         onChange={(e) => setManualCode(e.target.value)}
         placeholder="0000.00.00"
-        className="flex-1 px-2 py-1 text-sm font-mono border rounded focus:outline-none focus:ring-1 focus:ring-[#2E86C1]"
+        className="flex-1 px-2 py-1 text-sm font-mono border rounded focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
       />
       <button
         type="submit"
         disabled={!manualCode.trim()}
-        className="px-2 py-1 text-xs font-medium bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50"
+        className="px-2 py-1 text-xs font-medium bg-[#E4E4E7] text-[#18181B] rounded hover:bg-[#D4D4D8] disabled:opacity-50"
       >
         Asignar
       </button>
