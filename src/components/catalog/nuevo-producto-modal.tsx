@@ -1,7 +1,51 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Loader2, ChevronDown } from "lucide-react";
+import { X, Loader2, ChevronDown, Plus, Building2 } from "lucide-react";
+import { searchCountries } from "@/lib/countries";
+
+function CountrySelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div>
+      <label className="text-xs font-medium text-[#71717A] uppercase tracking-wide">País de origen</label>
+      <div className="relative mt-1">
+        <input
+          type="text"
+          value={open ? search : value}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setOpen(true);
+            onChange("");
+          }}
+          onFocus={() => { setOpen(true); setSearch(value); }}
+          placeholder="Buscar país..."
+          className="w-full px-3 py-2 border border-[#E4E4E7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+        />
+        {open && (
+          <div className="absolute z-20 mt-1 w-full bg-white border border-[#E4E4E7] rounded-lg shadow-lg max-h-40 overflow-y-auto">
+            {searchCountries(search).slice(0, 20).map((c) => (
+              <button
+                key={c.code}
+                type="button"
+                onClick={() => {
+                  onChange(c.name);
+                  setSearch(c.name);
+                  setOpen(false);
+                }}
+                className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#EFF6FF]"
+              >
+                {c.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 interface NuevoProductoModalProps {
   providerId?: string;
@@ -22,19 +66,67 @@ export function NuevoProductoModal({ providerId, providerName, onClose, onSaved 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Provider list (only fetched when no providerId is given)
+  // Provider combobox
   const [providers, setProviders] = useState<{ id: string; name: string }[]>([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
+  const [providerSearch, setProviderSearch] = useState("");
+  const [showProviderDropdown, setShowProviderDropdown] = useState(false);
+  const [selectedProviderName, setSelectedProviderName] = useState(providerName || "");
+  const [creatingProvider, setCreatingProvider] = useState(false);
+  // Country selector for new provider
+  const [newProviderCountry, setNewProviderCountry] = useState("");
+  const [countrySearchText, setCountrySearchText] = useState("");
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
 
+  // Fetch providers with debounced search
   useEffect(() => {
-    if (!providerId) {
+    if (providerId) return; // Skip if provider is pre-assigned
+    if (!showProviderDropdown) return;
+
+    const timer = setTimeout(async () => {
       setLoadingProviders(true);
-      fetch("/api/providers")
-        .then((res) => (res.ok ? res.json() : { providers: [] }))
-        .then((data) => setProviders(data.providers || []))
-        .finally(() => setLoadingProviders(false));
+      try {
+        const params = new URLSearchParams();
+        if (providerSearch.trim()) params.set("search", providerSearch.trim());
+        const res = await fetch(`/api/providers?${params}`);
+        if (res.ok) {
+          const data = await res.json();
+          setProviders(data.providers || []);
+        }
+      } catch {
+        // ignore
+      }
+      setLoadingProviders(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [providerId, showProviderDropdown, providerSearch]);
+
+  const handleCreateProvider = async () => {
+    if (!providerSearch.trim()) return;
+    setCreatingProvider(true);
+    try {
+      const body: { name: string; country?: string } = { name: providerSearch.trim() };
+      if (newProviderCountry) body.country = newProviderCountry;
+      const res = await fetch("/api/providers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        const provider = await res.json();
+        setSelectedProviderId(provider.id);
+        setSelectedProviderName(provider.name);
+        setShowProviderDropdown(false);
+        setProviderSearch("");
+        setNewProviderCountry("");
+        setCountrySearchText("");
+      }
+    } catch {
+      // ignore
     }
-  }, [providerId]);
+    setCreatingProvider(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,19 +194,119 @@ export function NuevoProductoModal({ providerId, providerName, onClose, onSaved 
             <div>
               <label className="text-xs font-medium text-[#71717A] uppercase tracking-wide">Proveedor *</label>
               <div className="relative mt-1">
-                <select
-                  value={selectedProviderId}
-                  onChange={(e) => setSelectedProviderId(e.target.value)}
-                  className="w-full px-3 py-2 border border-[#E4E4E7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] appearance-none bg-white"
-                  disabled={loadingProviders}
-                >
-                  <option value="">{loadingProviders ? "Cargando..." : "Seleccionar proveedor"}</option>
-                  {providers.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
-                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A1A1AA] pointer-events-none" />
+                {showProviderDropdown ? (
+                  <div>
+                    <input
+                      type="text"
+                      value={providerSearch}
+                      onChange={(e) => setProviderSearch(e.target.value)}
+                      placeholder="Buscar o escribir nombre de proveedor..."
+                      className="w-full px-3 py-2 border border-[#E4E4E7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") {
+                          setShowProviderDropdown(false);
+                          setProviderSearch("");
+                        }
+                      }}
+                    />
+                    <div className="absolute z-10 mt-1 w-full bg-white border border-[#E4E4E7] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {loadingProviders ? (
+                        <div className="flex items-center justify-center py-3">
+                          <Loader2 size={14} className="animate-spin text-[#2563EB]" />
+                        </div>
+                      ) : (
+                        <>
+                          {providers.map((p) => (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedProviderId(p.id);
+                                setSelectedProviderName(p.name);
+                                setShowProviderDropdown(false);
+                                setProviderSearch("");
+                              }}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-[#EFF6FF] ${
+                                selectedProviderId === p.id ? "bg-[#EFF6FF] font-medium" : ""
+                              }`}
+                            >
+                              {p.name}
+                            </button>
+                          ))}
+                          {/* Create new provider option */}
+                          {providerSearch.trim() && (
+                            <button
+                              type="button"
+                              onClick={handleCreateProvider}
+                              disabled={creatingProvider}
+                              className="w-full text-left px-3 py-2 text-sm border-t border-[#E4E4E7] hover:bg-[#EFF6FF] flex items-center gap-2 text-[#2563EB] font-medium"
+                            >
+                              {creatingProvider ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Plus size={14} />
+                              )}
+                              Crear &ldquo;{providerSearch.trim()}&rdquo;
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowProviderDropdown(true)}
+                    className="flex items-center gap-2 w-full px-3 py-2 border border-[#E4E4E7] rounded-lg text-sm hover:bg-[#FAFAFA] text-left"
+                  >
+                    <Building2 size={14} className="text-[#A1A1AA]" />
+                    {selectedProviderName ? (
+                      <span className="text-[#18181B]">{selectedProviderName}</span>
+                    ) : (
+                      <span className="text-[#A1A1AA]">Seleccionar proveedor</span>
+                    )}
+                  </button>
+                )}
               </div>
+              {/* Country selector - shown when typing a name to create a new provider */}
+              {showProviderDropdown && providerSearch.trim() && (
+                <div className="mt-2">
+                  <label className="text-xs font-medium text-[#71717A] uppercase tracking-wide">País del proveedor</label>
+                  <div className="relative mt-1">
+                    <input
+                      type="text"
+                      value={countrySearchText}
+                      onChange={(e) => {
+                        setCountrySearchText(e.target.value);
+                        setShowCountryDropdown(true);
+                        setNewProviderCountry("");
+                      }}
+                      onFocus={() => setShowCountryDropdown(true)}
+                      placeholder={newProviderCountry || "Buscar país..."}
+                      className="w-full px-3 py-2 border border-[#E4E4E7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                    />
+                    {showCountryDropdown && (
+                      <div className="absolute z-20 mt-1 w-full bg-white border border-[#E4E4E7] rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                        {searchCountries(countrySearchText).slice(0, 20).map((c) => (
+                          <button
+                            key={c.code}
+                            type="button"
+                            onClick={() => {
+                              setNewProviderCountry(c.name);
+                              setCountrySearchText(c.name);
+                              setShowCountryDropdown(false);
+                            }}
+                            className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#EFF6FF]"
+                          >
+                            {c.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -159,12 +351,7 @@ export function NuevoProductoModal({ providerId, providerName, onClose, onSaved 
           </div>
 
           {/* País de origen */}
-          <div>
-            <label className="text-xs font-medium text-[#71717A] uppercase tracking-wide">País de origen</label>
-            <input type="text" value={countryOfOrigin} onChange={(e) => setCountryOfOrigin(e.target.value)}
-              className="mt-1 w-full px-3 py-2 border border-[#E4E4E7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-              placeholder="País de origen" />
-          </div>
+          <CountrySelect value={countryOfOrigin} onChange={setCountryOfOrigin} />
 
           {/* Error */}
           {error && <p className="text-sm text-[#DC2626]">{error}</p>}
