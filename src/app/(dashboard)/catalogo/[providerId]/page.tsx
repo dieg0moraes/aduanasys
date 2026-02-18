@@ -14,10 +14,15 @@ import {
   Building2,
   FileText,
   ChevronDown,
+  Package,
+
+  Plus,
 } from "lucide-react";
 import type { Invoice } from "@/lib/types";
 import { STATUS_LABELS, STATUS_COLORS } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { NuevoProductoModal } from "@/components/catalog/nuevo-producto-modal";
 
 interface CatalogItem {
   id: string;
@@ -43,12 +48,50 @@ interface CatalogResponse {
   totalPages: number;
 }
 
+interface ProviderInfo {
+  id: string;
+  name: string;
+  country: string | null;
+  product_count: number;
+  invoice_count: number;
+}
+
+const AVATAR_COLORS = [
+  "bg-[#2563EB] text-white",
+  "bg-[#9333EA] text-white",
+  "bg-[#EA580C] text-white",
+  "bg-[#16A34A] text-white",
+  "bg-[#DC2626] text-white",
+  "bg-[#0891B2] text-white",
+  "bg-[#D97706] text-white",
+  "bg-[#7C3AED] text-white",
+  "bg-[#059669] text-white",
+  "bg-[#E11D48] text-white",
+];
+
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function getNcmPillClasses(timesUsed: number): string {
+  if (timesUsed >= 3) {
+    return "bg-[#F0FDF4] text-[#16A34A] border border-[#BBF7D0]";
+  } else if (timesUsed >= 1) {
+    return "bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A]";
+  }
+  return "bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]";
+}
+
 export default function ProviderCatalogPage() {
   const params = useParams();
   const router = useRouter();
   const providerId = params.providerId as string;
 
-  const [providerName, setProviderName] = useState<string>("");
+  const [providerInfo, setProviderInfo] = useState<ProviderInfo | null>(null);
   const [data, setData] = useState<CatalogResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState("");
@@ -65,6 +108,7 @@ export default function ProviderCatalogPage() {
     internal_description: "",
   });
   const [saving, setSaving] = useState(false);
+  const [showNuevoProducto, setShowNuevoProducto] = useState(false);
 
   // Provider invoices
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -101,11 +145,6 @@ export default function ProviderCatalogPage() {
       if (response.ok) {
         const result = await response.json();
         setData(result);
-
-        // Obtener nombre del proveedor del primer item
-        if (result.items.length > 0 && result.items[0].provider?.name) {
-          setProviderName(result.items[0].provider.name);
-        }
       }
     } catch (err) {
       console.error("Error fetching catalog:", err);
@@ -117,11 +156,9 @@ export default function ProviderCatalogPage() {
     fetchCatalog();
   }, [fetchCatalog]);
 
-  // Si no tenemos nombre del proveedor (catálogo vacío), buscarlo directo
+  // Fetch provider info
   useEffect(() => {
-    if (providerName) return;
-
-    const fetchProviderName = async () => {
+    const fetchProviderInfo = async () => {
       try {
         const response = await fetch(`/api/providers?search=`);
         if (response.ok) {
@@ -129,15 +166,17 @@ export default function ProviderCatalogPage() {
           const provider = data.providers.find(
             (p: { id: string }) => p.id === providerId
           );
-          if (provider) setProviderName(provider.name);
+          if (provider) {
+            setProviderInfo(provider);
+          }
         }
       } catch {
         // ignore
       }
     };
 
-    fetchProviderName();
-  }, [providerId, providerName]);
+    fetchProviderInfo();
+  }, [providerId]);
 
   // Fetch invoices for this provider
   useEffect(() => {
@@ -281,26 +320,60 @@ export default function ProviderCatalogPage() {
     setMovingInProgress(false);
   };
 
+  const providerName = providerInfo?.name || "Proveedor";
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={() => router.push("/catalogo")}
-          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <div className="w-10 h-10 rounded-lg bg-[#2E86C1]/10 flex items-center justify-center flex-shrink-0">
-          <Building2 size={20} className="text-[#2E86C1]" />
-        </div>
-        <div className="flex-1">
-          <h1 className="text-xl font-bold text-gray-900">
-            {providerName || "Proveedor"}
-          </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {data ? `${data.total} producto${data.total !== 1 ? "s" : ""} en catálogo` : "Cargando..."}
-          </p>
+      {/* Breadcrumb */}
+      <div className="mb-4">
+        <Breadcrumb
+          items={[
+            { label: "Catálogo", href: "/catalogo" },
+            { label: providerName },
+          ]}
+        />
+      </div>
+
+      {/* Provider info card */}
+      <div className="bg-white rounded-xl border border-[#E4E4E7] p-5 mb-6">
+        <div className="flex items-center gap-4">
+          {/* Avatar */}
+          <div
+            className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 text-lg font-semibold ${getAvatarColor(providerName)}`}
+          >
+            {providerName.charAt(0).toUpperCase()}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold text-[#18181B]">
+              {providerName}
+            </h1>
+            <div className="flex items-center gap-4 mt-1 text-sm text-[#71717A]">
+              {providerInfo?.country && (
+                <span>{providerInfo.country}</span>
+              )}
+              <div className="flex items-center gap-1.5">
+                <Package size={14} className="text-[#A1A1AA]" />
+                <span>{data?.total ?? 0} productos</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <FileText size={14} className="text-[#A1A1AA]" />
+                <span>{providerInfo?.invoice_count ?? 0} facturas</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => setShowNuevoProducto(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
+            >
+              <Plus size={14} />
+              Agregar Producto
+            </button>
+          </div>
         </div>
       </div>
 
@@ -308,20 +381,20 @@ export default function ProviderCatalogPage() {
       <div className="mb-6">
         <button
           onClick={() => setShowInvoices(!showInvoices)}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 mb-2"
+          className="flex items-center gap-2 text-sm font-medium text-[#18181B] hover:text-[#18181B] mb-2"
         >
-          <FileText size={16} className="text-gray-400" />
+          <FileText size={16} className="text-[#A1A1AA]" />
           Facturas ({loadingInvoices ? "..." : invoices.length})
           <ChevronDown size={14} className={`transition-transform ${showInvoices ? "rotate-180" : ""}`} />
         </button>
         {showInvoices && (
-          <div className="bg-white rounded-xl border divide-y mb-2">
+          <div className="bg-white rounded-xl border border-[#E4E4E7] divide-y divide-[#E4E4E7] mb-2">
             {loadingInvoices ? (
               <div className="flex items-center justify-center py-6">
-                <Loader2 size={20} className="animate-spin text-[#2E86C1]" />
+                <Loader2 size={20} className="animate-spin text-[#2563EB]" />
               </div>
             ) : invoices.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-6">
+              <p className="text-[#A1A1AA] text-sm text-center py-6">
                 No hay facturas asociadas a este proveedor
               </p>
             ) : (
@@ -329,15 +402,15 @@ export default function ProviderCatalogPage() {
                 <button
                   key={inv.id}
                   onClick={() => router.push(`/facturas/${inv.id}`)}
-                  className="flex items-center justify-between w-full p-3 hover:bg-gray-50 text-left"
+                  className="flex items-center justify-between w-full p-3 hover:bg-[#FAFAFA] text-left"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <FileText size={16} className="text-gray-400 shrink-0" />
+                    <FileText size={16} className="text-[#A1A1AA] shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-[#18181B] truncate">
                         {inv.file_name}
                       </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-[#A1A1AA] mt-0.5">
                         {formatDate(inv.created_at)}
                         {inv.total_items > 0 && ` · ${inv.total_items} items`}
                       </p>
@@ -362,39 +435,39 @@ export default function ProviderCatalogPage() {
         <div className="relative max-w-md">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A1A1AA]"
           />
           <input
             type="text"
             placeholder="Buscar por SKU, descripción o NCM..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]/20 focus:border-[#2E86C1]"
+            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-[#E4E4E7] text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]"
           />
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border overflow-hidden">
+      <div className="bg-white rounded-xl border border-[#E4E4E7] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 border-b text-left">
-                <th className="px-4 py-3 font-medium text-gray-600">SKU</th>
-                <th className="px-4 py-3 font-medium text-gray-600">
+              <tr className="bg-[#FAFAFA] border-b border-[#E4E4E7] text-left">
+                <th className="px-4 py-3 font-medium text-[#71717A]">SKU</th>
+                <th className="px-4 py-3 font-medium text-[#71717A]">
                   Descripción Original
                 </th>
-                <th className="px-4 py-3 font-medium text-gray-600">
+                <th className="px-4 py-3 font-medium text-[#71717A]">
                   Desc. Aduanera
                 </th>
-                <th className="px-4 py-3 font-medium text-gray-600">
+                <th className="px-4 py-3 font-medium text-[#71717A]">
                   Desc. Interna
                 </th>
-                <th className="px-4 py-3 font-medium text-gray-600">NCM</th>
-                <th className="px-4 py-3 font-medium text-gray-600 text-center">
+                <th className="px-4 py-3 font-medium text-[#71717A]">NCM</th>
+                <th className="px-4 py-3 font-medium text-[#71717A] text-center">
                   Usos
                 </th>
-                <th className="px-4 py-3 font-medium text-gray-600 w-16"></th>
+                <th className="px-4 py-3 font-medium text-[#71717A] w-16"></th>
               </tr>
             </thead>
             <tbody>
@@ -403,7 +476,7 @@ export default function ProviderCatalogPage() {
                   <td colSpan={7} className="px-4 py-12 text-center">
                     <Loader2
                       size={24}
-                      className="animate-spin text-[#2E86C1] mx-auto"
+                      className="animate-spin text-[#2563EB] mx-auto"
                     />
                   </td>
                 </tr>
@@ -411,7 +484,7 @@ export default function ProviderCatalogPage() {
                 <tr>
                   <td
                     colSpan={7}
-                    className="px-4 py-12 text-center text-gray-400"
+                    className="px-4 py-12 text-center text-[#A1A1AA]"
                   >
                     {search
                       ? "No se encontraron productos con esa búsqueda."
@@ -424,8 +497,8 @@ export default function ProviderCatalogPage() {
                   return (
                     <Fragment key={item.id}>
                       <tr
-                        className={`border-b last:border-b-0 cursor-pointer transition-colors ${
-                          isExpanded ? "bg-blue-50/50" : "hover:bg-gray-50/50"
+                        className={`border-b border-[#E4E4E7] last:border-b-0 cursor-pointer transition-colors ${
+                          isExpanded ? "bg-blue-50/50" : "hover:bg-[#FAFAFA]"
                         }`}
                         onClick={() => {
                           if (isExpanded) {
@@ -435,20 +508,22 @@ export default function ProviderCatalogPage() {
                           }
                         }}
                       >
-                        <td className="px-4 py-3 font-mono text-xs text-gray-600">
+                        <td className="px-4 py-3 font-mono text-xs text-[#71717A]">
                           {item.sku}
                         </td>
-                        <td className="px-4 py-3 text-gray-600 max-w-xs truncate">
+                        <td className="px-4 py-3 text-[#71717A] max-w-xs truncate">
                           {item.provider_description}
                         </td>
-                        <td className="px-4 py-3 text-gray-700 max-w-xs truncate">
+                        <td className="px-4 py-3 text-[#18181B] max-w-xs truncate">
                           {item.customs_description}
                         </td>
-                        <td className="px-4 py-3 text-gray-600 max-w-xs truncate">
-                          {item.internal_description || <span className="text-gray-400">—</span>}
+                        <td className="px-4 py-3 text-[#71717A] max-w-xs truncate">
+                          {item.internal_description || <span className="text-[#A1A1AA]">--</span>}
                         </td>
-                        <td className="px-4 py-3 font-mono text-xs text-gray-600">
-                          {item.ncm_code}
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-0.5 rounded text-xs font-mono ${getNcmPillClasses(item.times_used)}`}>
+                            {item.ncm_code}
+                          </span>
                         </td>
                         <td className="px-4 py-3 text-center">
                           <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
@@ -459,7 +534,7 @@ export default function ProviderCatalogPage() {
                           <div className="flex items-center gap-1">
                             <ChevronDown
                               size={14}
-                              className={`text-gray-400 transition-transform ${
+                              className={`text-[#A1A1AA] transition-transform ${
                                 isExpanded ? "rotate-180" : ""
                               }`}
                             />
@@ -468,7 +543,7 @@ export default function ProviderCatalogPage() {
                                 e.stopPropagation();
                                 deleteItem(item.id);
                               }}
-                              className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-500"
+                              className="p-1.5 rounded hover:bg-red-50 text-[#A1A1AA] hover:text-red-500"
                               title="Eliminar"
                             >
                               <Trash2 size={14} />
@@ -479,13 +554,13 @@ export default function ProviderCatalogPage() {
 
                       {/* Expanded edit panel */}
                       {isExpanded && (
-                        <tr className="border-b bg-blue-50/30">
+                        <tr className="border-b border-[#E4E4E7] bg-blue-50/30">
                           <td colSpan={7} className="px-4 py-4">
                             <div className="space-y-4">
                               {/* Row 1: descriptions */}
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
                                     Descripción Aduanera
                                   </label>
                                   <textarea
@@ -497,12 +572,12 @@ export default function ProviderCatalogPage() {
                                       }))
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] min-h-[60px] resize-y"
                                     placeholder="Descripción para aduana"
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
                                     Descripción Interna
                                   </label>
                                   <textarea
@@ -514,7 +589,7 @@ export default function ProviderCatalogPage() {
                                       }))
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1] min-h-[60px] resize-y"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] min-h-[60px] resize-y"
                                     placeholder="Descripción interna (uso propio)"
                                   />
                                 </div>
@@ -523,7 +598,7 @@ export default function ProviderCatalogPage() {
                               {/* Row 2: NCM + flags */}
                               <div className="grid grid-cols-5 gap-4">
                                 <div>
-                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
                                     NCM
                                   </label>
                                   <input
@@ -536,11 +611,11 @@ export default function ProviderCatalogPage() {
                                       }))
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
                                     LATU
                                   </label>
                                   <select
@@ -552,15 +627,15 @@ export default function ProviderCatalogPage() {
                                       }))
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                                   >
-                                    <option value="">—</option>
-                                    <option value="true">Sí</option>
+                                    <option value="">--</option>
+                                    <option value="true">Si</option>
                                     <option value="false">No</option>
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
                                     IMESI
                                   </label>
                                   <select
@@ -572,15 +647,15 @@ export default function ProviderCatalogPage() {
                                       }))
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                                   >
-                                    <option value="">—</option>
-                                    <option value="true">Sí</option>
+                                    <option value="">--</option>
+                                    <option value="true">Si</option>
                                     <option value="false">No</option>
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
                                     Exonera IVA
                                   </label>
                                   <select
@@ -592,15 +667,15 @@ export default function ProviderCatalogPage() {
                                       }))
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                                   >
-                                    <option value="">—</option>
-                                    <option value="true">Sí</option>
+                                    <option value="">--</option>
+                                    <option value="true">Si</option>
                                     <option value="false">No</option>
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
                                     Apertura
                                   </label>
                                   <input
@@ -613,8 +688,8 @@ export default function ProviderCatalogPage() {
                                       }))
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2E86C1]"
-                                    placeholder="—"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                                    placeholder="--"
                                   />
                                 </div>
                               </div>
@@ -627,7 +702,7 @@ export default function ProviderCatalogPage() {
                                     saveEdit();
                                   }}
                                   disabled={saving}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2E86C1] text-white text-sm font-medium hover:bg-[#2574A9] disabled:opacity-50 transition-colors"
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] disabled:opacity-50 transition-colors"
                                 >
                                   {saving ? (
                                     <Loader2 size={14} className="animate-spin" />
@@ -641,7 +716,7 @@ export default function ProviderCatalogPage() {
                                     e.stopPropagation();
                                     cancelEdit();
                                   }}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm text-gray-600 hover:bg-white transition-colors"
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm text-[#71717A] hover:bg-white transition-colors"
                                 >
                                   <X size={14} />
                                   Cancelar
@@ -660,7 +735,7 @@ export default function ProviderCatalogPage() {
                                             value={moveProviderSearch}
                                             onChange={(e) => setMoveProviderSearch(e.target.value)}
                                             placeholder="Buscar proveedor destino..."
-                                            className="w-full px-2 py-1.5 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#2E86C1]"
+                                            className="w-full px-2 py-1.5 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
                                             autoFocus
                                             onClick={(e) => e.stopPropagation()}
                                             onKeyDown={(e) => {
@@ -674,10 +749,10 @@ export default function ProviderCatalogPage() {
                                         <div className="max-h-40 overflow-y-auto">
                                           {loadingMoveProviders ? (
                                             <div className="flex items-center justify-center py-3">
-                                              <Loader2 size={14} className="animate-spin text-[#2E86C1]" />
+                                              <Loader2 size={14} className="animate-spin text-[#2563EB]" />
                                             </div>
                                           ) : moveProviders.length === 0 ? (
-                                            <p className="px-3 py-2 text-sm text-gray-400">Sin proveedores disponibles</p>
+                                            <p className="px-3 py-2 text-sm text-[#A1A1AA]">Sin proveedores disponibles</p>
                                           ) : (
                                             moveProviders.map((p) => (
                                               <button
@@ -687,7 +762,7 @@ export default function ProviderCatalogPage() {
                                                   handleMoveProduct(item.id, p.id, p.name);
                                                 }}
                                                 disabled={movingInProgress}
-                                                className="w-full text-left px-3 py-2 text-sm hover:bg-[#EBF5FB] disabled:opacity-50"
+                                                className="w-full text-left px-3 py-2 text-sm hover:bg-[#EFF6FF] disabled:opacity-50"
                                               >
                                                 {p.name}
                                               </button>
@@ -702,7 +777,7 @@ export default function ProviderCatalogPage() {
                                         e.stopPropagation();
                                         setMovingId(item.id);
                                       }}
-                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm text-gray-600 hover:bg-white transition-colors"
+                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm text-[#71717A] hover:bg-white transition-colors"
                                     >
                                       <ArrowLeft size={14} className="rotate-180" />
                                       Mover
@@ -724,15 +799,15 @@ export default function ProviderCatalogPage() {
 
         {/* Pagination */}
         {data && data.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50">
-            <span className="text-xs text-gray-500">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-[#E4E4E7] bg-[#FAFAFA]">
+            <span className="text-xs text-[#71717A]">
               Página {data.page} de {data.totalPages}
             </span>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="p-1.5 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-1.5 rounded hover:bg-[#E4E4E7] disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -741,7 +816,7 @@ export default function ProviderCatalogPage() {
                   setPage((p) => Math.min(data.totalPages, p + 1))
                 }
                 disabled={page >= data.totalPages}
-                className="p-1.5 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-1.5 rounded hover:bg-[#E4E4E7] disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronRight size={16} />
               </button>
@@ -749,6 +824,15 @@ export default function ProviderCatalogPage() {
           </div>
         )}
       </div>
+
+      {showNuevoProducto && (
+        <NuevoProductoModal
+          providerId={providerId}
+          providerName={providerName}
+          onClose={() => setShowNuevoProducto(false)}
+          onSaved={() => { setShowNuevoProducto(false); fetchCatalog(); }}
+        />
+      )}
     </div>
   );
 }

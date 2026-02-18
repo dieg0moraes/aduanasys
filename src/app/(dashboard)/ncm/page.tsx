@@ -5,13 +5,12 @@ import {
   Search,
   Loader2,
   BookOpen,
-  Hash,
-  Database,
-  FileText,
-  Brain,
-  Tag,
-  GitBranch,
   AlertTriangle,
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  Check,
+  GitBranch,
 } from "lucide-react";
 
 interface NCMResult {
@@ -38,46 +37,13 @@ interface SearchResponse {
   sources?: { catalog: number; fulltext: number; trigram: number; semantic: number; graph: number };
 }
 
-const SOURCE_CONFIG: Record<
-  string,
-  { icon: typeof Database; color: string; bg: string; label: string }
-> = {
-  catalog: {
-    icon: Database,
-    color: "text-purple-700",
-    bg: "bg-purple-50 border-purple-200",
-    label: "Catálogo",
-  },
-  fulltext: {
-    icon: FileText,
-    color: "text-emerald-700",
-    bg: "bg-emerald-50 border-emerald-200",
-    label: "Full-text",
-  },
-  trigram: {
-    icon: Search,
-    color: "text-amber-700",
-    bg: "bg-amber-50 border-amber-200",
-    label: "Soft match",
-  },
-  semantic: {
-    icon: Brain,
-    color: "text-blue-700",
-    bg: "bg-blue-50 border-blue-200",
-    label: "Semántica",
-  },
-  exact: {
-    icon: Tag,
-    color: "text-gray-700",
-    bg: "bg-gray-50 border-gray-200",
-    label: "Código exacto",
-  },
-  graph: {
-    icon: GitBranch,
-    color: "text-cyan-700",
-    bg: "bg-cyan-50 border-cyan-200",
-    label: "Grafo NCM",
-  },
+const LAYER_CONFIG: Record<string, { dotColor: string; label: string }> = {
+  catalog: { dotColor: "bg-[#16A34A]", label: "Catalogo" },
+  fulltext: { dotColor: "bg-[#2563EB]", label: "Full-text" },
+  trigram: { dotColor: "bg-[#F59E0B]", label: "Soft match" },
+  semantic: { dotColor: "bg-[#9333EA]", label: "Semantica" },
+  exact: { dotColor: "bg-[#FAFAFA]0", label: "Exacto" },
+  graph: { dotColor: "bg-cyan-500", label: "Grafo" },
 };
 
 export default function NCMPage() {
@@ -87,6 +53,30 @@ export default function NCMPage() {
   const [expandedQuery, setExpandedQuery] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
   const [sources, setSources] = useState<SearchResponse["sources"]>();
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  function toggleRow(key: string) {
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }
+
+  async function handleCopy(code: string) {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode(null), 2000);
+    } catch {
+      // clipboard not available
+    }
+  }
 
   async function handleSearch(e?: FormEvent) {
     e?.preventDefault();
@@ -98,6 +88,7 @@ export default function NCMPage() {
     setResults([]);
     setExpandedQuery("");
     setSources(undefined);
+    setExpandedRows(new Set());
 
     try {
       const response = await fetch("/api/ncm/search", {
@@ -120,161 +111,98 @@ export default function NCMPage() {
   }
 
   function getSimilarityColor(score: number) {
-    if (score >= 0.9) return "bg-green-100 text-green-700";
-    if (score >= 0.8) return "bg-emerald-100 text-emerald-700";
-    if (score >= 0.6) return "bg-yellow-100 text-yellow-700";
-    return "bg-orange-100 text-orange-700";
+    const pct = score * 100;
+    if (pct >= 80) return "text-[#16A34A]";
+    if (pct >= 50) return "text-[#F59E0B]";
+    return "text-red-500";
   }
 
-  function getSourceBadge(matchType: string) {
-    const config = SOURCE_CONFIG[matchType] || SOURCE_CONFIG.semantic;
-    const Icon = config.icon;
-    return (
-      <span
-        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border ${config.bg} ${config.color}`}
-      >
-        <Icon size={12} />
-        {config.label}
-      </span>
-    );
+  function getSimilarityBg(score: number) {
+    const pct = score * 100;
+    if (pct >= 80) return "bg-green-50";
+    if (pct >= 50) return "bg-amber-50";
+    return "bg-red-50";
   }
 
-  function renderDescription(description: string) {
-    const parts = description.split(" > ");
-    if (parts.length === 1) {
-      return <p className="text-sm text-gray-700">{description}</p>;
-    }
-    return (
-      <div className="flex flex-wrap items-center gap-1.5">
-        {parts.map((part, idx) => (
-          <span key={idx} className="flex items-center gap-1.5">
-            <span
-              className={`text-sm ${
-                idx === parts.length - 1
-                  ? "text-gray-900 font-medium"
-                  : "text-gray-500"
-              }`}
-            >
-              {part.trim()}
-            </span>
-            {idx < parts.length - 1 && (
-              <span className="text-gray-300 text-xs">&rsaquo;</span>
-            )}
-          </span>
-        ))}
-      </div>
-    );
+  function getLayerDot(matchType: string) {
+    const config = LAYER_CONFIG[matchType] || LAYER_CONFIG.semantic;
+    return <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${config.dotColor}`} />;
+  }
+
+  function truncateDescription(desc: string, maxLen: number = 80) {
+    if (desc.length <= maxLen) return desc;
+    return desc.slice(0, maxLen).trimEnd() + "...";
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-8 max-w-5xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 mb-2">
-          <BookOpen size={28} className="text-[#2E86C1]" />
-          Búsqueda de Códigos NCM
+        <h1 className="text-2xl font-bold text-[#18181B] flex items-center gap-2 mb-2">
+          <BookOpen size={28} className="text-[#2563EB]" />
+          Busqueda de Codigos NCM
         </h1>
-        <p className="text-sm text-gray-500">
-          Buscá códigos NCM por descripción del producto, código numérico, o
+        <p className="text-sm text-[#71717A]">
+          Busca codigos NCM por descripcion del producto, codigo numerico, o
           nombre de un producto ya clasificado.
         </p>
       </div>
 
       {/* Search Form */}
-      <form onSubmit={handleSearch} className="mb-8">
-        <div className="flex gap-3 max-w-2xl">
-          <div className="relative flex-1">
-            <Search
-              size={18}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              placeholder="Ej: 'mouse inalámbrico', 'telas de algodón', 'LATTAFA' o '6204'"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              disabled={loading}
-              className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 text-base focus:outline-none focus:ring-2 focus:ring-[#2E86C1]/20 focus:border-[#2E86C1] disabled:bg-gray-50 disabled:text-gray-400"
-              autoFocus
-            />
+      <div className="bg-white rounded-xl border border-[#E4E4E7] p-6 mb-6">
+        <form onSubmit={handleSearch}>
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search
+                size={20}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A1A1AA]"
+              />
+              <input
+                type="text"
+                placeholder="Ej: 'mouse inalambrico', 'telas de algodon', 'LATTAFA' o '6204'"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                disabled={loading}
+                className="w-full pl-12 pr-4 py-3.5 rounded-lg border border-[#E4E4E7] text-base text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent disabled:bg-[#FAFAFA] disabled:text-[#A1A1AA] transition-shadow"
+                autoFocus
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading || !query.trim()}
+              className="bg-[#2563EB] text-white rounded-md px-4 py-2 font-medium hover:bg-[#1D4ED8] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 flex-shrink-0"
+            >
+              {loading ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Buscando...
+                </>
+              ) : (
+                <>
+                  <Search size={18} />
+                  Buscar
+                </>
+              )}
+            </button>
           </div>
-          <button
-            type="submit"
-            disabled={loading || !query.trim()}
-            className="px-6 py-3 bg-[#2E86C1] text-white rounded-lg font-medium hover:bg-[#2874A6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader2 size={18} className="animate-spin" />
-                Buscando...
-              </>
-            ) : (
-              <>
-                <Search size={18} />
-                Buscar
-              </>
-            )}
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
 
-      {/* Search Info */}
-      {!loading && hasSearched && (expandedQuery || sources) && (
-        <div className="mb-6 space-y-3 max-w-4xl">
-          {expandedQuery && (
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-xs text-gray-500 mb-1">
-                Búsqueda interpretada como:
-              </p>
-              <p className="text-sm text-blue-700 italic">
-                &ldquo;{expandedQuery}&rdquo;
-              </p>
-            </div>
-          )}
-          {sources && (
-            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
-              <span>Fuentes:</span>
-              {sources.catalog > 0 && (
-                <span className="flex items-center gap-1">
-                  <Database size={12} className="text-purple-500" />
-                  {sources.catalog} catálogo
-                </span>
-              )}
-              {sources.fulltext > 0 && (
-                <span className="flex items-center gap-1">
-                  <FileText size={12} className="text-emerald-500" />
-                  {sources.fulltext} full-text
-                </span>
-              )}
-              {sources.trigram > 0 && (
-                <span className="flex items-center gap-1">
-                  <Search size={12} className="text-amber-500" />
-                  {sources.trigram} soft match
-                </span>
-              )}
-              {sources.semantic > 0 && (
-                <span className="flex items-center gap-1">
-                  <Brain size={12} className="text-blue-500" />
-                  {sources.semantic} semántica
-                </span>
-              )}
-              {sources.graph > 0 && (
-                <span className="flex items-center gap-1">
-                  <GitBranch size={12} className="text-cyan-500" />
-                  {sources.graph} grafo
-                </span>
-              )}
-            </div>
-          )}
+      {/* AI Expansion Card */}
+      {!loading && hasSearched && expandedQuery && expandedQuery !== query.trim() && (
+        <div className="bg-[#EFF6FF] border border-[#DBEAFE] rounded-lg p-3 mb-6">
+          <p className="text-sm text-[#3B82F6]">
+            Interpretado como: <em className="text-[#1D4ED8]">&ldquo;{expandedQuery}&rdquo;</em>
+          </p>
         </div>
       )}
 
       {/* Initial State */}
       {!loading && !hasSearched && (
         <div className="text-center py-20">
-          <BookOpen size={48} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">
-            Escribí una descripción de producto y presioná{" "}
+          <BookOpen size={48} className="mx-auto text-[#A1A1AA] mb-4" />
+          <p className="text-[#71717A]">
+            Escribi una descripcion de producto y presiona{" "}
             <strong>Buscar</strong> o <strong>Enter</strong>
           </p>
         </div>
@@ -283,9 +211,9 @@ export default function NCMPage() {
       {/* Loading State */}
       {loading && (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <Loader2 size={32} className="animate-spin text-[#2E86C1]" />
-          <p className="text-sm text-gray-500">
-            Buscando en catálogo, texto, semántica y grafo...
+          <Loader2 size={32} className="animate-spin text-[#2563EB]" />
+          <p className="text-sm text-[#71717A]">
+            Buscando en catalogo, texto, semantica y grafo...
           </p>
         </div>
       )}
@@ -293,102 +221,183 @@ export default function NCMPage() {
       {/* No Results */}
       {!loading && hasSearched && results.length === 0 && (
         <div className="text-center py-20">
-          <Search size={48} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">No se encontraron resultados</p>
-          <p className="text-xs text-gray-400 mt-2">
-            Probá con otros términos o un código NCM directo
+          <Search size={48} className="mx-auto text-[#A1A1AA] mb-4" />
+          <p className="text-[#71717A]">No se encontraron resultados</p>
+          <p className="text-xs text-[#A1A1AA] mt-2">
+            Proba con otros terminos o un codigo NCM directo
           </p>
         </div>
       )}
 
       {/* Results */}
       {!loading && results.length > 0 && (
-        <div>
-          <p className="text-sm text-gray-500 mb-4">
-            {results.length} resultado{results.length !== 1 ? "s" : ""}
-          </p>
+        <div className="bg-white rounded-xl border border-[#E4E4E7]">
+          {/* Results Header with Legend */}
+          <div className="px-5 py-4 border-b border-[#E4E4E7] flex items-center justify-between">
+            <p className="text-sm text-[#71717A]">
+              {results.length} resultado{results.length !== 1 ? "s" : ""}
+            </p>
+            <div className="flex items-center gap-4 text-xs text-[#71717A]">
+              {Object.entries(LAYER_CONFIG)
+                .filter(([key]) => {
+                  // Only show layers that appear in results
+                  return results.some((r) => r.match_type === key);
+                })
+                .map(([key, config]) => (
+                  <span key={key} className="flex items-center gap-1.5">
+                    <span className={`inline-block w-2 h-2 rounded-full ${config.dotColor}`} />
+                    {config.label}
+                  </span>
+                ))}
+            </div>
+          </div>
 
-          <div className="space-y-3">
-            {results.map((result) => (
-              <div
-                key={`${result.match_type}-${result.id}`}
-                className="bg-white rounded-lg border border-gray-200 hover:border-[#2E86C1]/30 hover:shadow-sm transition-all p-5"
-              >
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-lg bg-[#2E86C1]/10 flex items-center justify-center flex-shrink-0">
-                      <Hash size={18} className="text-[#2E86C1]" />
-                    </div>
-                    <div>
-                      <span className="font-mono text-lg font-bold text-gray-900">
-                        {result.ncm_code}
-                      </span>
-                      <span className="text-xs text-gray-400 ml-2">
-                        Cap. {result.chapter}
-                      </span>
-                    </div>
-                  </div>
+          {/* Result Rows */}
+          <div className="divide-y divide-[#E4E4E7]">
+            {results.map((result) => {
+              const rowKey = `${result.match_type}-${result.id}`;
+              const isExpanded = expandedRows.has(rowKey);
+              const similarityPct = Math.round(result.similarity * 100);
 
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {getSourceBadge(result.match_type)}
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold ${getSimilarityColor(
-                        result.similarity
-                      )}`}
-                    >
-                      {Math.round(result.similarity * 100)}%
+              return (
+                <div key={rowKey}>
+                  {/* Collapsed Row */}
+                  <button
+                    type="button"
+                    onClick={() => toggleRow(rowKey)}
+                    className="w-full px-5 py-3.5 flex items-center gap-3 hover:bg-[#FAFAFA] transition-colors text-left"
+                  >
+                    {/* Expand/Collapse Icon */}
+                    {isExpanded ? (
+                      <ChevronDown size={16} className="text-[#A1A1AA] flex-shrink-0" />
+                    ) : (
+                      <ChevronRight size={16} className="text-[#A1A1AA] flex-shrink-0" />
+                    )}
+
+                    {/* Layer Dot */}
+                    {getLayerDot(result.match_type)}
+
+                    {/* NCM Code Pill */}
+                    <span className="font-mono text-sm font-medium bg-[#F4F4F5] px-2 py-0.5 rounded flex-shrink-0">
+                      {result.ncm_code}
                     </span>
-                  </div>
-                </div>
 
-                <div className="ml-14">
-                  {renderDescription(result.description)}
+                    {/* Truncated Description */}
+                    <span className="text-sm text-[#52525B] truncate flex-1 min-w-0">
+                      {truncateDescription(result.description, 90)}
+                    </span>
 
-                  {/* Hierarchy breadcrumb del grafo */}
-                  {result.hierarchy_path && result.hierarchy_path.length > 0 && (
-                    <div className="mt-1.5 flex flex-wrap items-center gap-1 text-xs text-cyan-600">
-                      <GitBranch size={11} className="text-cyan-400 flex-shrink-0" />
-                      {result.hierarchy_path.map((seg, i) => {
-                        const label = seg
-                          .replace(/^(Section|Chapter|Heading|Item|Sección|Capítulo|Partida|Subpartida):\s*/, "")
-                          .split(" - ")[0];
-                        return (
-                          <span key={i} className="flex items-center gap-1">
-                            {i > 0 && <span className="text-gray-300">&rsaquo;</span>}
-                            <span>{label}</span>
-                          </span>
-                        );
-                      })}
-                    </div>
-                  )}
+                    {/* Similarity Percentage */}
+                    <span
+                      className={`text-xs font-semibold px-2 py-0.5 rounded flex-shrink-0 ${getSimilarityBg(result.similarity)} ${getSimilarityColor(result.similarity)}`}
+                    >
+                      {similarityPct}%
+                    </span>
+                  </button>
 
-                  {/* Exclusiones */}
-                  {result.exclusions && result.exclusions.length > 0 && (
-                    <div className="mt-1.5 space-y-1">
-                      {result.exclusions.map((exc, i) => (
-                        <div
-                          key={exc.rule_id || i}
-                          className="flex items-start gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1"
-                        >
-                          <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
-                          <span>{exc.description}</span>
+                  {/* Expanded Content */}
+                  {isExpanded && (
+                    <div className="px-5 pb-4 pl-16 space-y-3 bg-[#FAFAFA]">
+                      {/* Full Description */}
+                      <div>
+                        <p className="text-xs font-medium text-[#71717A] mb-1">Descripcion completa</p>
+                        <p className="text-sm text-[#18181B]">{result.description}</p>
+                      </div>
+
+                      {/* Section & Chapter */}
+                      {(result.section || result.chapter) && (
+                        <div className="flex flex-wrap gap-4">
+                          {result.section && (
+                            <div>
+                              <p className="text-xs font-medium text-[#71717A] mb-0.5">Sección</p>
+                              <p className="text-sm text-[#18181B]">{result.section}</p>
+                            </div>
+                          )}
+                          {result.chapter && (
+                            <div>
+                              <p className="text-xs font-medium text-[#71717A] mb-0.5">Capítulo</p>
+                              <p className="text-sm text-[#18181B]">{result.chapter}</p>
+                            </div>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Info extra del catálogo */}
-                  {result.match_type === "catalog" && (
-                    <div className="mt-2 text-xs text-gray-400 space-y-0.5">
-                      {result.sku && <p>SKU: {result.sku}</p>}
-                      {result.provider_description && (
-                        <p>Proveedor: {result.provider_description}</p>
                       )}
+
+                      {/* Hierarchy Tree */}
+                      {result.hierarchy_path && result.hierarchy_path.length > 0 && (
+                        <div>
+                          <p className="text-xs font-medium text-[#71717A] mb-2">Árbol de clasificación</p>
+                          <div className="bg-[#F0FDFA] border border-[#CCFBF1] rounded-lg px-3 py-2.5 space-y-1.5">
+                            {result.hierarchy_path.map((seg, i) => {
+                              const cleaned = seg.replace(/^(Section|Chapter|Heading|Item|Sección|Capítulo|Partida|Subpartida):\s*/, "");
+                              const parts = cleaned.split(" - ");
+                              const code = parts[0];
+                              const desc = parts.slice(1).join(" - ");
+                              return (
+                                <div key={i} className="flex items-start gap-1.5" style={{ paddingLeft: `${i * 16}px` }}>
+                                  {i === 0 ? (
+                                    <GitBranch size={12} className="text-teal-400 flex-shrink-0 mt-0.5" />
+                                  ) : (
+                                    <span className="text-teal-300 flex-shrink-0 mt-px text-xs">└</span>
+                                  )}
+                                  <span className="text-xs text-teal-800">
+                                    <span className="font-semibold font-mono">{code}</span>
+                                    {desc && <span className="text-teal-600"> — {desc}</span>}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Exclusion Warnings */}
+                      {result.exclusions && result.exclusions.length > 0 && (
+                        <div className="space-y-1.5">
+                          {result.exclusions.map((exc, i) => (
+                            <div
+                              key={exc.rule_id || i}
+                              className="flex items-start gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2.5 py-1.5"
+                            >
+                              <AlertTriangle size={12} className="flex-shrink-0 mt-0.5" />
+                              <span>{exc.description}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Catalog Extra Info */}
+                      {result.match_type === "catalog" && (
+                        <div className="text-xs text-[#71717A] space-y-0.5">
+                          {result.sku && <p>SKU: {result.sku}</p>}
+                          {result.provider_description && (
+                            <p>Proveedor: {result.provider_description}</p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Copy Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(result.ncm_code)}
+                        className="inline-flex items-center gap-1.5 text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors mt-1"
+                      >
+                        {copiedCode === result.ncm_code ? (
+                          <>
+                            <Check size={14} />
+                            Copiado
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={14} />
+                            Copiar
+                          </>
+                        )}
+                      </button>
                     </div>
                   )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
