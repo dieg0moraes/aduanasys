@@ -11,6 +11,9 @@ import {
   Users,
   Package,
   Plus,
+  Pencil,
+  Save,
+  X,
 } from "lucide-react";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { NuevoProductoModal } from "@/components/catalog/nuevo-producto-modal";
@@ -199,6 +202,19 @@ export default function MercaderiaSearch() {
   // Expanded cards
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  // Inline editing
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState({
+    customs_description: "",
+    internal_description: "",
+    ncm_code: "",
+    latu: null as boolean | null,
+    imesi: null as boolean | null,
+    exonera_iva: null as boolean | null,
+    apertura: null as number | null,
+  });
+  const [saving, setSaving] = useState(false);
+
   // Create product modal
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -289,8 +305,54 @@ export default function MercaderiaSearch() {
 
   const toggleExpand = (id: string) => {
     setExpandedId((prev) => (prev === id ? null : id));
+    if (editingId && editingId !== id) {
+      setEditingId(null);
+    }
   };
 
+  const startEdit = (item: CatalogItem) => {
+    setEditingId(item.id);
+    setEditValues({
+      customs_description: item.customs_description,
+      internal_description: item.internal_description || "",
+      ncm_code: item.ncm_code,
+      latu: item.latu,
+      imesi: item.imesi,
+      exonera_iva: item.exonera_iva,
+      apertura: item.apertura,
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/catalog", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: editingId, ...editValues }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setItems((prev) =>
+          prev.map((item) =>
+            item.id === editingId ? { ...item, ...updated } : item
+          )
+        );
+        setEditingId(null);
+      } else {
+        const err = await res.json();
+        alert(`Error al guardar: ${err.error || "Error desconocido"}`);
+      }
+    } catch {
+      alert("Error de conexión al guardar");
+    }
+    setSaving(false);
+  };
 
   return (
     <div>
@@ -466,56 +528,189 @@ export default function MercaderiaSearch() {
                 {/* Expanded content */}
                 {isExpanded && (
                   <div className="px-4 pb-4 border-t border-[#F4F4F5] pt-3">
-                    {/* Descriptions */}
-                    <div className="space-y-2 mb-3">
-                      {item.customs_description && (
-                        <div>
-                          <span className="text-[10px] font-medium text-[#A1A1AA] uppercase tracking-wide">
-                            Descripción aduanera
-                          </span>
-                          <p className="text-sm text-[#18181B] mt-0.5">
-                            {item.customs_description}
-                          </p>
+                    {editingId === item.id ? (
+                      /* --- Edit mode --- */
+                      <div className="space-y-3">
+                        {/* Descriptions - inline editable */}
+                        <div className="space-y-2">
+                          <div>
+                            <span className="text-[10px] font-medium text-[#A1A1AA] uppercase tracking-wide">
+                              Descripción aduanera
+                            </span>
+                            <textarea
+                              value={editValues.customs_description}
+                              onChange={(e) => setEditValues((v) => ({ ...v, customs_description: e.target.value }))}
+                              rows={2}
+                              className="mt-0.5 w-full px-2.5 py-1.5 bg-[#FAFAFA] border border-[#E4E4E7] rounded-lg text-sm text-[#18181B] focus:outline-none focus:ring-1 focus:ring-[#2563EB] focus:bg-white resize-none"
+                            />
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-medium text-[#A1A1AA] uppercase tracking-wide">
+                              Descripción interna
+                            </span>
+                            <textarea
+                              value={editValues.internal_description}
+                              onChange={(e) => setEditValues((v) => ({ ...v, internal_description: e.target.value }))}
+                              rows={2}
+                              placeholder="Sin descripción interna"
+                              className="mt-0.5 w-full px-2.5 py-1.5 bg-[#FAFAFA] border border-[#E4E4E7] rounded-lg text-sm text-[#18181B] placeholder:text-[#D4D4D8] focus:outline-none focus:ring-1 focus:ring-[#2563EB] focus:bg-white resize-none"
+                            />
+                          </div>
                         </div>
-                      )}
-                      {item.internal_description && (
-                        <div>
-                          <span className="text-[10px] font-medium text-[#A1A1AA] uppercase tracking-wide">
-                            Descripción interna
-                          </span>
-                          <p className="text-sm text-[#18181B] mt-0.5">
-                            {item.internal_description}
-                          </p>
+
+                        {/* NCM inline */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-medium text-[#A1A1AA] uppercase tracking-wide">NCM</span>
+                          <input
+                            type="text"
+                            value={editValues.ncm_code}
+                            onChange={(e) => setEditValues((v) => ({ ...v, ncm_code: e.target.value }))}
+                            className="px-2.5 py-1 bg-[#FAFAFA] border border-[#E4E4E7] rounded-lg text-sm font-mono text-[#18181B] focus:outline-none focus:ring-1 focus:ring-[#2563EB] focus:bg-white w-40"
+                          />
                         </div>
-                      )}
-                    </div>
 
-                    {/* Flag pills */}
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      {item.latu && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#F5F3FF] text-[#9333EA]">
-                          LATU
-                        </span>
-                      )}
-                      {item.imesi && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#FFF7ED] text-[#EA580C]">
-                          IMESI
-                        </span>
-                      )}
-                      {item.exonera_iva && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#F0FDF4] text-[#16A34A]">
-                          Exonera IVA
-                        </span>
-                      )}
-                      {item.apertura != null && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#EFF6FF] text-[#2563EB]">
-                          Apertura: {item.apertura}
-                        </span>
-                      )}
-                    </div>
+                        {/* Toggle pills + apertura */}
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {/* LATU toggle */}
+                          <button
+                            type="button"
+                            onClick={() => setEditValues((v) => ({ ...v, latu: v.latu === true ? false : v.latu === false ? null : true }))}
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-medium border transition-colors cursor-pointer ${
+                              editValues.latu === true
+                                ? "bg-[#F5F3FF] text-[#9333EA] border-[#DDD6FE]"
+                                : editValues.latu === false
+                                ? "bg-white text-[#A1A1AA] border-[#E4E4E7] line-through"
+                                : "bg-white text-[#D4D4D8] border-dashed border-[#E4E4E7]"
+                            }`}
+                          >
+                            LATU{editValues.latu === true ? " ✓" : editValues.latu === false ? " ✗" : ""}
+                          </button>
+                          {/* IMESI toggle */}
+                          <button
+                            type="button"
+                            onClick={() => setEditValues((v) => ({ ...v, imesi: v.imesi === true ? false : v.imesi === false ? null : true }))}
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-medium border transition-colors cursor-pointer ${
+                              editValues.imesi === true
+                                ? "bg-[#FFF7ED] text-[#EA580C] border-[#FED7AA]"
+                                : editValues.imesi === false
+                                ? "bg-white text-[#A1A1AA] border-[#E4E4E7] line-through"
+                                : "bg-white text-[#D4D4D8] border-dashed border-[#E4E4E7]"
+                            }`}
+                          >
+                            IMESI{editValues.imesi === true ? " ✓" : editValues.imesi === false ? " ✗" : ""}
+                          </button>
+                          {/* Exonera IVA toggle */}
+                          <button
+                            type="button"
+                            onClick={() => setEditValues((v) => ({ ...v, exonera_iva: v.exonera_iva === true ? false : v.exonera_iva === false ? null : true }))}
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-medium border transition-colors cursor-pointer ${
+                              editValues.exonera_iva === true
+                                ? "bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]"
+                                : editValues.exonera_iva === false
+                                ? "bg-white text-[#A1A1AA] border-[#E4E4E7] line-through"
+                                : "bg-white text-[#D4D4D8] border-dashed border-[#E4E4E7]"
+                            }`}
+                          >
+                            Exonera IVA{editValues.exonera_iva === true ? " ✓" : editValues.exonera_iva === false ? " ✗" : ""}
+                          </button>
+                          {/* Apertura inline */}
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] font-medium text-[#A1A1AA]">Apertura:</span>
+                            <input
+                              type="number"
+                              value={editValues.apertura ?? ""}
+                              onChange={(e) => setEditValues((v) => ({ ...v, apertura: e.target.value === "" ? null : Number(e.target.value) }))}
+                              placeholder="--"
+                              className="w-16 px-2 py-0.5 bg-[#FAFAFA] border border-[#E4E4E7] rounded text-xs font-mono text-[#18181B] focus:outline-none focus:ring-1 focus:ring-[#2563EB] focus:bg-white"
+                            />
+                          </div>
+                        </div>
 
-                    {/* Importers section */}
-                    <ImportersSection productId={item.id} />
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-2 pt-1">
+                          <button
+                            onClick={cancelEdit}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#E4E4E7] text-xs text-[#71717A] hover:bg-[#FAFAFA]"
+                          >
+                            <X size={12} />
+                            Cancelar
+                          </button>
+                          <button
+                            onClick={saveEdit}
+                            disabled={saving}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#2563EB] text-white text-xs font-medium hover:bg-[#1D4ED8] disabled:opacity-50"
+                          >
+                            {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+                            {saving ? "Guardando..." : "Guardar"}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* --- Read mode --- */
+                      <>
+                        {/* Edit button */}
+                        <div className="flex justify-end mb-2">
+                          <button
+                            onClick={() => startEdit(item)}
+                            className="flex items-center gap-1 px-2 py-1 rounded text-xs text-[#71717A] hover:bg-[#F4F4F5] hover:text-[#18181B]"
+                          >
+                            <Pencil size={12} />
+                            Editar
+                          </button>
+                        </div>
+
+                        {/* Descriptions */}
+                        <div className="space-y-2 mb-3">
+                          {item.customs_description && (
+                            <div>
+                              <span className="text-[10px] font-medium text-[#A1A1AA] uppercase tracking-wide">
+                                Descripción aduanera
+                              </span>
+                              <p className="text-sm text-[#18181B] mt-0.5">
+                                {item.customs_description}
+                              </p>
+                            </div>
+                          )}
+                          {item.internal_description && (
+                            <div>
+                              <span className="text-[10px] font-medium text-[#A1A1AA] uppercase tracking-wide">
+                                Descripción interna
+                              </span>
+                              <p className="text-sm text-[#18181B] mt-0.5">
+                                {item.internal_description}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Flag pills */}
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          {item.latu && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#F5F3FF] text-[#9333EA]">
+                              LATU
+                            </span>
+                          )}
+                          {item.imesi && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#FFF7ED] text-[#EA580C]">
+                              IMESI
+                            </span>
+                          )}
+                          {item.exonera_iva && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#F0FDF4] text-[#16A34A]">
+                              Exonera IVA
+                            </span>
+                          )}
+                          {item.apertura != null && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#EFF6FF] text-[#2563EB]">
+                              Apertura: {item.apertura}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Importers section */}
+                        <ImportersSection productId={item.id} />
+                      </>
+                    )}
                   </div>
                 )}
               </div>
