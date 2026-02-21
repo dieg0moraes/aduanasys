@@ -36,9 +36,30 @@ const TEMPLATE_HEADERS = [
 /** Regex for valid NCM codes: 4 digits, optionally .2 digits, optionally .2 more digits */
 const NCM_REGEX = /^\d{4}(\.\d{2}(\.\d{2})?)?$/;
 
+/** Normalize header text for matching (lowercase, strip accents, trim) */
+function normalizeHeader(h: string): string {
+  return h
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "")
+    .trim();
+}
+
+/** Map of normalized header → canonical field key */
+const HEADER_MAP: Record<string, string> = {
+  sku: "sku",
+  descripcioncomercial: "provider_description",
+  descripcionaduanera: "customs_description",
+  descripcioninterna: "internal_description",
+  ncm: "ncm_code",
+  paisdeorigen: "country_of_origin",
+  apertura: "apertura",
+};
+
 /**
  * Parse an Excel file buffer into typed ImportRow[] with validation.
- * Reads the first sheet, expects headers in the first row matching TEMPLATE_HEADERS.
+ * Reads the first sheet, maps columns by header name (tolerant of accents/casing).
  */
 export function parseExcelBuffer(buffer: ArrayBuffer): ImportRow[] {
   const workbook = XLSX.read(buffer, { type: "array" });
@@ -48,30 +69,46 @@ export function parseExcelBuffer(buffer: ArrayBuffer): ImportRow[] {
   const sheet = workbook.Sheets[sheetName];
   if (!sheet) return [];
 
-  // Convert to array of arrays (raw rows including header)
-  const raw: unknown[][] = XLSX.utils.sheet_to_json(sheet, {
+  // Read as array of arrays to get raw header row
+  const rawArrays: unknown[][] = XLSX.utils.sheet_to_json(sheet, {
     header: 1,
     defval: "",
     blankrows: false,
   });
 
-  if (raw.length < 2) return []; // need at least header + 1 data row
+  if (rawArrays.length < 2) return []; // need at least header + 1 data row
+
+  // Build column index map from header row
+  const headerRow = rawArrays[0];
+  const colMap: Record<string, number> = {};
+  for (let c = 0; c < headerRow.length; c++) {
+    const normalized = normalizeHeader(String(headerRow[c] ?? ""));
+    const fieldKey = HEADER_MAP[normalized];
+    if (fieldKey) {
+      colMap[fieldKey] = c;
+    }
+  }
 
   const rows: ImportRow[] = [];
   const seenSkus = new Set<string>();
 
-  // Skip header row (index 0), process data rows
-  for (let i = 1; i < raw.length; i++) {
-    const cells = raw[i];
-    const rowNumber = i + 1; // 1-based, accounting for header
+  // Process data rows (skip header)
+  for (let i = 1; i < rawArrays.length; i++) {
+    const cells = rawArrays[i];
+    const rowNumber = i + 1; // 1-based Excel row
 
-    const rawSku = String(cells[0] ?? "").trim();
-    const rawProvDesc = String(cells[1] ?? "").trim();
-    const rawCustomsDesc = String(cells[2] ?? "").trim();
-    const rawInternalDesc = String(cells[3] ?? "").trim();
-    const rawNcm = String(cells[4] ?? "").trim();
-    const rawCountry = String(cells[5] ?? "").trim();
-    const rawApertura = cells[6];
+    const cell = (key: string) => {
+      const idx = colMap[key];
+      return idx !== undefined ? String(cells[idx] ?? "").trim() : "";
+    };
+
+    const rawSku = cell("sku");
+    const rawProvDesc = cell("provider_description");
+    const rawCustomsDesc = cell("customs_description");
+    const rawInternalDesc = cell("internal_description");
+    const rawNcm = cell("ncm_code");
+    const rawCountry = cell("country_of_origin");
+    const rawApertura = colMap["apertura"] !== undefined ? cells[colMap["apertura"]] : "";
 
     const errors: string[] = [];
     const warnings: string[] = [];
