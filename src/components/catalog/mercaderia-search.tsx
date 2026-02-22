@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import {
   Search,
   Loader2,
@@ -11,6 +12,7 @@ import {
   Users,
   Package,
   Plus,
+  Upload,
   Pencil,
   Save,
   X,
@@ -389,6 +391,13 @@ export default function MercaderiaSearch() {
           <Plus size={14} />
           Nuevo Producto
         </button>
+        <Link
+          href="/catalogo/importar"
+          className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg border border-[#E4E4E7] text-sm font-medium text-[#71717A] hover:bg-[#FAFAFA] transition-colors"
+        >
+          <Upload size={14} />
+          Importar Excel
+        </Link>
       </div>
 
       {/* Advanced filters */}
