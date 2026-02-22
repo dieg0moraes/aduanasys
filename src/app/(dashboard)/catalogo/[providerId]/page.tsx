@@ -7,7 +7,7 @@ import {
   Search,
   Loader2,
   Trash2,
-  Check,
+  Save,
   X,
   ChevronLeft,
   ChevronRight,
@@ -17,6 +17,7 @@ import {
   ChevronDown,
   Package,
   Upload,
+  Pencil,
   Plus,
 } from "lucide-react";
 import type { Invoice } from "@/lib/types";
@@ -564,170 +565,119 @@ export default function ProviderCatalogPage() {
                       {isExpanded && (
                         <tr className="border-b border-[#E4E4E7] bg-blue-50/30">
                           <td colSpan={7} className="px-4 py-4">
-                            <div className="space-y-4">
-                              {/* Row 1: descriptions */}
+                            <div className="space-y-3">
+                              {/* Descriptions - inline editable */}
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
-                                    Descripción Aduanera
-                                  </label>
+                                  <span className="text-[10px] font-medium text-[#A1A1AA] uppercase tracking-wide">
+                                    Descripción aduanera
+                                  </span>
                                   <textarea
                                     value={editValues.customs_description}
-                                    onChange={(e) =>
-                                      setEditValues((v) => ({
-                                        ...v,
-                                        customs_description: e.target.value,
-                                      }))
-                                    }
+                                    onChange={(e) => setEditValues((v) => ({ ...v, customs_description: e.target.value }))}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] min-h-[60px] resize-y"
+                                    rows={2}
+                                    className="mt-0.5 w-full px-2.5 py-1.5 bg-[#FAFAFA] border border-[#E4E4E7] rounded-lg text-sm text-[#18181B] focus:outline-none focus:ring-1 focus:ring-[#2563EB] focus:bg-white resize-none"
                                     placeholder="Descripción para aduana"
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
-                                    Descripción Interna
-                                  </label>
+                                  <span className="text-[10px] font-medium text-[#A1A1AA] uppercase tracking-wide">
+                                    Descripción interna
+                                  </span>
                                   <textarea
                                     value={editValues.internal_description}
-                                    onChange={(e) =>
-                                      setEditValues((v) => ({
-                                        ...v,
-                                        internal_description: e.target.value,
-                                      }))
-                                    }
+                                    onChange={(e) => setEditValues((v) => ({ ...v, internal_description: e.target.value }))}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] min-h-[60px] resize-y"
-                                    placeholder="Descripción interna (uso propio)"
+                                    rows={2}
+                                    placeholder="Sin descripción interna"
+                                    className="mt-0.5 w-full px-2.5 py-1.5 bg-[#FAFAFA] border border-[#E4E4E7] rounded-lg text-sm text-[#18181B] placeholder:text-[#D4D4D8] focus:outline-none focus:ring-1 focus:ring-[#2563EB] focus:bg-white resize-none"
                                   />
                                 </div>
                               </div>
 
-                              {/* Row 2: NCM + flags */}
-                              <div className="grid grid-cols-5 gap-4">
-                                <div>
-                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
-                                    NCM
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={editValues.ncm_code}
-                                    onChange={(e) =>
-                                      setEditValues((v) => ({
-                                        ...v,
-                                        ncm_code: e.target.value,
-                                      }))
-                                    }
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
-                                    LATU
-                                  </label>
-                                  <select
-                                    value={editValues.latu === null ? "" : editValues.latu ? "true" : "false"}
-                                    onChange={(e) =>
-                                      setEditValues((v) => ({
-                                        ...v,
-                                        latu: e.target.value === "" ? null : e.target.value === "true",
-                                      }))
-                                    }
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                                  >
-                                    <option value="">--</option>
-                                    <option value="true">Si</option>
-                                    <option value="false">No</option>
-                                  </select>
-                                </div>
-                                <div>
-                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
-                                    IMESI
-                                  </label>
-                                  <select
-                                    value={editValues.imesi === null ? "" : editValues.imesi ? "true" : "false"}
-                                    onChange={(e) =>
-                                      setEditValues((v) => ({
-                                        ...v,
-                                        imesi: e.target.value === "" ? null : e.target.value === "true",
-                                      }))
-                                    }
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                                  >
-                                    <option value="">--</option>
-                                    <option value="true">Si</option>
-                                    <option value="false">No</option>
-                                  </select>
-                                </div>
-                                <div>
-                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
-                                    Exonera IVA
-                                  </label>
-                                  <select
-                                    value={editValues.exonera_iva === null ? "" : editValues.exonera_iva ? "true" : "false"}
-                                    onChange={(e) =>
-                                      setEditValues((v) => ({
-                                        ...v,
-                                        exonera_iva: e.target.value === "" ? null : e.target.value === "true",
-                                      }))
-                                    }
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                                  >
-                                    <option value="">--</option>
-                                    <option value="true">Si</option>
-                                    <option value="false">No</option>
-                                  </select>
-                                </div>
-                                <div>
-                                  <label className="block text-xs font-medium text-[#71717A] mb-1">
-                                    Apertura
-                                  </label>
+                              {/* NCM inline */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-medium text-[#A1A1AA] uppercase tracking-wide">NCM</span>
+                                <input
+                                  type="text"
+                                  value={editValues.ncm_code}
+                                  onChange={(e) => setEditValues((v) => ({ ...v, ncm_code: e.target.value }))}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="px-2.5 py-1 bg-[#FAFAFA] border border-[#E4E4E7] rounded-lg text-sm font-mono text-[#18181B] focus:outline-none focus:ring-1 focus:ring-[#2563EB] focus:bg-white w-40"
+                                />
+                              </div>
+
+                              {/* Toggle pills + apertura */}
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setEditValues((v) => ({ ...v, latu: v.latu === true ? false : v.latu === false ? null : true })); }}
+                                  className={`px-2.5 py-1 rounded-full text-[10px] font-medium border transition-colors cursor-pointer ${
+                                    editValues.latu === true
+                                      ? "bg-[#F5F3FF] text-[#9333EA] border-[#DDD6FE]"
+                                      : editValues.latu === false
+                                      ? "bg-white text-[#A1A1AA] border-[#E4E4E7] line-through"
+                                      : "bg-white text-[#D4D4D8] border-dashed border-[#E4E4E7]"
+                                  }`}
+                                >
+                                  LATU{editValues.latu === true ? " ✓" : editValues.latu === false ? " ✗" : ""}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setEditValues((v) => ({ ...v, imesi: v.imesi === true ? false : v.imesi === false ? null : true })); }}
+                                  className={`px-2.5 py-1 rounded-full text-[10px] font-medium border transition-colors cursor-pointer ${
+                                    editValues.imesi === true
+                                      ? "bg-[#FFF7ED] text-[#EA580C] border-[#FED7AA]"
+                                      : editValues.imesi === false
+                                      ? "bg-white text-[#A1A1AA] border-[#E4E4E7] line-through"
+                                      : "bg-white text-[#D4D4D8] border-dashed border-[#E4E4E7]"
+                                  }`}
+                                >
+                                  IMESI{editValues.imesi === true ? " ✓" : editValues.imesi === false ? " ✗" : ""}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setEditValues((v) => ({ ...v, exonera_iva: v.exonera_iva === true ? false : v.exonera_iva === false ? null : true })); }}
+                                  className={`px-2.5 py-1 rounded-full text-[10px] font-medium border transition-colors cursor-pointer ${
+                                    editValues.exonera_iva === true
+                                      ? "bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]"
+                                      : editValues.exonera_iva === false
+                                      ? "bg-white text-[#A1A1AA] border-[#E4E4E7] line-through"
+                                      : "bg-white text-[#D4D4D8] border-dashed border-[#E4E4E7]"
+                                  }`}
+                                >
+                                  Exonera IVA{editValues.exonera_iva === true ? " ✓" : editValues.exonera_iva === false ? " ✗" : ""}
+                                </button>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[10px] font-medium text-[#A1A1AA]">Apertura:</span>
                                   <input
                                     type="number"
                                     value={editValues.apertura ?? ""}
-                                    onChange={(e) =>
-                                      setEditValues((v) => ({
-                                        ...v,
-                                        apertura: e.target.value === "" ? null : Number(e.target.value),
-                                      }))
-                                    }
+                                    onChange={(e) => setEditValues((v) => ({ ...v, apertura: e.target.value === "" ? null : Number(e.target.value) }))}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                                     placeholder="--"
+                                    className="w-16 px-2 py-0.5 bg-[#FAFAFA] border border-[#E4E4E7] rounded text-xs font-mono text-[#18181B] focus:outline-none focus:ring-1 focus:ring-[#2563EB] focus:bg-white"
                                   />
                                 </div>
                               </div>
 
                               {/* Actions */}
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 pt-1">
                                 <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    saveEdit();
-                                  }}
-                                  disabled={saving}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1D4ED8] disabled:opacity-50 transition-colors"
+                                  onClick={(e) => { e.stopPropagation(); cancelEdit(); }}
+                                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#E4E4E7] text-xs text-[#71717A] hover:bg-[#FAFAFA]"
                                 >
-                                  {saving ? (
-                                    <Loader2 size={14} className="animate-spin" />
-                                  ) : (
-                                    <Check size={14} />
-                                  )}
-                                  Guardar
+                                  <X size={12} />
+                                  Cancelar
                                 </button>
                                 <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    cancelEdit();
-                                  }}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm text-[#71717A] hover:bg-white transition-colors"
+                                  onClick={(e) => { e.stopPropagation(); saveEdit(); }}
+                                  disabled={saving}
+                                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#2563EB] text-white text-xs font-medium hover:bg-[#1D4ED8] disabled:opacity-50"
                                 >
-                                  <X size={14} />
-                                  Cancelar
+                                  {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+                                  {saving ? "Guardando..." : "Guardar"}
                                 </button>
                                 <div className="ml-auto relative">
                                   {movingId === item.id ? (
@@ -781,13 +731,10 @@ export default function ProviderCatalogPage() {
                                     </div>
                                   ) : (
                                     <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setMovingId(item.id);
-                                      }}
-                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm text-[#71717A] hover:bg-white transition-colors"
+                                      onClick={(e) => { e.stopPropagation(); setMovingId(item.id); }}
+                                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#E4E4E7] text-xs text-[#71717A] hover:bg-[#FAFAFA]"
                                     >
-                                      <ArrowLeft size={14} className="rotate-180" />
+                                      <ArrowLeft size={12} className="rotate-180" />
                                       Mover
                                     </button>
                                   )}
