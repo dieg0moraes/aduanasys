@@ -162,9 +162,10 @@ export default function InvoiceDetailPage() {
     setSavingCountry(false);
   };
 
+  const stripAccents = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const filteredCountries = countrySearch.trim()
     ? COUNTRIES.filter((c) =>
-        c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+        stripAccents(c.name.toLowerCase()).includes(stripAccents(countrySearch.toLowerCase())) ||
         String(c.code).includes(countrySearch)
       )
     : COUNTRIES;
